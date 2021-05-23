@@ -5,4 +5,10 @@
     <RootNamespace>RodrigoCoin_v2._0</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="BouncyCastle" Version="1.8.9" />
+    <PackageReference Include="NBitcoin" Version="5.0.81" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
 </Project>
