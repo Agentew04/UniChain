@@ -5,7 +5,7 @@ using Org.BouncyCastle.Crypto.Digests;
 
 namespace RodrigoCoin_v2
 {
-    public class Transaction
+    public class Transaction : BlockChainEvent
     {
         #region Variables
         //in hash
@@ -57,6 +57,7 @@ namespace RodrigoCoin_v2
             ToAddress = toAddress;
             Amount = amount;
             Timestamp = DateTime.UtcNow.ToFileTimeUtc();
+            EventType = EventType.Transaction;
         }
 
 
@@ -72,6 +73,8 @@ namespace RodrigoCoin_v2
             ToAddress = toAddress.ToHex();
             Amount = amount;
             Timestamp = DateTime.UtcNow.ToFileTimeUtc();
+            EventType = EventType.Transaction;
+
         }
 
 
@@ -87,6 +90,8 @@ namespace RodrigoCoin_v2
             ToAddress = toAddress;
             Amount = amount;
             Timestamp = DateTime.UtcNow.ToFileTimeUtc();
+            EventType = EventType.Transaction;
+
         }
 
 
@@ -102,6 +107,8 @@ namespace RodrigoCoin_v2
             ToAddress = toAddress.ToHex();
             Amount = amount;
             Timestamp = DateTime.UtcNow.ToFileTimeUtc();
+            EventType = EventType.Transaction;
+
         }
 
 
@@ -114,9 +121,9 @@ namespace RodrigoCoin_v2
         /// <param name="privateKey">The private key used to sign the transaction</param>
         public void SignTransaction(Key privateKey)
         {
-            if (privateKey.PubKey.ToHex() != this.FromAddress || privateKey.PubKey.ToHex() != this.FromAddress)
+            if ( privateKey.PubKey.ToHex() != this.FromAddress)
             {
-                throw new Exception("Invalid key");
+                throw new InvalidKeyException();
             }
 
             var HashTransaction = CalculateHash();
@@ -133,7 +140,8 @@ namespace RodrigoCoin_v2
         {
             //check addresses and amount
             if(this.FromAddress == "network" && this.ToAddress != null) { return true; }
-            if(this.FromAddress == null || this.ToAddress == null || Amount == 0) { return false; }
+            if (Signature == null) { return false; }
+            if (this.FromAddress == null || this.ToAddress == null || Amount == 0) { return false; }
             //check signature
             if (!VerifySignature()) { return false; }
 
@@ -149,7 +157,7 @@ namespace RodrigoCoin_v2
         public string CalculateHash()
         {
             var sha = new Sha3Digest(512);
-            byte[] input2 = Encoding.ASCII.GetBytes($"{FromAddress ?? ""}-{ToAddress ?? ""}-{Amount}-{Timestamp}");
+            byte[] input2 = Encoding.ASCII.GetBytes($"{FromAddress}-{ToAddress}-{Amount}-{Timestamp}");
 
             sha.BlockUpdate(input2, 0, input2.Length);
             byte[] result = new byte[64];
@@ -164,7 +172,7 @@ namespace RodrigoCoin_v2
         /// Verifies if the transaction is signed by the owner
         /// </summary>
         /// <param name="pubKey">The public key </param>
-        /// <returns></returns>
+        /// <returns>A boolean representing the result</returns>
         public bool VerifySignature()
         {
             PubKey pubKey = new(this.FromAddress);

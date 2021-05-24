@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31205.134
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RodrigoCoin v2.0", "RodrigoCoin v2.0.csproj", "{6679ADB6-B848-4C91-B3E5-BF02DB1AB84F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RodrigoCoin v2.0", "RodrigoCoin v2.0.csproj", "{6679ADB6-B848-4C91-B3E5-BF02DB1AB84F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestConsoleApp", "..\TestConsoleApp\TestConsoleApp.csproj", "{C7F66678-33E9-4C0D-A27A-3A0FEB9FC932}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestConsoleApp", "..\TestConsoleApp\TestConsoleApp.csproj", "{C7F66678-33E9-4C0D-A27A-3A0FEB9FC932}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlockChainInteractor", "..\BlockChainInteractor\BlockChainInteractor.csproj", "{FEB940F4-E921-4980-B3F6-845FDDE15033}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{C7F66678-33E9-4C0D-A27A-3A0FEB9FC932}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C7F66678-33E9-4C0D-A27A-3A0FEB9FC932}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C7F66678-33E9-4C0D-A27A-3A0FEB9FC932}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FEB940F4-E921-4980-B3F6-845FDDE15033}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEB940F4-E921-4980-B3F6-845FDDE15033}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEB940F4-E921-4980-B3F6-845FDDE15033}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEB940F4-E921-4980-B3F6-845FDDE15033}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

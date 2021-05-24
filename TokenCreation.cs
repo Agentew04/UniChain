@@ -10,8 +10,9 @@ using System.Threading.Tasks;
 
 namespace RodrigoCoin_v2
 {
-    public class TokenCreation
+    public class TokenCreation : BlockChainEvent
     {
+        #region Variables
         /// <summary>
         /// A GUID/UUID for this token, randomly generated
         /// </summary>
@@ -38,7 +39,9 @@ namespace RodrigoCoin_v2
         /// The metadata for this token, defines how it looks like
         /// </summary>
         public TokenMetadata Metadata { get; }
+        #endregion
 
+        #region constructors
 
         /// <summary>
         /// Creates a new token to be published on the blockchain
@@ -51,7 +54,10 @@ namespace RodrigoCoin_v2
             this.Owner = owner;
             this.Metadata = metadata;
             this.Timestamp = DateTime.UtcNow.ToFileTimeUtc();
+            EventType = EventType.TokenCreation;
         }
+
+        #endregion
 
         /// <summary>
         /// Checks if this token is valid
@@ -59,6 +65,7 @@ namespace RodrigoCoin_v2
         /// <returns>A boolean representing the result</returns>
         public bool IsValid()
         {
+            if( Signature == null) { return false; }
             if (Owner == null || Metadata == null){ return false; }
             if (Metadata.Name == null || Metadata.Description == null){ return false; }
             if(Metadata.Attributes == null || Metadata.ImageUrl == null){ return false; }
@@ -114,9 +121,15 @@ namespace RodrigoCoin_v2
             var signature = privateKey.SignMessage(hash);
             Signature = signature;
         }
+
+        /// <summary>
+        /// Verifies if the transaction is signed by the owner
+        /// </summary>
+        /// <param name="pubKey">The public key </param>
+        /// <returns>A boolean representing the result</returns>
         public bool VerifySignature()
         {
-            PubKey pub = new PubKey(this.Owner);
+            PubKey pub = new(this.Owner);
             return pub.VerifyMessage(this.CalculateHash(), this.Signature);
         }
     }

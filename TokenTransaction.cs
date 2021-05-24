@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace RodrigoCoin_v2
 {
-    public class TokenTransaction
+    public class TokenTransaction : BlockChainEvent
     {
         #region Variables
         //in hash
@@ -39,7 +39,7 @@ namespace RodrigoCoin_v2
 
         //not in hash
         /// <summary>
-        /// The hash signed with the <see cref="FromAddress"/>/Public Key
+        /// The hash signed with the <see cref="FromAddress"/>/<see cref="PubKey"/>
         /// </summary>
         public string Signature { get; set; }
 
@@ -60,6 +60,7 @@ namespace RodrigoCoin_v2
             ToAddress = toAddress;
             TokenId = tokenId;
             Timestamp = DateTime.UtcNow.ToFileTimeUtc();
+            EventType = EventType.TokenTransaction;
         }
 
 
@@ -68,13 +69,14 @@ namespace RodrigoCoin_v2
         /// </summary>
         /// <param name="fromAddress">Same of the <see cref="PubKey"/></param>
         /// <param name="toAddress">The Address of the receiver</param>
-        /// <param name="amount">The amount of coins tranferred</param>
+        /// <param name="amount">The Id of the token being transferred</param>
         public TokenTransaction(string fromAddress, PubKey toAddress, Guid tokenId)
         {
             FromAddress = fromAddress;
             ToAddress = toAddress.ToHex();
-            Amount = amount;
+            TokenId = tokenId;
             Timestamp = DateTime.UtcNow.ToFileTimeUtc();
+            EventType = EventType.TokenTransaction;
         }
 
 
@@ -83,13 +85,14 @@ namespace RodrigoCoin_v2
         /// </summary>
         /// <param name="fromAddress">Same of the <see cref="PubKey"/></param>
         /// <param name="toAddress">The Address of the receiver</param>
-        /// <param name="amount">The amount of coins tranferred</param>
-        public TokenTransaction(PubKey fromAddress, string toAddress, int amount)
+        /// <param name="tokenId">The Id of the token being transferred</param>
+        public TokenTransaction(PubKey fromAddress, string toAddress, Guid tokenId)
         {
             FromAddress = fromAddress.ToHex();
             ToAddress = toAddress;
-            Amount = amount;
+            TokenId = tokenId;
             Timestamp = DateTime.UtcNow.ToFileTimeUtc();
+            EventType = EventType.TokenTransaction;
         }
 
 
@@ -98,12 +101,13 @@ namespace RodrigoCoin_v2
         /// </summary>
         /// <param name="fromAddress">Same of the <see cref="PubKey"/></param>
         /// <param name="toAddress">The Address of the receiver</param>
-        /// <param name="amount">The amount of coins tranferred</param>
-        public TokenTransaction(PubKey fromAddress, PubKey toAddress, int amount)
+        /// <param name="tokenId">The Id of the token being transferred</param>
+        public TokenTransaction(PubKey fromAddress, PubKey toAddress, Guid tokenId)
         {
             FromAddress = fromAddress.ToHex();
             ToAddress = toAddress.ToHex();
-            Amount = amount;
+            TokenId = tokenId;
+            EventType = EventType.TokenTransaction;
             Timestamp = DateTime.UtcNow.ToFileTimeUtc();
         }
 
@@ -117,7 +121,8 @@ namespace RodrigoCoin_v2
         /// <param name="privateKey">The private key used to sign the transaction</param>
         public void SignTransaction(Key privateKey)
         {
-            if (privateKey.PubKey.ToHex() != this.FromAddress || privateKey.PubKey.ToHex() != this.FromAddress)
+            //check is the owner making the transaction
+            if (privateKey.PubKey.ToHex() != this.FromAddress)
             {
                 throw new Exception("Invalid key");
             }
@@ -132,11 +137,13 @@ namespace RodrigoCoin_v2
         /// Checks if the current transaction is valid
         /// </summary>
         /// <returns>A boolean representing the result</returns>
-        public bool IsValid()
+        public bool IsValid(Blockchain blockchain)
         {
             //check addresses and amount
-            if (this.FromAddress == "network" && this.ToAddress != null) { return true; }
-            if (this.FromAddress == null || this.ToAddress == null || Amount == 0) { return false; }
+            if (blockchain.GetTokenOrigin(this.TokenId).HasValue == false) { return false; }
+            if (blockchain.GetTokenOrigin(this.TokenId).Value.TokenId != TokenId) { return false; }
+            if (this.Signature == null) { return false; }
+            if (this.FromAddress == null || this.ToAddress == null || TokenId == new Guid()) { return false; }
             //check signature
             if (!VerifySignature()) { return false; }
 
@@ -152,7 +159,7 @@ namespace RodrigoCoin_v2
         public string CalculateHash()
         {
             var sha = new Sha3Digest(512);
-            byte[] input2 = Encoding.ASCII.GetBytes($"{FromAddress ?? ""}-{ToAddress ?? ""}-{Amount}-{Timestamp}");
+            byte[] input2 = Encoding.ASCII.GetBytes($"{FromAddress}-{ToAddress}-{TokenId}-{Timestamp}");
 
             sha.BlockUpdate(input2, 0, input2.Length);
             byte[] result = new byte[64];
@@ -167,7 +174,7 @@ namespace RodrigoCoin_v2
         /// Verifies if the transaction is signed by the owner
         /// </summary>
         /// <param name="pubKey">The public key </param>
-        /// <returns></returns>
+        /// <returns>A boolean representing the result</returns>
         public bool VerifySignature()
         {
             PubKey pubKey = new(this.FromAddress);
