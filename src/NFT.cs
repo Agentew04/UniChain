@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RodrigoCoin_v2
 {
-    public struct NFT
+    public struct NFT:BlockChainEvent
     {
         /// <summary>
         /// A GUID/UUID for this token, randomly generated
@@ -29,6 +29,7 @@ namespace RodrigoCoin_v2
         /// The metadata for this token, defines how it looks like
         /// </summary>
         public TokenMetadata Metadata { get; set; }
+        public EventType EventType { get;private set;}
 
         public NFT(string owner, TokenMetadata metadata)
         {
@@ -36,6 +37,7 @@ namespace RodrigoCoin_v2
             this.Owner = owner;
             this.Metadata = metadata;
             this.Timestamp = DateTime.UtcNow.ToFileTimeUtc();
+            EventType=EventType.NFT;
         }
 
         public static explicit operator NFT(TokenCreation v)

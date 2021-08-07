@@ -42,6 +42,7 @@ namespace RodrigoCoin_v2
         /// The hash signed with the <see cref="FromAddress"/>/<see cref="PubKey"/>
         /// </summary>
         public string Signature { get; set; }
+        public EventType EventType { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         #endregion
 

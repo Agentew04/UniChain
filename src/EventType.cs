@@ -4,6 +4,7 @@
     {
         Transaction,
         TokenCreation,
-        TokenTransaction
+        TokenTransaction,
+        NFT
     }
 }

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
+using Newtonsoft.Json;
+using Key = NBitcoin.Key;
 
 namespace RodrigoCoin_v2
 {
@@ -12,7 +14,7 @@ namespace RodrigoCoin_v2
         /// <summary>
         /// Represents the Chain of <see cref="Block"/> for this blockchain
         /// </summary>
-        public IList<Block> Chain { get; set; }
+        public IList<Block> Chain { get; private set; }
         /// <summary>
         /// The difficulty, or the number of zeros in the start of the hash
         /// </summary>
@@ -25,7 +27,7 @@ namespace RodrigoCoin_v2
         /// A list with all pending <see cref="Transaction"/>, <see cref="TokenCreation"/> and
         /// <see cref="TokenTransaction"/>.
         /// </summary>
-        private IList<object> PendingTransactions = new List<object>();
+        private IList<BlockChainEvent> PendingTransactions = new List<BlockChainEvent>();
 
 
 
@@ -35,6 +37,10 @@ namespace RodrigoCoin_v2
             {
                 new Block(null, null)
             };
+        }
+
+        public void PrintChain(){
+            Console.WriteLine(JsonConvert.SerializeObject(this.Chain));
         }
 
         /// <summary>
@@ -101,7 +107,27 @@ namespace RodrigoCoin_v2
             block.MineBlock(this.Difficulty);
             Chain.Add(block);
 
-            PendingTransactions = new List<object>();
+            PendingTransactions = new List<BlockChainEvent>();
+        }
+        /// <summary>
+        /// Checks all the transactions in <see cref="PendingTransactions"/> and creates a new block
+        /// in the blockchain
+        /// </summary>
+        /// <param name="minerAddress">The address that will receive all the rewards</param>
+        public void MinePendingTransactions(Key minerAddress)
+        {
+            if (minerAddress == null) { throw new ArgumentNullException("The miner address is null!",new NullAddressException()); }
+            PendingTransactions.Insert(0, new Transaction("network", minerAddress.PubKey.ToHex(), this.Reward));
+            Block block = new(GetLatestBlock().Hash, PendingTransactions);
+            if (!block.HasValidTransactions()) { throw new InvalidTransactionException("One of the transactions is not valid!"); }
+
+            Block latestBlock = GetLatestBlock();
+            block.Index = latestBlock.Index + 1;
+            block.PreviousHash = latestBlock.Hash;
+            block.MineBlock(this.Difficulty);
+            Chain.Add(block);
+
+            PendingTransactions = new List<BlockChainEvent>();
         }
 
         /// <summary>
@@ -315,7 +341,7 @@ namespace RodrigoCoin_v2
                 }
                 foreach (var transaction in block.Transactions)
                 {
-                    if (transaction.GetType() == typeof(TokenCreation))
+                    if (typeof(TokenCreation).IsInstanceOfType(transaction))
                     {
                         NFT nft = (NFT)transaction;
                         if(nft.Owner == address)
@@ -346,26 +372,18 @@ namespace RodrigoCoin_v2
                 {
                     continue;
                 }
-                foreach (var transaction in block.Transactions) {
-                    if(transaction.GetType() == typeof(Transaction))
-                    {
-                        Transaction t;
-                        t = (Transaction)transaction;
-                        if (t.FromAddress == address)
-                        {
-                            balance -= t.Amount;
-                        }
-
-                        if (t.ToAddress == address)
-                        {
-                            balance += t.Amount;
-                        }
+                var q = block.Transactions.AsQueryable()
+                .Where(trans=>typeof(Transaction).IsInstanceOfType(trans))
+                .Where(trans=>(trans as Transaction).FromAddress==address || (trans as Transaction).ToAddress==address);
+                foreach(var q1 in q){
+                    Transaction t=(Transaction)q1;
+                    if(t.ToAddress==address){
+                        balance+=t.Amount;
+                    }else{
+                        balance-=t.Amount;
                     }
-                    
-
                 }
             }
-
             return balance;
         }
 

@@ -14,9 +14,9 @@ namespace RodrigoCoin_v2
         public string PreviousHash { get; set; }
         public string Hash { get; set; }
         public int Nonce { get; set; } = 0;
-        public IList<object> Transactions { get; set; }
+        public IList<BlockChainEvent> Transactions { get; set; }
 
-        public Block(string previousHash, IList<object> transactions)
+        public Block(string previousHash, IList<BlockChainEvent> transactions)
         {
             Index = 0;
             TimeStamp = DateTime.UtcNow.ToFileTimeUtc();

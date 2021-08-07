@@ -39,6 +39,7 @@ namespace RodrigoCoin_v2
         /// The metadata for this token, defines how it looks like
         /// </summary>
         public TokenMetadata Metadata { get; }
+        public EventType EventType { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         #endregion
 
         #region constructors
@@ -55,6 +56,32 @@ namespace RodrigoCoin_v2
             this.Metadata = metadata;
             this.Timestamp = DateTime.UtcNow.ToFileTimeUtc();
             EventType = EventType.TokenCreation;
+        }
+        /// <summary>
+        /// Creates a new token to be published on the blockchain
+        /// </summary>
+        /// <param name="owner">The first owner for the token</param>
+        /// <param name="metadata">The metadata of this token</param>
+        public TokenCreation(Key owner, TokenMetadata metadata)
+        {
+            this.TokenId = Guid.NewGuid();
+            this.Owner = owner.PubKey.ToHex();
+            this.Metadata = metadata;
+            this.Timestamp = DateTime.UtcNow.ToFileTimeUtc();
+            EventType = EventType.TokenCreation;
+        }
+        /// <summary>
+        /// Creates a new token to be published on the blockchain
+        /// </summary>
+        /// <param name="owner">The first owner for the token</param>
+        /// <param name="metadata">The metadata of this token</param>
+        public TokenCreation(PubKey owner, TokenMetadata metadata)
+        {
+            this.TokenId = Guid.NewGuid();
+            this.Owner = owner.ToHex();
+            this.Metadata = metadata;
+            this.Timestamp = DateTime.UtcNow.ToFileTimeUtc();
+            this.EventType = EventType.TokenCreation;
         }
 
         #endregion
