@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RodrigoCoin_v2
+namespace RodrigoChain.Exceptions
 {
     public class InvalidKeyException : Exception
     {
@@ -30,6 +30,15 @@ namespace RodrigoCoin_v2
         }
 
         public InvalidTransactionException(string message) : base("The transaction is invalid!\nDescription: " + message)
+        {
+        }
+    }
+    public class InvalidVoteCreation : Exception
+    {
+        public InvalidVoteCreation() : base("The Vote Creation in invalid!")
+        {
+        }
+        public InvalidVoteCreation(string message) : base("The vote creation is invalid!\nDescription: "+message)
         {
         }
     }
