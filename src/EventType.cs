@@ -1,10 +1,15 @@
-﻿namespace RodrigoCoin_v2
+﻿namespace RodrigoChain
 {
     public enum EventType
     {
         Transaction,
-        TokenCreation,
-        TokenTransaction,
-        NFT
+        NFTTransfer,
+        NFTBurn,
+        NFTMint,
+        PoolOpen,
+        PoolVote,
+        PoolClose,
+        DocumentSubmit,
+        MessageSend
     }
 }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace RodrigoChain
 {
-    public class NFTTransaction : BaseBlockChainEvent
+    public class NFTTransfer : BaseBlockChainEvent
     {
         #region Variables
         //in hash
@@ -39,7 +39,7 @@ namespace RodrigoChain
         /// <param name="fromAddress">Same of the <see cref="PubKey"/></param>
         /// <param name="toAddress">The Address of the receiver</param>
         /// <param name="tokenId">The Id of the token being transferred</param>
-        public NFTTransaction(User user, Address toAddress, Guid tokenId) : base(EventType.NFTTransaction,user)
+        public NFTTransfer(User user, Address toAddress, Guid tokenId) : base(EventType.NFTTransfer,user)
         {
             ActionOwner = user;
             FromAddress = user.Address;
@@ -73,8 +73,8 @@ namespace RodrigoChain
         public bool IsValid(Blockchain blockchain)
         {
             //check addresses and amount
-            if (blockchain.GetTokenOrigin(this.TokenId).HasValue == false) { return false; }
-            if (blockchain.GetTokenOrigin(this.TokenId).Value.TokenId != TokenId) { return false; }
+            //if (blockchain.GetTokenOrigin(this.TokenId).HasValue == false) { return false; }
+            //if (blockchain.GetTokenOrigin(this.TokenId).Value.TokenId != TokenId) { return false; }
             if (this.Signature == null) { return false; }
             if (this.FromAddress.IsNull() || this.ToAddress.IsNull() || TokenId == new Guid()) { return false; }
             //check signature

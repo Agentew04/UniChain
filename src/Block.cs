@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace RodrigoCoin_v2
+namespace RodrigoChain
 {
     public class Block
     {
@@ -14,9 +14,9 @@ namespace RodrigoCoin_v2
         public string PreviousHash { get; set; }
         public string Hash { get; set; }
         public int Nonce { get; set; } = 0;
-        public IList<BlockChainEvent> Transactions { get; set; }
+        public IList<BaseBlockChainEvent> Transactions { get; set; }
 
-        public Block(string previousHash, IList<BlockChainEvent> transactions)
+        public Block(string previousHash, IList<BaseBlockChainEvent> transactions)
         {
             Index = 0;
             TimeStamp = DateTime.UtcNow.ToFileTimeUtc();
@@ -41,9 +41,9 @@ namespace RodrigoCoin_v2
                         return false;
                     }else { continue; }
                 }
-                if(x.GetType() == typeof(TokenCreation))
+                if(x.GetType() == typeof(NFTMint))
                 {
-                    if (!(((TokenCreation)x).IsValid()))
+                    if (!(((NFTMint)x).IsValid()))
                     {
                         return false;
                     }else { continue; }

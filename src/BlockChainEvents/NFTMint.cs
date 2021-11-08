@@ -1,16 +1,12 @@
-﻿using NBitcoin;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Crypto.Digests;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace RodrigoChain
 {
-    public class NFTMinting : BaseBlockChainEvent
+    public class NFTMint : BaseBlockChainEvent
     {
         #region Variables
 
@@ -38,7 +34,7 @@ namespace RodrigoChain
         /// </summary>
         /// <param name="owner">The first owner for the token</param>
         /// <param name="metadata">The metadata of this token</param>
-        public NFTMinting(User user, ITokenMetadata metadata) : base(EventType.NFTMinting,user){
+        public NFTMint(User user, ITokenMetadata metadata) : base(EventType.NFTMint,user){
             this.ActionOwner=user;
             this.Timestamp = DateTime.UtcNow.ToFileTimeUtc();
             this.Meta=metadata;
@@ -55,13 +51,13 @@ namespace RodrigoChain
             if( Signature == null) { return false; }
             if (Owner.IsNull() || Meta == null){ return false; }
             if (Meta.Name == null || Meta.Description == null){ return false; }
-            if(Meta.Attributes == null || Meta.ImageUrl == null){ return false; }
+            if (Meta.ImageUrl == null){ return false; }
             if (!VerifySignature()) { return false; }
             return true;
         }
 
         /// <summary>
-        /// Returns a JObject equivalent to this <see cref="NFTMinting"/>, similar to <see cref="MoneyTransaction"/>
+        /// Returns a JObject equivalent to this <see cref="NFTMint"/>, similar to <see cref="Transaction"/>
         /// </summary>
         /// <returns>A JObject that can be converted to string</returns>
         public JObject ToJObject()

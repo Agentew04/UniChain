@@ -1,6 +1,4 @@
-﻿using RodrigoChain;
-
-namespace RodrigoChain
+﻿namespace RodrigoChain
 {
     public abstract class BaseBlockChainEvent
     {
@@ -9,7 +7,7 @@ namespace RodrigoChain
         public User ActionOwner { get; set;}
 
         /// <summary>
-        /// The time when the object <see cref="MoneyTransaction"/> was created.
+        /// The time when the object <see cref="Transaction"/> was created.
         /// Isn't the time that is added to the block.
         /// </summary>
         public long Timestamp { get; set; }
@@ -55,18 +53,18 @@ namespace RodrigoChain
 
         public EventType ToEventType(){
             System.Type type = this.GetType();
-            if(type==typeof(MoneyTransaction)){
-                return EventType.MoneyTransaction;
-            }else if(type == typeof(NFTMinting)){
-                return EventType.NFTMinting;
-            }else if(type==typeof(NFTTransaction)){
-                return EventType.NFTTransaction;
-            }else if(type==typeof(VoteCreation)){
-                return EventType.VoteCreated;
-            }else if(type==typeof(VoteCast)){
-                return EventType.VoteCast;
+            if(type==typeof(Transaction)){
+                return EventType.Transaction;
+            }else if(type == typeof(NFTMint)){
+                return EventType.NFTMint;
+            }else if(type==typeof(NFTTransfer)){
+                return EventType.NFTTransfer;
+            }else if(type==typeof(PoolOpen)){
+                return EventType.PoolOpen;
+            }else if(type==typeof(PoolVote)){
+                return EventType.PoolVote;
             }else{
-                return EventType.MoneyTransaction;
+                return EventType.Transaction;
             }
         }
     }

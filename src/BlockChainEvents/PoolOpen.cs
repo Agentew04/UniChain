@@ -3,18 +3,19 @@ using System.Text;
 using System.Text.Json;
 using Org.BouncyCastle.Crypto.Digests;
 using RodrigoChain.Exceptions;
+using System.Collections.Generic;
 
 namespace RodrigoChain{
-    public class VoteCreation : BaseBlockChainEvent
+    public class PoolOpen : BaseBlockChainEvent
     {
         #region Variables
         public Address Owner { get; set; }
         public string[] Options {get;set;}
         public Guid VoteId {get;set;}
-        public IMeta Meta { get; set; }
+        public Dictionary<string,string> Meta { get; set; }
         public int MinumumAmountToVote { get; set; }
 
-        public VoteCreation(User user, string[] options, IMeta meta) : base(EventType.VoteCreated,user)
+        public PoolOpen(User user, string[] options, Dictionary<string,string> meta) : base(EventType.PoolOpen,user)
         {
             ActionOwner=user;
             Owner = (Address)user;

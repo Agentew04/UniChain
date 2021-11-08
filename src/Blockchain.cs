@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 using System.Security.Cryptography;
 using Newtonsoft.Json;
 using Key = NBitcoin.Key;
+using RodrigoChain.Exceptions;
 
-namespace RodrigoCoin_v2
+namespace RodrigoChain
 {
     public class Blockchain
     {
@@ -27,7 +28,7 @@ namespace RodrigoCoin_v2
         /// A list with all pending <see cref="Transaction"/>, <see cref="TokenCreation"/> and
         /// <see cref="TokenTransaction"/>.
         /// </summary>
-        private IList<BlockChainEvent> PendingTransactions = new List<BlockChainEvent>();
+        private IList<BaseBlockChainEvent> PendingTransactions = new List<BaseBlockChainEvent>();
 
 
 
@@ -70,7 +71,7 @@ namespace RodrigoCoin_v2
         /// Add a new Token(NFT) on the <see cref="PendingTransactions"/> to be processed later
         /// </summary>
         /// <param name="tokenCreation">The token to be added, type <see cref="TokenCreation"/></param>
-        public void AddTokenCreation(TokenCreation tokenCreation)
+        public void AddTokenCreation(NFTMint tokenCreation)
         {
             if(!tokenCreation.IsValid()){ throw new InvalidTokenException(); }
             PendingTransactions.Add(tokenCreation);
@@ -81,7 +82,7 @@ namespace RodrigoCoin_v2
         /// the method <see cref="MinePendingTransactions(string)"/> is used.
         /// </summary>
         /// <param name="tokenTransaction"></param>
-        public void AddTokenTransaction(TokenTransaction tokenTransaction)
+        public void AddTokenTransaction(NFTTransfer tokenTransaction)
         {
             if (!tokenTransaction.IsValid(this)) { throw new InvalidTransactionException(); }
             PendingTransactions.Add(tokenTransaction);
@@ -94,10 +95,10 @@ namespace RodrigoCoin_v2
         /// in the blockchain
         /// </summary>
         /// <param name="minerAddress">The address that will receive all the rewards</param>
-        public void MinePendingTransactions(string minerAddress)
+        public void MinePendingTransactions(Address minerAddress)
         {
-            if (minerAddress == null) { throw new ArgumentNullException("The miner address is null!",new NullAddressException()); }
-            PendingTransactions.Insert(0, new Transaction("network", minerAddress, this.Reward));
+            if (minerAddress.IsNull()) { throw new ArgumentNullException("The miner address is null!",new NullAddressException()); }
+            PendingTransactions.Insert(0, new Transaction(new User(){Address=new Address("network")}, minerAddress, this.Reward));
             Block block = new(GetLatestBlock().Hash, PendingTransactions);
             if (!block.HasValidTransactions()) { throw new InvalidTransactionException("One of the transactions is not valid!"); }
 
@@ -107,27 +108,7 @@ namespace RodrigoCoin_v2
             block.MineBlock(this.Difficulty);
             Chain.Add(block);
 
-            PendingTransactions = new List<BlockChainEvent>();
-        }
-        /// <summary>
-        /// Checks all the transactions in <see cref="PendingTransactions"/> and creates a new block
-        /// in the blockchain
-        /// </summary>
-        /// <param name="minerAddress">The address that will receive all the rewards</param>
-        public void MinePendingTransactions(Key minerAddress)
-        {
-            if (minerAddress == null) { throw new ArgumentNullException("The miner address is null!",new NullAddressException()); }
-            PendingTransactions.Insert(0, new Transaction("network", minerAddress.PubKey.ToHex(), this.Reward));
-            Block block = new(GetLatestBlock().Hash, PendingTransactions);
-            if (!block.HasValidTransactions()) { throw new InvalidTransactionException("One of the transactions is not valid!"); }
-
-            Block latestBlock = GetLatestBlock();
-            block.Index = latestBlock.Index + 1;
-            block.PreviousHash = latestBlock.Hash;
-            block.MineBlock(this.Difficulty);
-            Chain.Add(block);
-
-            PendingTransactions = new List<BlockChainEvent>();
+            PendingTransactions = new List<BaseBlockChainEvent>();
         }
 
         /// <summary>
@@ -159,202 +140,202 @@ namespace RodrigoCoin_v2
         #region find in the chain
 
 
-        /// <summary>
-        /// Searches for a Token/NFT inside the blockchain. The information it returns
-        /// belong WHEN THE TOKEN WAS CREATED. For updated info, use <see cref="GetToken(Guid)"/>.
-        /// Purely informational, like <see cref="GetBalance(string)"/></summary>
-        /// <param name="tokenId">The token id to be looked up for</param>
-        /// <returns>A <see cref="Nullable{NFT}"/>. Returns <see langword="null"/> if no one created a nft like this before</returns>
-        public NFT? GetTokenOrigin(Guid tokenId)
-        {
-            foreach (Block block in this.Chain)
-            {
-                if (block.Transactions is null)
-                {
-                    continue;
-                }
-                foreach (var transaction in block.Transactions)
-                {
-                    if (typeof(TokenCreation).IsInstanceOfType(transaction))
-                    {
-                        NFT nft = (NFT)transaction;
-                        if(nft.TokenId == tokenId)
-                        {
-                            return nft;
-                        }
-                    }
-                    else { continue; }
-                }
-            }
-            return null;
-        }
+        // /// <summary>
+        // /// Searches for a Token/NFT inside the blockchain. The information it returns
+        // /// belong WHEN THE TOKEN WAS CREATED. For updated info, use <see cref="GetToken(Guid)"/>.
+        // /// Purely informational, like <see cref="GetBalance(string)"/></summary>
+        // /// <param name="tokenId">The token id to be looked up for</param>
+        // /// <returns>A <see cref="Nullable{NFT}"/>. Returns <see langword="null"/> if no one created a nft like this before</returns>
+        // public NFT? GetTokenOrigin(Guid tokenId)
+        // {
+        //     foreach (Block block in this.Chain)
+        //     {
+        //         if (block.Transactions is null)
+        //         {
+        //             continue;
+        //         }
+        //         foreach (var transaction in block.Transactions)
+        //         {
+        //             if (typeof(TokenCreation).IsInstanceOfType(transaction))
+        //             {
+        //                 NFT nft = (NFT)transaction;
+        //                 if(nft.TokenId == tokenId)
+        //                 {
+        //                     return nft;
+        //                 }
+        //             }
+        //             else { continue; }
+        //         }
+        //     }
+        //     return null;
+        // }
 
 
-        /// <summary>
-        /// Searches for a Token/NFT inside the blockchain. The information it returns
-        /// belong WHEN THE TOKEN WAS CREATED. For updated info, use <see cref="GetToken(Guid)"/>.
-        /// Purely informational, like <see cref="GetBalance(string)"/></summary>
-        /// <param name="timestamp">The timestamp of the <see cref="TokenCreation"/></param>
-        /// <returns>A <see cref="Nullable{NFT}"/>. Returns <see langword="null"/> if no one created a nft like this before</returns>
-        public NFT? GetTokenOrigin(long timestamp)
-        {
-            foreach (Block block in this.Chain)
-            {
-                if (block.Transactions is null)
-                {
-                    continue;
-                }
-                foreach (var transaction in block.Transactions)
-                {
-                    if (typeof(TokenCreation).IsInstanceOfType(transaction))
-                    {
-                        if (((NFT)transaction).Timestamp == timestamp)
-                        {
-                            return (NFT)transaction;
-                        }
-                    }else { continue; }
-                }
-            }
-            return null;
-        }
+        // /// <summary>
+        // /// Searches for a Token/NFT inside the blockchain. The information it returns
+        // /// belong WHEN THE TOKEN WAS CREATED. For updated info, use <see cref="GetToken(Guid)"/>.
+        // /// Purely informational, like <see cref="GetBalance(string)"/></summary>
+        // /// <param name="timestamp">The timestamp of the <see cref="TokenCreation"/></param>
+        // /// <returns>A <see cref="Nullable{NFT}"/>. Returns <see langword="null"/> if no one created a nft like this before</returns>
+        // public NFT? GetTokenOrigin(long timestamp)
+        // {
+        //     foreach (Block block in this.Chain)
+        //     {
+        //         if (block.Transactions is null)
+        //         {
+        //             continue;
+        //         }
+        //         foreach (var transaction in block.Transactions)
+        //         {
+        //             if (typeof(TokenCreation).IsInstanceOfType(transaction))
+        //             {
+        //                 if (((NFT)transaction).Timestamp == timestamp)
+        //                 {
+        //                     return (NFT)transaction;
+        //                 }
+        //             }else { continue; }
+        //         }
+        //     }
+        //     return null;
+        // }
 
 
-        /// <summary>
-        /// Searches for a Token/NFT inside the blockchain. The information it returns
-        /// belong WHEN THE TOKEN WAS CREATED. For updated info, use <see cref="GetToken(Guid)"/>.
-        /// Purely informational, like <see cref="GetBalance(string)"/>
-        /// </summary>
-        /// <param name="ownerAddress">The timestamp of the <see cref="TokenCreation"/></param>
-        /// <returns>A <see cref="Nullable{T}"/>. Returns <see langword="null"/> if no one created a nft like this before</returns>
-        public NFT? GetTokenOrigin(string ownerAddress)
-        {
-            foreach (Block block in this.Chain)
-            {
-                if (block.Transactions is null)
-                {
-                    continue;
-                }
-                foreach (var transaction in block.Transactions)
-                {
-                    if (typeof(TokenCreation).IsInstanceOfType(transaction))
-                    {
-                        if (((NFT)transaction).Owner == ownerAddress)
-                        {
-                            return (NFT)transaction;
-                        }
-                    }
-                    else { continue; }
-                }
-            }
-            return null;
-        }
+        // /// <summary>
+        // /// Searches for a Token/NFT inside the blockchain. The information it returns
+        // /// belong WHEN THE TOKEN WAS CREATED. For updated info, use <see cref="GetToken(Guid)"/>.
+        // /// Purely informational, like <see cref="GetBalance(string)"/>
+        // /// </summary>
+        // /// <param name="ownerAddress">The timestamp of the <see cref="TokenCreation"/></param>
+        // /// <returns>A <see cref="Nullable{T}"/>. Returns <see langword="null"/> if no one created a nft like this before</returns>
+        // public NFT? GetTokenOrigin(string ownerAddress)
+        // {
+        //     foreach (Block block in this.Chain)
+        //     {
+        //         if (block.Transactions is null)
+        //         {
+        //             continue;
+        //         }
+        //         foreach (var transaction in block.Transactions)
+        //         {
+        //             if (typeof(TokenCreation).IsInstanceOfType(transaction))
+        //             {
+        //                 if (((NFT)transaction).Owner == ownerAddress)
+        //                 {
+        //                     return (NFT)transaction;
+        //                 }
+        //             }
+        //             else { continue; }
+        //         }
+        //     }
+        //     return null;
+        // }
 
 
-        /// <summary>
-        /// Searches the current information about a Token in the blockchain.
-        /// </summary>
-        /// <param name="tokenId">The GUID/UUID of the token that will be searched</param>
-        /// <returns>Returns a <see cref="NFT"/> representing the current state of the Token</returns>
-        /// <exception cref="TokenNotFoundException"/>
-        public NFT GetToken(Guid tokenId)
-        {
-            TokenMetadata meta = new("","",new Dictionary<object, object>());
-            long timestamp = 0;
-            bool istokenfound = false;
-            if(GetTokenOrigin(tokenId).HasValue == false || GetTokenOrigin(tokenId) == null) { throw new TokenNotFoundException("This token does not exist"); }
-            NFT currentstate = new();
-            foreach (Block block in this.Chain){
-                foreach(var transaction in block.Transactions){
-                    if (transaction.GetType().IsSubclassOf(typeof(BlockChainEvent))){
-                        if(((BlockChainEvent)transaction).EventType == EventType.TokenCreation){
-                            TokenCreation t = (TokenCreation)transaction;
-                            if (t.TokenId == tokenId)
-                            {
-                                meta = t.Metadata;
-                                timestamp = t.Timestamp;
-                                istokenfound = true;
-                            }
-                        }
-                        if(((BlockChainEvent)transaction).EventType == EventType.TokenTransaction){
-                            TokenTransaction t = (TokenTransaction)transaction;
-                            if(t.TokenId == tokenId)
-                            {
-                                currentstate = (NFT)t;
-                            }
-                        }
-                    }
-                }
-            }
-            if (!istokenfound) { throw new TokenNotFoundException(); }
-            currentstate.Metadata = meta;
-            currentstate.Timestamp = timestamp;
-            return currentstate;
-        }
+        // /// <summary>
+        // /// Searches the current information about a Token in the blockchain.
+        // /// </summary>
+        // /// <param name="tokenId">The GUID/UUID of the token that will be searched</param>
+        // /// <returns>Returns a <see cref="NFT"/> representing the current state of the Token</returns>
+        // /// <exception cref="TokenNotFoundException"/>
+        // public NFT GetToken(Guid tokenId)
+        // {
+        //     TokenMetadata meta = new("","",new Dictionary<object, object>());
+        //     long timestamp = 0;
+        //     bool istokenfound = false;
+        //     if(GetTokenOrigin(tokenId).HasValue == false || GetTokenOrigin(tokenId) == null) { throw new TokenNotFoundException("This token does not exist"); }
+        //     NFT currentstate = new();
+        //     foreach (Block block in this.Chain){
+        //         foreach(var transaction in block.Transactions){
+        //             if (transaction.GetType().IsSubclassOf(typeof(BlockChainEvent))){
+        //                 if(((BlockChainEvent)transaction).EventType == EventType.TokenCreation){
+        //                     TokenCreation t = (TokenCreation)transaction;
+        //                     if (t.TokenId == tokenId)
+        //                     {
+        //                         meta = t.Metadata;
+        //                         timestamp = t.Timestamp;
+        //                         istokenfound = true;
+        //                     }
+        //                 }
+        //                 if(((BlockChainEvent)transaction).EventType == EventType.TokenTransaction){
+        //                     TokenTransaction t = (TokenTransaction)transaction;
+        //                     if(t.TokenId == tokenId)
+        //                     {
+        //                         currentstate = (NFT)t;
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        //     if (!istokenfound) { throw new TokenNotFoundException(); }
+        //     currentstate.Metadata = meta;
+        //     currentstate.Timestamp = timestamp;
+        //     return currentstate;
+        // }
 
 
         /// <summary>
         /// Searches for the current owner of a Token
         /// </summary>
         /// <returns>The public Address/Key of the current owner</returns>
-        public string GetTokenOwner(Guid tokenId)
-        {
-            if (GetTokenOrigin(tokenId).HasValue == false || GetTokenOrigin(tokenId) == null) { throw new TokenNotFoundException("This token does not exist"); }
-            string currentowner = GetTokenOrigin(tokenId).Value.Owner;
-            foreach (Block block in this.Chain)
-            {
-                foreach (var transaction in block.Transactions)
-                {
-                    if (transaction.GetType().IsSubclassOf(typeof(BlockChainEvent)))
-                    {
-                        if (((BlockChainEvent)transaction).EventType == EventType.TokenTransaction)
-                        {
-                            TokenTransaction t = (TokenTransaction)transaction;
-                            if (t.TokenId == tokenId)
-                            {
-                                currentowner = t.ToAddress;
-                            }
+        // public Address GetTokenOwner(Guid tokenId)
+        // {
+        //     if (GetTokenOrigin(tokenId).HasValue == false || GetTokenOrigin(tokenId) == null) { throw new TokenNotFoundException("This token does not exist"); }
+        //     Address currentowner = GetTokenOrigin(tokenId).Value.Owner;
+        //     foreach (Block block in this.Chain)
+        //     {
+        //         foreach (var transaction in block.Transactions)
+        //         {
+        //             if (transaction.GetType().IsSubclassOf(typeof(BlockChainEvent)))
+        //             {
+        //                 if (((BlockChainEvent)transaction).EventType == EventType.TokenTransaction)
+        //                 {
+        //                     TokenTransaction t = (TokenTransaction)transaction;
+        //                     if (t.TokenId == tokenId)
+        //                     {
+        //                         currentowner = t.ToAddress;
+        //                     }
 
-                        }
-                    }
-                }
-            }
-            return currentowner;
-        }
+        //                 }
+        //             }
+        //         }
+        //     }
+        //     return currentowner;
+        // }
 
 
-        /// <summary>
-        /// Iterates in the blockchain and sees which NFTs the address has.
-        /// Purely informational, like <see cref="GetBalance(string)"/>
-        /// </summary>
-        /// <param name="address">The address to be looked up</param>
-        /// <returns>A <see cref="IList{NFT}"/> containing all the nfts the user has</returns>
-        public IList<NFT> GetNFTs(string address)
-        {
-            IList<NFT> nftsowned = new List<NFT>();
+        // /// <summary>
+        // /// Iterates in the blockchain and sees which NFTs the address has.
+        // /// Purely informational, like <see cref="GetBalance(string)"/>
+        // /// </summary>
+        // /// <param name="address">The address to be looked up</param>
+        // /// <returns>A <see cref="IList{NFT}"/> containing all the nfts the user has</returns>
+        // public IList<NFT> GetNFTs(string address)
+        // {
+        //     IList<NFT> nftsowned = new List<NFT>();
 
-            //get all nfts
-            foreach (Block block in this.Chain)
-            {
-                if (block.Transactions is null)
-                {
-                    continue;
-                }
-                foreach (var transaction in block.Transactions)
-                {
-                    if (typeof(TokenCreation).IsInstanceOfType(transaction))
-                    {
-                        NFT nft = (NFT)transaction;
-                        if(nft.Owner == address)
-                        {
-                            nftsowned.Add(nft);
-                        }
-                    }
-                    else { continue; }
-                }
-            }
-            return nftsowned;
+        //     //get all nfts
+        //     foreach (Block block in this.Chain)
+        //     {
+        //         if (block.Transactions is null)
+        //         {
+        //             continue;
+        //         }
+        //         foreach (var transaction in block.Transactions)
+        //         {
+        //             if (typeof(TokenCreation).IsInstanceOfType(transaction))
+        //             {
+        //                 NFT nft = (NFT)transaction;
+        //                 if(nft.Owner == address)
+        //                 {
+        //                     nftsowned.Add(nft);
+        //                 }
+        //             }
+        //             else { continue; }
+        //         }
+        //     }
+        //     return nftsowned;
             
-        }
+        // }
 
 
         /// <summary>

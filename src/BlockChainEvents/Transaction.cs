@@ -6,7 +6,7 @@ using RodrigoChain.Exceptions;
 
 namespace RodrigoChain
 {
-    public class MoneyTransaction : BaseBlockChainEvent
+    public class Transaction : BaseBlockChainEvent
     {
         #region Variables
         //in hash
@@ -39,9 +39,9 @@ namespace RodrigoChain
         /// <param name="to">The target addres to receive the money</param>
         /// <param name="amount">The amount of money to be transferred</param>
         /// <returns></returns>
-        public MoneyTransaction(User user, Address to, int amount) : base(EventType.MoneyTransaction,user)
+        public Transaction(User user, Address to, int amount) : base(EventType.Transaction,user)
         {
-            EventType=EventType.MoneyTransaction;
+            EventType=EventType.Transaction;
             ActionOwner=user;
             Amount=amount;
             ToAddress=to;

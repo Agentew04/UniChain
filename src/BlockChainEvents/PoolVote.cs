@@ -3,9 +3,10 @@ using System.Text;
 using System.Text.Json;
 using Org.BouncyCastle.Crypto.Digests;
 using RodrigoChain.Exceptions;
+using RodrigoChain;
 
 namespace RodrigoChain{
-    public class VoteCast : BaseBlockChainEvent{
+    public class PoolVote : BaseBlockChainEvent{
         
         #region Variables
              
@@ -21,7 +22,7 @@ namespace RodrigoChain{
 
         #region Constructor
 
-        public VoteCast(User user, Guid voteId, int optionPickedIndex) :base(EventType.VoteCast,user)
+        public PoolVote(User user, Guid voteId, int optionPickedIndex) :base(EventType.PoolVote,user)
         {
             ActionOwner=user;
         }

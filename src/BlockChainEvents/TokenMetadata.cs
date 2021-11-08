@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace RodrigoChain
 {
-    public interface ITokenMetadata : IMeta
+    public interface ITokenMetadata
     {
         /// <summary>
         /// The Name of the token
