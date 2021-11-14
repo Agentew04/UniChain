@@ -17,6 +17,12 @@
         /// </summary>
         public string Signature { get; set; } /*is not included in the hash*/
 
+        /// <summary>
+        /// Determines if this event is originated from the blockchain.
+        /// </summary>
+        /// <value></value>
+        public bool IsNetwork { get; set; }
+
         public BaseBlockChainEvent(EventType eventType, User user){
             EventType=eventType;
             ActionOwner=user;

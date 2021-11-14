@@ -67,12 +67,16 @@ namespace RodrigoChain
         public override bool IsValid()
         {
             //check addresses and amount
-            if(this.FromAddress.PublicKey=="network" && this.ToAddress.PublicKey != null) { return true; }
-            if (Signature == null) { return false; }
-            if (this.FromAddress.IsNull() || this.ToAddress.IsNull() || Amount <= 0) { return false; }
-            //check signature
-            if (!VerifySignature()) { return false; }
-
+            if(FromAddress.IsNetWork && !ToAddress.IsNetWork){
+                return true;
+            }
+            if (FromAddress.IsNull() || ToAddress.IsNull() || Amount <= 0)
+            {
+                return false;
+            }
+            if(Signature==null || !VerifySignature()){
+                return false;
+            }
             return true;
         }
 

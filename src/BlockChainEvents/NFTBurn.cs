@@ -1,32 +1,18 @@
-﻿using NBitcoin;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Crypto.Digests;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace RodrigoChain
-{
-    public class NFTTransfer : BaseBlockChainEvent
+namespace RodrigoChain{
+    public class NFTBurn : BaseBlockChainEvent
     {
-        #region Variables
-        //in hash
-        /// <summary>
-        /// The Address that the coins will withdrawed
-        /// </summary>
-        public Address FromAddress { get; set; }
-
+        #region Vars
 
         /// <summary>
-        /// The receiver of the coins
+        /// The unique id for this NFT
         /// </summary>
-        public Address ToAddress { get; set; }
-
-
-        /// <summary>
-        /// The <see cref="NFTId"/> of the Token being transferred
-        /// </summary>
+        /// <value></value>
         public Guid NFTId { get; set; }
 
         #endregion
@@ -34,37 +20,33 @@ namespace RodrigoChain
         #region Constructors
 
         /// <summary>
-        /// Creates a new Token Transaction. 
+        /// Creates an instance of a NFT Burn
         /// </summary>
-        /// <param name="fromAddress">Same of the <see cref="PubKey"/></param>
-        /// <param name="toAddress">The Address of the receiver</param>
-        /// <param name="tokenId">The Id of the token being transferred</param>
-        public NFTTransfer(User user, Address toAddress, Guid tokenId) : base(EventType.NFTTransfer,user)
+        /// <param name="user">The user executing the action</param>
+        /// <param name="nftId">The unique id of the NFT to be burned</param>
+        public NFTBurn(User user, Guid nftId) : base(EventType.NFTBurn,user)
         {
-            ActionOwner = user;
-            FromAddress = user.Address;
-            ToAddress = toAddress;
-            NFTId = tokenId;
+            ActionOwner=user;
             Timestamp = DateTime.UtcNow.ToFileTimeUtc();
+            NFTId = nftId;
         }
 
         #endregion
-
-        #region Methods
+    
+        #region Public Methods
         
         public override void SignEvent(User user)
         {
-            //check is the owner making the transaction
-            if (user != this.FromAddress)
-            {
-                throw new Exception("Invalid key");
-            }
+            //TODO: check if the user is the owner of the NFT
+            // if (user != this.FromAddress)
+            // {
+            //     throw new Exception("Invalid key");
+            // }
 
             var HashTransaction = CalculateHash();
             var signature = user.SignMessage(HashTransaction);
             Signature = signature;
         }
-
 
         /// <summary>
         /// Checks if the current transaction is valid
@@ -74,13 +56,12 @@ namespace RodrigoChain
         {
             //check addresses and amount
 
-            //TODO: check if the NFT exists
-            //TODO: check if the NFT is owned by the sender
+            //TODO: Check if the NFT exists really
+            //TODO: Check if the NFT is owned by the user
             //if (blockchain.GetTokenOrigin(this.TokenId).HasValue == false) { return false; }
             //if (blockchain.GetTokenOrigin(this.TokenId).Value.TokenId != TokenId) { return false; }
             if (this.Signature == null) { return false; }
             if(NFTId==Guid.Empty || NFTId == new Guid()) { return false; }
-            if (this.FromAddress.IsNull() || this.ToAddress.IsNull()) { return false; }
             //check signature
             if (!VerifySignature()) { return false; }
 
@@ -95,7 +76,7 @@ namespace RodrigoChain
         public override string CalculateHash()
         {
             var sha = new Sha3Digest(512);
-            byte[] input2 = Encoding.ASCII.GetBytes($"{FromAddress}-{ToAddress}-{NFTId}-{Timestamp}");
+            byte[] input2 = Encoding.ASCII.GetBytes($"{NFTId}-{Timestamp}");
 
             sha.BlockUpdate(input2, 0, input2.Length);
             byte[] result = new byte[64];

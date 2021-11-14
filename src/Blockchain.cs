@@ -56,36 +56,43 @@ namespace RodrigoChain
         #region add to chain
 
         /// <summary>
-        /// Add a new transaction on the <see cref="PendingTransactions"/> to be processed later
-        /// </summary>
-        /// <param name="transaction">The transaction to be added</param>
-        public void AddTransaction(Transaction transaction)
-        {
-            if(transaction.FromAddress == "network") { throw new NetworkActingException("The fromAddress is equals as \"network\""); }
-            if (!transaction.IsValid()) { throw new InvalidTransactionException(); }
-            PendingTransactions.Add(transaction);
+        /// Adds a new event to the pending transactions list
+        /// /// </summary>
+        public void AddEvent(BaseBlockChainEvent e){
+            //special checks
+            if(e.GetType() == typeof(Transaction)){
+                if(((Transaction)e).FromAddress=="network"){
+                    throw new InvalidTransactionException("Cannot add a transaction from the network");
+                }
+                if(((Transaction)e).ToAddress=="network"){
+                    throw new InvalidTransactionException("Cannot add a transaction to the network");
+                }
+            }
+
+
+            //add to the pending transactions
+
+            //NFT transfer and burn is an exception to the IsValid rule
+            if(e.GetType()==typeof(NFTTransfer)){
+                if(((NFTTransfer)e).IsValid(this)){
+                    PendingTransactions.Add(e);
+                }
+                return;
+            }
+            if(e.GetType()==typeof(NFTBurn)){
+                if(((NFTBurn)e).IsValid(this)){
+                    PendingTransactions.Add(e);
+                }
+                return;
+            }
+            if(e.IsValid()){
+                PendingTransactions.Add(e);
+            }
         }
-
-
-        /// <summary>
-        /// Add a new Token(NFT) on the <see cref="PendingTransactions"/> to be processed later
-        /// </summary>
-        /// <param name="tokenCreation">The token to be added, type <see cref="TokenCreation"/></param>
-        public void AddTokenCreation(NFTMint tokenCreation)
-        {
-            if(!tokenCreation.IsValid()){ throw new InvalidTokenException(); }
-            PendingTransactions.Add(tokenCreation);
-        }
-
-        /// <summary>
-        /// Add a new Transaction containing a Token(NFT) between two addresses. Is processed when
-        /// the method <see cref="MinePendingTransactions(string)"/> is used.
-        /// </summary>
-        /// <param name="tokenTransaction"></param>
-        public void AddTokenTransaction(NFTTransfer tokenTransaction)
-        {
-            if (!tokenTransaction.IsValid(this)) { throw new InvalidTransactionException(); }
-            PendingTransactions.Add(tokenTransaction);
+        public void AddEvents(params BaseBlockChainEvent[] events){
+            foreach(var e in events){
+                AddEvent(e);
+            }
         }
 
         #endregion
@@ -98,9 +105,12 @@ namespace RodrigoChain
         public void MinePendingTransactions(Address minerAddress)
         {
             if (minerAddress.IsNull()) { throw new ArgumentNullException("The miner address is null!",new NullAddressException()); }
-            PendingTransactions.Insert(0, new Transaction(new User(){Address=new Address("network")}, minerAddress, this.Reward));
+            PendingTransactions.Insert(0, new Transaction(new User(true), minerAddress, this.Reward));
             Block block = new(GetLatestBlock().Hash, PendingTransactions);
-            if (!block.HasValidTransactions()) { throw new InvalidTransactionException("One of the transactions is not valid!"); }
+            if (!block.HasValidTransactions()) 
+            { 
+                throw new InvalidTransactionException("One of the transactions is not valid!"); 
+            }
 
             Block latestBlock = GetLatestBlock();
             block.Index = latestBlock.Index + 1;

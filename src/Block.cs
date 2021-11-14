@@ -10,7 +10,7 @@ namespace RodrigoChain
     public class Block
     {
         public int Index { get; set; }
-        public long TimeStamp { get; set; }
+        public long Timestamp { get; set; }
         public string PreviousHash { get; set; }
         public string Hash { get; set; }
         public int Nonce { get; set; } = 0;
@@ -19,7 +19,7 @@ namespace RodrigoChain
         public Block(string previousHash, IList<BaseBlockChainEvent> transactions)
         {
             Index = 0;
-            TimeStamp = DateTime.UtcNow.ToFileTimeUtc();
+            Timestamp = DateTime.UtcNow.ToFileTimeUtc();
             PreviousHash = previousHash;
             Transactions = transactions;
             Hash = CalculateHash();
@@ -34,21 +34,12 @@ namespace RodrigoChain
         {
             foreach(var x in Transactions)
             {
-                if(x.GetType() == typeof(Transaction))
-                {
-                    if (!(((Transaction)x).IsValid()))
-                    {
-                        return false;
-                    }else { continue; }
+                if(x.IsNetwork){
+                    continue;
                 }
-                if(x.GetType() == typeof(NFTMint))
-                {
-                    if (!(((NFTMint)x).IsValid()))
-                    {
-                        return false;
-                    }else { continue; }
+                if (!x.IsValid()){
+                    return false;   
                 }
-                //TODO ADD TOKEN TRANSACTION
             }
             return true;
         }
@@ -61,7 +52,7 @@ namespace RodrigoChain
         public string CalculateHash()
         {
             var sha = new Sha3Digest(512);
-            byte[] input2 = Encoding.ASCII.GetBytes($"{TimeStamp}-{PreviousHash ?? ""}-{JsonConvert.SerializeObject(Transactions)}-{Nonce}");
+            byte[] input2 = Encoding.ASCII.GetBytes($"{Timestamp}-{PreviousHash ?? ""}-{JsonConvert.SerializeObject(Transactions)}-{Nonce}");
 
             sha.BlockUpdate(input2, 0, input2.Length);
             byte[] result = new byte[64];
@@ -84,6 +75,12 @@ namespace RodrigoChain
                 this.Nonce++;
                 this.Hash = this.CalculateHash();
             }
+        }
+
+        public override string ToString()
+        {
+            //convert to json
+            return JsonConvert.SerializeObject(this, Formatting.Indented);
         }
     }
 }

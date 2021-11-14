@@ -13,7 +13,7 @@ namespace RodrigoChain
         /// <summary>
         /// The unique Id for this Token
         /// </summary>
-        public Guid Id { get; }
+        public Guid NFTId { get; }
 
         /// <summary>
         /// The Address of the Owner of this Token
@@ -23,7 +23,7 @@ namespace RodrigoChain
         /// <summary>
         /// The custom metadata for this Token
         /// </summary>
-        public ITokenMetadata Meta {get;set;}
+        public NFTMetadata Meta {get;set;}
 
         #endregion
 
@@ -34,12 +34,12 @@ namespace RodrigoChain
         /// </summary>
         /// <param name="owner">The first owner for the token</param>
         /// <param name="metadata">The metadata of this token</param>
-        public NFTMint(User user, ITokenMetadata metadata) : base(EventType.NFTMint,user){
+        public NFTMint(User user, NFTMetadata metadata) : base(EventType.NFTMint,user){
             this.ActionOwner=user;
             this.Timestamp = DateTime.UtcNow.ToFileTimeUtc();
             this.Meta=metadata;
             this.Owner=user.Address;
-            this.Id = Guid.NewGuid();
+            this.NFTId = Guid.NewGuid();
         }
 
         #endregion
@@ -77,7 +77,7 @@ namespace RodrigoChain
         public override string CalculateHash()
         {
             var sha = new Sha3Digest(512);
-            byte[] input2 = Encoding.ASCII.GetBytes($"{this.Owner}-{this.Timestamp}-{this.Id}-{this.Meta}");
+            byte[] input2 = Encoding.ASCII.GetBytes($"{this.Owner}-{this.Timestamp}-{this.NFTId}-{this.Meta}");
 
             sha.BlockUpdate(input2, 0, input2.Length);
             byte[] result = new byte[64];

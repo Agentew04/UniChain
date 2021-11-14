@@ -8,10 +8,19 @@ namespace RodrigoChain
     /// </summary>
     public class User{
         public Address Address {get;set;}
-        public PrivateKey PrivateKey {get;set;}
+        private PrivateKey PrivateKey {get;set;}
         public User(){
             PrivateKey = new PrivateKey();
             Address = PrivateKey.GetAddress();
+        }
+        public User(bool isNetwork){
+            if(isNetwork){
+                Address = new Address(true);
+            }else{
+                PrivateKey = new PrivateKey();
+                Address = PrivateKey.GetAddress();
+            }
+           
         }
         /// <summary>
         /// Signs the given string with the current Private Key

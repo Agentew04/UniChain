@@ -24,8 +24,23 @@ namespace RodrigoChain
         /// </summary>
         /// <param name="publicKey"></param>
         public Address(string publicKey){
+            if(publicKey=="network"){
+                IsNetWork = true;
+                return;
+            }
             PublicKey = publicKey;
-            key = new PubKey(publicKey);
+            key = new PubKey(publicKey);            
+        }
+
+        public Address(bool isNetwork){
+            if(isNetwork){
+                IsNetWork = true;
+                return;
+            }else{
+                key = new NBitcoin.Key().PubKey;
+                PublicKey = key.ToHex();
+            return;
+            }
         }
         public bool VerifySign(string originalmessage, string signature){
             return key.VerifyMessage(originalmessage,signature);
@@ -37,7 +52,12 @@ namespace RodrigoChain
         /// Checks if the address is null, empty or whitespace
         /// </summary>
         /// <returns></returns>
-        public bool IsNull()=>string.IsNullOrWhiteSpace(this.PublicKey);
+        public bool IsNull(){
+            if(IsNetWork){
+                return false;
+            }
+            return string.IsNullOrWhiteSpace(PublicKey);
+        }
 
         /// <summary>
         /// Checks if both Keys are equals
