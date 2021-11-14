@@ -23,7 +23,7 @@ namespace RodrigoChain
         /// <summary>
         /// The custom metadata for this Token
         /// </summary>
-        public NFTMetadata Meta {get;set;}
+        public NFTMetadata NFTMetadata {get;set;}
 
         #endregion
 
@@ -37,7 +37,7 @@ namespace RodrigoChain
         public NFTMint(User user, NFTMetadata metadata) : base(EventType.NFTMint,user){
             this.ActionOwner=user;
             this.Timestamp = DateTime.UtcNow.ToFileTimeUtc();
-            this.Meta=metadata;
+            this.NFTMetadata=metadata;
             this.Owner=user.Address;
             this.NFTId = Guid.NewGuid();
         }
@@ -49,9 +49,9 @@ namespace RodrigoChain
         public override bool IsValid()
         {
             if( Signature == null) { return false; }
-            if (Owner.IsNull() || Meta == null){ return false; }
-            if (Meta.Name == null || Meta.Description == null){ return false; }
-            if (Meta.ImageUrl == null){ return false; }
+            if (Owner.IsNull() || NFTMetadata == null){ return false; }
+            if (NFTMetadata.Name == null || NFTMetadata.Description == null){ return false; }
+            if (NFTMetadata.ImageUrl == null){ return false; }
             if (!VerifySignature()) { return false; }
             return true;
         }
@@ -77,7 +77,7 @@ namespace RodrigoChain
         public override string CalculateHash()
         {
             var sha = new Sha3Digest(512);
-            byte[] input2 = Encoding.ASCII.GetBytes($"{this.Owner}-{this.Timestamp}-{this.NFTId}-{this.Meta}");
+            byte[] input2 = Encoding.ASCII.GetBytes($"{this.Owner}-{this.Timestamp}-{this.NFTId}-{this.NFTMetadata}");
 
             sha.BlockUpdate(input2, 0, input2.Length);
             byte[] result = new byte[64];

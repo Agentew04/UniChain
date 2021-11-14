@@ -150,228 +150,110 @@ namespace RodrigoChain
         #region find in the chain
 
 
-        // /// <summary>
-        // /// Searches for a Token/NFT inside the blockchain. The information it returns
-        // /// belong WHEN THE TOKEN WAS CREATED. For updated info, use <see cref="GetToken(Guid)"/>.
-        // /// Purely informational, like <see cref="GetBalance(string)"/></summary>
-        // /// <param name="tokenId">The token id to be looked up for</param>
-        // /// <returns>A <see cref="Nullable{NFT}"/>. Returns <see langword="null"/> if no one created a nft like this before</returns>
-        // public NFT? GetTokenOrigin(Guid tokenId)
-        // {
-        //     foreach (Block block in this.Chain)
-        //     {
-        //         if (block.Transactions is null)
-        //         {
-        //             continue;
-        //         }
-        //         foreach (var transaction in block.Transactions)
-        //         {
-        //             if (typeof(TokenCreation).IsInstanceOfType(transaction))
-        //             {
-        //                 NFT nft = (NFT)transaction;
-        //                 if(nft.TokenId == tokenId)
-        //                 {
-        //                     return nft;
-        //                 }
-        //             }
-        //             else { continue; }
-        //         }
-        //     }
-        //     return null;
-        // }
+        /// <summary>
+        /// Searches for a Token/NFT inside the blockchain. The information it returns
+        /// belong WHEN THE TOKEN WAS CREATED. For updated info, use <see cref="GetNFTTransfer(Guid)"/>.
+        /// Purely informational, like <see cref="GetBalance(string)"/></summary>
+        /// <param name="tokenId">The token id to be looked up for</param>
+        /// <returns>A <see cref="Nullable{NFT}"/>. Returns <see langword="null"/> if no one created a nft like this before</returns>
+        public NFTMint GetNFTMint(Guid tokenId)
+        {
+            foreach (Block block in Chain)
+            {
+                if(block.Transactions==null){
+                    continue;
+                }
+                foreach (BaseBlockChainEvent e in block.Transactions)
+                {
+                    if (e.GetType() == typeof(NFTMint))
+                    {
+                        if (((NFTMint)e).NFTId == tokenId)
+                        {
+                            return (NFTMint)e;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
 
-
-        // /// <summary>
-        // /// Searches for a Token/NFT inside the blockchain. The information it returns
-        // /// belong WHEN THE TOKEN WAS CREATED. For updated info, use <see cref="GetToken(Guid)"/>.
-        // /// Purely informational, like <see cref="GetBalance(string)"/></summary>
-        // /// <param name="timestamp">The timestamp of the <see cref="TokenCreation"/></param>
-        // /// <returns>A <see cref="Nullable{NFT}"/>. Returns <see langword="null"/> if no one created a nft like this before</returns>
-        // public NFT? GetTokenOrigin(long timestamp)
-        // {
-        //     foreach (Block block in this.Chain)
-        //     {
-        //         if (block.Transactions is null)
-        //         {
-        //             continue;
-        //         }
-        //         foreach (var transaction in block.Transactions)
-        //         {
-        //             if (typeof(TokenCreation).IsInstanceOfType(transaction))
-        //             {
-        //                 if (((NFT)transaction).Timestamp == timestamp)
-        //                 {
-        //                     return (NFT)transaction;
-        //                 }
-        //             }else { continue; }
-        //         }
-        //     }
-        //     return null;
-        // }
-
-
-        // /// <summary>
-        // /// Searches for a Token/NFT inside the blockchain. The information it returns
-        // /// belong WHEN THE TOKEN WAS CREATED. For updated info, use <see cref="GetToken(Guid)"/>.
-        // /// Purely informational, like <see cref="GetBalance(string)"/>
-        // /// </summary>
-        // /// <param name="ownerAddress">The timestamp of the <see cref="TokenCreation"/></param>
-        // /// <returns>A <see cref="Nullable{T}"/>. Returns <see langword="null"/> if no one created a nft like this before</returns>
-        // public NFT? GetTokenOrigin(string ownerAddress)
-        // {
-        //     foreach (Block block in this.Chain)
-        //     {
-        //         if (block.Transactions is null)
-        //         {
-        //             continue;
-        //         }
-        //         foreach (var transaction in block.Transactions)
-        //         {
-        //             if (typeof(TokenCreation).IsInstanceOfType(transaction))
-        //             {
-        //                 if (((NFT)transaction).Owner == ownerAddress)
-        //                 {
-        //                     return (NFT)transaction;
-        //                 }
-        //             }
-        //             else { continue; }
-        //         }
-        //     }
-        //     return null;
-        // }
-
-
-        // /// <summary>
-        // /// Searches the current information about a Token in the blockchain.
-        // /// </summary>
-        // /// <param name="tokenId">The GUID/UUID of the token that will be searched</param>
-        // /// <returns>Returns a <see cref="NFT"/> representing the current state of the Token</returns>
-        // /// <exception cref="TokenNotFoundException"/>
-        // public NFT GetToken(Guid tokenId)
-        // {
-        //     TokenMetadata meta = new("","",new Dictionary<object, object>());
-        //     long timestamp = 0;
-        //     bool istokenfound = false;
-        //     if(GetTokenOrigin(tokenId).HasValue == false || GetTokenOrigin(tokenId) == null) { throw new TokenNotFoundException("This token does not exist"); }
-        //     NFT currentstate = new();
-        //     foreach (Block block in this.Chain){
-        //         foreach(var transaction in block.Transactions){
-        //             if (transaction.GetType().IsSubclassOf(typeof(BlockChainEvent))){
-        //                 if(((BlockChainEvent)transaction).EventType == EventType.TokenCreation){
-        //                     TokenCreation t = (TokenCreation)transaction;
-        //                     if (t.TokenId == tokenId)
-        //                     {
-        //                         meta = t.Metadata;
-        //                         timestamp = t.Timestamp;
-        //                         istokenfound = true;
-        //                     }
-        //                 }
-        //                 if(((BlockChainEvent)transaction).EventType == EventType.TokenTransaction){
-        //                     TokenTransaction t = (TokenTransaction)transaction;
-        //                     if(t.TokenId == tokenId)
-        //                     {
-        //                         currentstate = (NFT)t;
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        //     if (!istokenfound) { throw new TokenNotFoundException(); }
-        //     currentstate.Metadata = meta;
-        //     currentstate.Timestamp = timestamp;
-        //     return currentstate;
-        // }
+        /// <summary>
+        /// Searches the current information about a Token in the blockchain.
+        /// </summary>
+        /// <param name="tokenId">The GUID/UUID of the token that will be searched</param>
+        /// <returns>Returns a NFTTransfer or null if not found</returns>
+        public NFTTransfer GetNFTTransfer(Guid tokenId)
+        {
+            NFTTransfer tx=null;
+            if(GetNFTMint(tokenId)==null) { return null;}
+            foreach (Block block in Chain)
+            {
+                if(block.Transactions==null){
+                    continue;
+                }
+                foreach (BaseBlockChainEvent e in block.Transactions)
+                {
+                    if (e.GetType() == typeof(NFTTransfer))
+                    {
+                        if (((NFTTransfer)e).NFTId == tokenId)
+                        {
+                            tx = (NFTTransfer)e;
+                        }
+                    }
+                }
+            }
+            return tx;
+        }
 
 
         /// <summary>
         /// Searches for the current owner of a Token
         /// </summary>
-        /// <returns>The public Address/Key of the current owner</returns>
-        // public Address GetTokenOwner(Guid tokenId)
-        // {
-        //     if (GetTokenOrigin(tokenId).HasValue == false || GetTokenOrigin(tokenId) == null) { throw new TokenNotFoundException("This token does not exist"); }
-        //     Address currentowner = GetTokenOrigin(tokenId).Value.Owner;
-        //     foreach (Block block in this.Chain)
-        //     {
-        //         foreach (var transaction in block.Transactions)
-        //         {
-        //             if (transaction.GetType().IsSubclassOf(typeof(BlockChainEvent)))
-        //             {
-        //                 if (((BlockChainEvent)transaction).EventType == EventType.TokenTransaction)
-        //                 {
-        //                     TokenTransaction t = (TokenTransaction)transaction;
-        //                     if (t.TokenId == tokenId)
-        //                     {
-        //                         currentowner = t.ToAddress;
-        //                     }
-
-        //                 }
-        //             }
-        //         }
-        //     }
-        //     return currentowner;
-        // }
-
-
-        // /// <summary>
-        // /// Iterates in the blockchain and sees which NFTs the address has.
-        // /// Purely informational, like <see cref="GetBalance(string)"/>
-        // /// </summary>
-        // /// <param name="address">The address to be looked up</param>
-        // /// <returns>A <see cref="IList{NFT}"/> containing all the nfts the user has</returns>
-        // public IList<NFT> GetNFTs(string address)
-        // {
-        //     IList<NFT> nftsowned = new List<NFT>();
-
-        //     //get all nfts
-        //     foreach (Block block in this.Chain)
-        //     {
-        //         if (block.Transactions is null)
-        //         {
-        //             continue;
-        //         }
-        //         foreach (var transaction in block.Transactions)
-        //         {
-        //             if (typeof(TokenCreation).IsInstanceOfType(transaction))
-        //             {
-        //                 NFT nft = (NFT)transaction;
-        //                 if(nft.Owner == address)
-        //                 {
-        //                     nftsowned.Add(nft);
-        //                 }
-        //             }
-        //             else { continue; }
-        //         }
-        //     }
-        //     return nftsowned;
-            
-        // }
-
+        /// <returns>The public Address of the current owner</returns>
+        public Address GetCurrentNFTOwner(Guid tokenId)
+        {
+            //FIXME: not working lol
+            var tx = GetNFTTransfer(tokenId);
+            if(tx==null){
+                return null;
+            }
+            return tx.ToAddress;
+        }
 
         /// <summary>
         /// Iterates in the blockchain and sees how much currency the address has.
-        /// Purely informational, like <see cref="GetNFTs(string)"/>
         /// </summary>
-        /// <param name="address"></param>
-        /// <returns></returns>
-        public int GetBalance(string address)
+        /// <param name="address">The Address to be lookedup for</param>
+        /// <returns>The amount of money that this Address has</returns>
+        public int GetBalance(Address address)
         {
             int balance = 0;
 
-            foreach (Block block in this.Chain) {
-                if(block.Transactions is null)
+            //get balance of address
+            foreach (Block block in Chain)
+            {
+                //skip empty blocks
+                if(block.Transactions==null || block.Transactions.Count==0){continue;}
+
+                //iterates in the chain
+                foreach (BaseBlockChainEvent e in block.Transactions)
                 {
-                    continue;
-                }
-                var q = block.Transactions.AsQueryable()
-                .Where(trans=>typeof(Transaction).IsInstanceOfType(trans))
-                .Where(trans=>(trans as Transaction).FromAddress==address || (trans as Transaction).ToAddress==address);
-                foreach(var q1 in q){
-                    Transaction t=(Transaction)q1;
-                    if(t.ToAddress==address){
-                        balance+=t.Amount;
-                    }else{
-                        balance-=t.Amount;
+                    if (e.GetType() == typeof(Transaction))
+                    {
+                        if(((Transaction)e).FromAddress.IsNetWork){
+                            balance+=((Transaction)e).Amount;
+                            continue;
+                        }
+                        if (((Transaction)e).ToAddress == address)
+                        {
+                            balance+=((Transaction)e).Amount;
+                            continue;
+                        }
+                        if (((Transaction)e).FromAddress == address)
+                        {
+                            balance-=((Transaction)e).Amount;
+                            continue;
+                        }
                     }
                 }
             }
