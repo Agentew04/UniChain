@@ -46,8 +46,10 @@ namespace RodrigoChain
 
         #region Methods
 
-        public override bool IsValid()
+        public override bool IsValid(Blockchain blockchain)
         {
+            //TODO: check if nft already exists
+            
             if( Signature == null) { return false; }
             if (Owner.IsNull() || NFTMetadata == null){ return false; }
             if (NFTMetadata.Name == null || NFTMetadata.Description == null){ return false; }

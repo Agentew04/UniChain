@@ -30,14 +30,14 @@ namespace RodrigoChain
         /// Check if all the <see cref="Transaction"/>, <seealso cref="TokenCreation"/> are valid
         /// </summary>
         /// <returns>A booleand representing the result</returns>
-        public bool HasValidTransactions()
+        public bool HasValidTransactions(Blockchain blockchain)
         {
             foreach(var x in Transactions)
             {
                 if(x.IsNetwork){
                     continue;
                 }
-                if (!x.IsValid()){
+                if (!x.IsValid(blockchain)){
                     return false;   
                 }
             }

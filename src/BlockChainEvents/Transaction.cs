@@ -64,7 +64,7 @@ namespace RodrigoChain
             Signature = signature;
         }
 
-        public override bool IsValid()
+        public override bool IsValid(Blockchain blockchain)
         {
             //check addresses and amount
             if(FromAddress.IsNetWork && !ToAddress.IsNetWork){

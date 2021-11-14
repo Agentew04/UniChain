@@ -71,21 +71,7 @@ namespace RodrigoChain
 
 
             //add to the pending transactions
-
-            //NFT transfer and burn is an exception to the IsValid rule
-            if(e.GetType()==typeof(NFTTransfer)){
-                if(((NFTTransfer)e).IsValid(this)){
-                    PendingTransactions.Add(e);
-                }
-                return;
-            }
-            if(e.GetType()==typeof(NFTBurn)){
-                if(((NFTBurn)e).IsValid(this)){
-                    PendingTransactions.Add(e);
-                }
-                return;
-            }
-            if(e.IsValid()){
+            if(e.IsValid(this)){
                 PendingTransactions.Add(e);
             }
         }
@@ -107,7 +93,7 @@ namespace RodrigoChain
             if (minerAddress.IsNull()) { throw new ArgumentNullException("The miner address is null!",new NullAddressException()); }
             PendingTransactions.Insert(0, new Transaction(new User(true), minerAddress, this.Reward));
             Block block = new(GetLatestBlock().Hash, PendingTransactions);
-            if (!block.HasValidTransactions()) 
+            if (!block.HasValidTransactions(this)) 
             { 
                 throw new InvalidTransactionException("One of the transactions is not valid!"); 
             }
@@ -149,6 +135,28 @@ namespace RodrigoChain
 
         #region find in the chain
 
+        public IEnumerable<Pool> GetPools(){
+            var q = from block in Chain
+                    from transaction in block.Transactions
+                    where transaction.GetType() == typeof(PoolVote)
+                    select (PoolVote)transaction;
+
+            foreach(var block in Chain){
+                if(block.Transactions==null){
+                    continue;
+                }
+                foreach(var e in block.Transactions){
+                    if(e.GetType() == typeof(PoolOpen)){
+                        //get all votes in this pool
+                        var votes = q.Where(x => x.PoolId == ((PoolOpen)e).PoolId);
+                        yield return Pool.Parse((PoolOpen)e,votes);
+                    }
+                }
+            }
+        }
+        public Pool GetPoolById(Guid poolId){
+            return GetPools().Where(p => p.PoolId == poolId).First();
+        }
 
         /// <summary>
         /// Searches for a Token/NFT inside the blockchain. The information it returns

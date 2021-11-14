@@ -52,7 +52,7 @@ namespace RodrigoChain{
         /// Checks if the current transaction is valid
         /// </summary>
         /// <returns>A boolean representing the result</returns>
-        public bool IsValid(Blockchain blockchain)
+        public override bool IsValid(Blockchain blockchain)
         {
             //check addresses and amount
 
@@ -66,11 +66,6 @@ namespace RodrigoChain{
             if (!VerifySignature()) { return false; }
 
             return true;
-        }
-
-        public override bool IsValid()
-        {
-            throw new NotImplementedException();
         }
 
         public override string CalculateHash()

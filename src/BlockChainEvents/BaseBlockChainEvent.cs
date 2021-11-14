@@ -39,7 +39,7 @@
         /// Checks if the current transaction is valid
         /// </summary>
         /// <returns>A boolean representing the result</returns>
-        public abstract bool IsValid();
+        public abstract bool IsValid(Blockchain blockchain);
 
         /// <summary>
         /// Sign the current event
