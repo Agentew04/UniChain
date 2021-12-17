@@ -16,6 +16,11 @@ namespace RodrigoChain.Events
         /// </summary>
         /// <value></value>
         public Guid NFTId { get; set; }
+        
+        /// <summary>
+        /// The Address that burned this NFT
+        /// </summary>
+        public Address BurnerAddress { get; set; }
 
         #endregion
 

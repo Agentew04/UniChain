@@ -2,13 +2,13 @@ using System;
 
 namespace RodrigoChain.Exceptions
 {
-    public class TokenNotFoundException : Exception
+    public class NFTNotFoundException : Exception
     {
-        public TokenNotFoundException() :base("The token was not found on the Blockchain!")
+        public NFTNotFoundException() :base("The token was not found on the Blockchain!")
         {
         }
 
-        public TokenNotFoundException(string message) : base("The key provided was invalid!\nDescription: "+message)
+        public NFTNotFoundException(string message) : base("The key provided was invalid!\nDescription: "+message)
         {
         }
     }
