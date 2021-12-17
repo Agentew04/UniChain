@@ -4,34 +4,46 @@ using System.Text.Json;
 using Org.BouncyCastle.Crypto.Digests;
 using RodrigoChain.Exceptions;
 using System.Collections.Generic;
+using RodrigoChain.Core;
 
-namespace RodrigoChain{
+namespace RodrigoChain.Events
+{
     public class PoolOpen : BaseBlockChainEvent
     {
         #region Variables
-        public Address Owner { get; set; }
-        public string[] Options {get;set;}
-        public Guid VoteId {get;set;}
-        public Dictionary<string,string> Meta { get; set; }
-        public int MinumumAmountToVote { get; set; }
 
-        public PoolOpen(User user, string[] options, Dictionary<string,string> meta) : base(EventType.PoolOpen,user)
+        public Address Owner { get; set; }
+        public Guid PoolId {get;set;}
+        public PoolMetadata Metadata { get; set; }
+
+        #endregion
+
+        #region Constructors
+        public PoolOpen(User user, PoolMetadata metadata) : base(EventType.PoolOpen,user)
         {
             ActionOwner=user;
-            Owner = (Address)user;
-        }
+            EventType = EventType.PoolOpen;
+            Owner = user.Address;
+            PoolId = Guid.NewGuid();
+            Metadata = metadata;
+            Timestamp = DateTime.UtcNow.ToFileTimeUtc();
 
-        public override bool IsValid()
+        }
+        #endregion
+
+        #region Methods
+
+        public override bool IsValid(Blockchain blockchain)
         {
             if( Signature == null) { return false; }
-            if (Owner.IsNull() || Meta == null){ return false; }
+            if (Owner.IsNull() || Metadata == null){ return false; }
             if (!VerifySignature()) { return false; }
             return true;
         }
 
         public override void SignEvent(User user)
         {
-            //check is the owner making the transaction
+            //check is the owner making the event
             if (user != this.Owner)
             {
                 throw new InvalidKeyException();
@@ -46,7 +58,7 @@ namespace RodrigoChain{
         {
             string json(object o)=>JsonSerializer.Serialize(o);
             var sha = new Sha3Digest(512);
-            byte[] input2 = Encoding.ASCII.GetBytes($"{json(Owner)}-{json(Options)}-{VoteId}-{json(Meta)}-{MinumumAmountToVote}");
+            byte[] input2 = Encoding.ASCII.GetBytes($"{Owner.ToString()}-{PoolId.ToString()}-{json(Metadata)}");
 
             sha.BlockUpdate(input2, 0, input2.Length);
             byte[] result = new byte[64];

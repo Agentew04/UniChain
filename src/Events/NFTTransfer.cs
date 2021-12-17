@@ -1,12 +1,13 @@
 ﻿using NBitcoin;
 using Org.BouncyCastle.Crypto.Digests;
+using RodrigoChain.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RodrigoChain
+namespace RodrigoChain.Events
 {
     public class NFTTransfer : BaseBlockChainEvent
     {

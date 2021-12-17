@@ -3,7 +3,7 @@ using System.Text;
 using NBitcoin;
 using Org.BouncyCastle.Crypto.Digests;
 
-namespace RodrigoChain
+namespace RodrigoChain.Core
 {
     /// <summary>
     /// A class for holding a RodrigoChain's Address
@@ -80,7 +80,7 @@ namespace RodrigoChain
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static bool operator ==(Address a, Address b)=> a.PublicKey.Equals(b.PublicKey);
+        public static bool operator ==(Address a, Address b)=> a.PublicKey==b.PublicKey;
         /// <summary>
         /// Checks if both addresses are different
         /// </summary>

@@ -1,4 +1,7 @@
-﻿namespace RodrigoChain
+﻿using System;
+using RodrigoChain.Events;
+
+namespace RodrigoChain.Core
 {
     public abstract class BaseBlockChainEvent
     {
@@ -55,23 +58,6 @@
         public bool VerifySignature()
         {
             return this.ActionOwner.Address.VerifySign(CalculateHash(), this.Signature);
-        }
-
-        public EventType ToEventType(){
-            System.Type type = this.GetType();
-            if(type==typeof(Transaction)){
-                return EventType.Transaction;
-            }else if(type == typeof(NFTMint)){
-                return EventType.NFTMint;
-            }else if(type==typeof(NFTTransfer)){
-                return EventType.NFTTransfer;
-            }else if(type==typeof(PoolOpen)){
-                return EventType.PoolOpen;
-            }else if(type==typeof(PoolVote)){
-                return EventType.PoolVote;
-            }else{
-                return EventType.Transaction;
-            }
         }
     }
 }

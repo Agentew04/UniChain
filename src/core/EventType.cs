@@ -1,4 +1,4 @@
-﻿namespace RodrigoChain
+﻿namespace RodrigoChain.Core
 {
     public enum EventType
     {

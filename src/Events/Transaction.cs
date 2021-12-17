@@ -2,9 +2,10 @@
 using System.Text;
 using NBitcoin;
 using Org.BouncyCastle.Crypto.Digests;
+using RodrigoChain.Core;
 using RodrigoChain.Exceptions;
 
-namespace RodrigoChain
+namespace RodrigoChain.Events
 {
     public class Transaction : BaseBlockChainEvent
     {

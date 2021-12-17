@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Org.BouncyCastle.Crypto.Digests;
+using RodrigoChain.Core;
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;

@@ -7,6 +7,9 @@ using System.Security.Cryptography;
 using Newtonsoft.Json;
 using Key = NBitcoin.Key;
 using RodrigoChain.Exceptions;
+using System.Linq.Expressions;
+using RodrigoChain.Core;
+using RodrigoChain.Events;
 
 namespace RodrigoChain
 {
@@ -162,24 +165,23 @@ namespace RodrigoChain
         /// Searches for a Token/NFT inside the blockchain. The information it returns
         /// belong WHEN THE TOKEN WAS CREATED. For updated info, use <see cref="GetNFTTransfer(Guid)"/>.
         /// Purely informational, like <see cref="GetBalance(string)"/></summary>
-        /// <param name="tokenId">The token id to be looked up for</param>
+        /// <param name="NFTId">The token id to be looked up for</param>
         /// <returns>A <see cref="Nullable{NFT}"/>. Returns <see langword="null"/> if no one created a nft like this before</returns>
-        public NFTMint GetNFTMint(Guid tokenId)
+        public NFTMint GetNFTMint(Guid NFTId)
         {
-            foreach (Block block in Chain)
-            {
-                if(block.Transactions==null){
+            var q = from block in Chain
+                    where block.Transactions != null
+                    from transaction in block.Transactions
+                    where transaction.GetType() == typeof(NFTMint)
+                    select (NFTMint)transaction;
+            if(q==null || q.Count()==0){
+                return null;
+            }
+            foreach (var ntfmint in q){
+                if(ntfmint.NFTId==NFTId){
+                    return ntfmint;
+                }else{
                     continue;
-                }
-                foreach (BaseBlockChainEvent e in block.Transactions)
-                {
-                    if (e.GetType() == typeof(NFTMint))
-                    {
-                        if (((NFTMint)e).NFTId == tokenId)
-                        {
-                            return (NFTMint)e;
-                        }
-                    }
                 }
             }
             return null;
@@ -192,25 +194,16 @@ namespace RodrigoChain
         /// <returns>Returns a NFTTransfer or null if not found</returns>
         public NFTTransfer GetNFTTransfer(Guid tokenId)
         {
-            NFTTransfer tx=null;
-            if(GetNFTMint(tokenId)==null) { return null;}
-            foreach (Block block in Chain)
-            {
-                if(block.Transactions==null){
-                    continue;
-                }
-                foreach (BaseBlockChainEvent e in block.Transactions)
-                {
-                    if (e.GetType() == typeof(NFTTransfer))
-                    {
-                        if (((NFTTransfer)e).NFTId == tokenId)
-                        {
-                            tx = (NFTTransfer)e;
-                        }
-                    }
-                }
+            var q = from block in Chain
+                    where block.Transactions != null
+                    from transaction in block.Transactions
+                    where transaction.GetType() == typeof(NFTTransfer)
+                    where ((NFTTransfer)transaction).NFTId == tokenId
+                    select (NFTTransfer)transaction;
+            if(q==null || q.Count()==0){
+                return null;
             }
-            return tx;
+            return q.Last();
         }
 
 
@@ -220,12 +213,11 @@ namespace RodrigoChain
         /// <returns>The public Address of the current owner</returns>
         public Address GetCurrentNFTOwner(Guid tokenId)
         {
-            //FIXME: not working lol
-            var tx = GetNFTTransfer(tokenId);
-            if(tx==null){
+            var nftTransfer = GetNFTTransfer(tokenId);
+            if(nftTransfer==null){
                 return null;
             }
-            return tx.ToAddress;
+            return nftTransfer.ToAddress;
         }
 
         /// <summary>
@@ -237,33 +229,41 @@ namespace RodrigoChain
         {
             int balance = 0;
 
-            //get balance of address
-            foreach (Block block in Chain)
-            {
-                //skip empty blocks
-                if(block.Transactions==null || block.Transactions.Count==0){continue;}
+            //check if null
+            if (address.IsNull()) { throw new ArgumentNullException("The address is null!", new NullAddressException()); }
 
-                //iterates in the chain
-                foreach (BaseBlockChainEvent e in block.Transactions)
-                {
-                    if (e.GetType() == typeof(Transaction))
-                    {
-                        if(((Transaction)e).FromAddress.IsNetWork){
-                            balance+=((Transaction)e).Amount;
-                            continue;
-                        }
-                        if (((Transaction)e).ToAddress == address)
-                        {
-                            balance+=((Transaction)e).Amount;
-                            continue;
-                        }
-                        if (((Transaction)e).FromAddress == address)
-                        {
-                            balance-=((Transaction)e).Amount;
-                            continue;
-                        }
-                    }
+            //get all transaction with this address
+            var q = from block in Chain
+                    where block.Transactions != null
+                    from transaction in block.Transactions
+                    where transaction.GetType() == typeof(Transaction)
+                    where ((Transaction)transaction).FromAddress == address || ((Transaction)transaction).ToAddress == address
+                    select (Transaction)transaction;
+                    
+            //check if the user has made any transactions
+            if (q == null || q.Count()==0) { return 0; }
+
+            foreach (var tx in q)
+            {
+                if(tx==null){
+                    continue;
                 }
+                //if the transaction is sending money to this address
+                if (tx.ToAddress == address)
+                {
+                    //add the amount to the balance
+                    balance += tx.Amount;
+                    continue;
+                }
+
+                //if the transaction is receiving money from this address
+                if (tx.FromAddress == address)
+                {
+                    //subtract the amount from the balance
+                    balance -= tx.Amount;
+                    continue;
+                }
+
             }
             return balance;
         }

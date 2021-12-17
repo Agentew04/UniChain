@@ -1,10 +1,12 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Crypto.Digests;
+using RodrigoChain.Core;
 using System;
 using System.Text;
 
-namespace RodrigoChain{
+namespace RodrigoChain.Events
+{
     public class NFTBurn : BaseBlockChainEvent
     {
         #region Vars

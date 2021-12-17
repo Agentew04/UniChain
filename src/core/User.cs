@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using RodrigoChain.Core;
 
-namespace RodrigoChain
+namespace RodrigoChain.Core
 {
     /// <summary>
     /// Represents a user doing actions in the BlockChain
