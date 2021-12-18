@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace RodrigoChain.Events
+namespace Unichain.Events
 {
     public class NFTMetadata
     {

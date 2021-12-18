@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using RodrigoChain.Core;
-using RodrigoChain.Events;
-using RodrigoChain.Exceptions;
+using Unichain.Core;
+using Unichain.Events;
+using Unichain.Exceptions;
 
-namespace RodrigoChain
+namespace Unichain
 {
     public partial class Blockchain
     {

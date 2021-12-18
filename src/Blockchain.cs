@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using RodrigoChain.Exceptions;
-using RodrigoChain.Core;
-using RodrigoChain.Events;
+using Unichain.Exceptions;
+using Unichain.Core;
+using Unichain.Events;
 
-namespace RodrigoChain
+namespace Unichain
 {
     public partial class Blockchain
     {

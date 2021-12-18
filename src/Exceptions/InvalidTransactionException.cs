@@ -1,6 +1,6 @@
 using System;
 
-namespace RodrigoChain.Exceptions
+namespace Unichain.Exceptions
 {
     public class InvalidTransactionException : Exception
     {

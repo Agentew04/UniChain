@@ -1,11 +1,11 @@
 ﻿using Newtonsoft.Json;
-using RodrigoChain.Core;
+using Unichain.Core;
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace RodrigoChain
+namespace Unichain
 {
     public class Block
     {

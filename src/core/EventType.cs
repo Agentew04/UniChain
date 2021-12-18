@@ -1,4 +1,4 @@
-﻿namespace RodrigoChain.Core
+﻿namespace Unichain.Core
 {
     public enum EventType
     {

@@ -1,6 +1,6 @@
 using NBitcoin;
 
-namespace RodrigoChain.Core
+namespace Unichain.Core
 {
     /// <summary>
     /// A class for holding a RodrigoChain's Address

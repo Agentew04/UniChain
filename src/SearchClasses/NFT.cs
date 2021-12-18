@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
-using RodrigoChain.Core;
-using RodrigoChain.Events;
+using Unichain.Core;
+using Unichain.Events;
 
-namespace RodrigoChain{
+namespace Unichain
+{
     public class NFT{
         /// <summary>
         /// The unique Id for this Token

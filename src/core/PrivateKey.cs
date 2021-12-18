@@ -1,6 +1,6 @@
 using NBitcoin;
 
-namespace RodrigoChain.Core
+namespace Unichain.Core
 {
     /// <summary>
     /// A class representing a user's private key for signing and authorizing actions

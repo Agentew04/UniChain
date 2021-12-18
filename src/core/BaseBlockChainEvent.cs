@@ -1,6 +1,6 @@
-﻿using RodrigoChain.Events;
+﻿using Unichain.Events;
 
-namespace RodrigoChain.Core
+namespace Unichain.Core
 {
     public abstract class BaseBlockChainEvent
     {

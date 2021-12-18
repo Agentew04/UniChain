@@ -1,11 +1,11 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using RodrigoChain.Core;
+using Unichain.Core;
 using System;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace RodrigoChain.Events
+namespace Unichain.Events
 {
     public class NFTMint : BaseBlockChainEvent
     {

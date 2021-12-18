@@ -1,11 +1,11 @@
 using System;
 using System.Text;
 using System.Text.Json;
-using RodrigoChain.Exceptions;
-using RodrigoChain.Core;
+using Unichain.Exceptions;
+using Unichain.Core;
 using System.Security.Cryptography;
 
-namespace RodrigoChain.Events
+namespace Unichain.Events
 {
     public class PoolOpen : BaseBlockChainEvent
     {

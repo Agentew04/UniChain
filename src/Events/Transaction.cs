@@ -1,9 +1,9 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
-using RodrigoChain.Core;
-using RodrigoChain.Exceptions;
+using Unichain.Core;
+using Unichain.Exceptions;
 
-namespace RodrigoChain.Events
+namespace Unichain.Events
 {
     public class Transaction : BaseBlockChainEvent
     {

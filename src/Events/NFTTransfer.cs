@@ -1,10 +1,10 @@
 ﻿using NBitcoin;
-using RodrigoChain.Core;
+using Unichain.Core;
 using System;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace RodrigoChain.Events
+namespace Unichain.Events
 {
     public class NFTTransfer : BaseBlockChainEvent
     {
