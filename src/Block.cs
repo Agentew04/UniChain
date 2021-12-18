@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Org.BouncyCastle.Crypto.Digests;
 using RodrigoChain.Core;
 using System;
 using System.Collections.Generic;
@@ -52,15 +51,19 @@ namespace RodrigoChain
         /// <returns></returns>
         public string CalculateHash()
         {
-            var sha = new Sha3Digest(512);
-            byte[] input2 = Encoding.ASCII.GetBytes($"{Timestamp}-{PreviousHash ?? ""}-{JsonConvert.SerializeObject(Transactions)}-{Nonce}");
+            //calculate sha512 hash using nftid, timestamp and burneraddress
+            var bytes = System.Text.Encoding.UTF8.GetBytes($"{Timestamp}-{PreviousHash ?? ""}-{JsonConvert.SerializeObject(Transactions)}-{Nonce}");
+            using (var hash = SHA512.Create())
+            {
+                var hashedInputBytes = hash.ComputeHash(bytes);
 
-            sha.BlockUpdate(input2, 0, input2.Length);
-            byte[] result = new byte[64];
-            sha.DoFinal(result, 0);
-
-            string hash = BitConverter.ToString(result);
-            return hash.Replace("-", "").ToLowerInvariant();
+                // Convert to text
+                // StringBuilder Capacity is 128, because 512 bits / 8 bits in byte * 2 symbols for byte 
+                var hashedInputStringBuilder = new StringBuilder(128);
+                foreach (var b in hashedInputBytes)
+                    hashedInputStringBuilder.Append(b.ToString("X2"));
+                return hashedInputStringBuilder.ToString();
+            }
         }
 
 

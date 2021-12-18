@@ -1,13 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Security.Cryptography;
 using Newtonsoft.Json;
-using Key = NBitcoin.Key;
 using RodrigoChain.Exceptions;
-using System.Linq.Expressions;
 using RodrigoChain.Core;
 using RodrigoChain.Events;
 

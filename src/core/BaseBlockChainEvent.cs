@@ -1,5 +1,4 @@
-﻿using System;
-using RodrigoChain.Events;
+﻿using RodrigoChain.Events;
 
 namespace RodrigoChain.Core
 {

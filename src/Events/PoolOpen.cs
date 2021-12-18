@@ -1,10 +1,9 @@
 using System;
 using System.Text;
 using System.Text.Json;
-using Org.BouncyCastle.Crypto.Digests;
 using RodrigoChain.Exceptions;
-using System.Collections.Generic;
 using RodrigoChain.Core;
+using System.Security.Cryptography;
 
 namespace RodrigoChain.Events
 {
@@ -57,15 +56,20 @@ namespace RodrigoChain.Events
         public override string CalculateHash()
         {
             string json(object o)=>JsonSerializer.Serialize(o);
-            var sha = new Sha3Digest(512);
-            byte[] input2 = Encoding.ASCII.GetBytes($"{Owner.ToString()}-{PoolId.ToString()}-{json(Metadata)}");
 
-            sha.BlockUpdate(input2, 0, input2.Length);
-            byte[] result = new byte[64];
-            sha.DoFinal(result, 0);
+            //calculate sha512 hash using nftid, timestamp and burneraddress
+            var bytes = System.Text.Encoding.UTF8.GetBytes($"{Owner.ToString()}-{PoolId.ToString()}-{json(Metadata)}");
+            using (var hash = SHA512.Create())
+            {
+                var hashedInputBytes = hash.ComputeHash(bytes);
 
-            string hash = BitConverter.ToString(result);
-            return hash.Replace("-", "").ToLowerInvariant();
+                // Convert to text
+                // StringBuilder Capacity is 128, because 512 bits / 8 bits in byte * 2 symbols for byte 
+                var hashedInputStringBuilder = new StringBuilder(128);
+                foreach (var b in hashedInputBytes)
+                    hashedInputStringBuilder.Append(b.ToString("X2"));
+                return hashedInputStringBuilder.ToString();
+            }
         }
 
         #endregion

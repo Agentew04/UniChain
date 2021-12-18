@@ -1,7 +1,4 @@
-using System;
-using System.Text;
 using NBitcoin;
-using Org.BouncyCastle.Crypto.Digests;
 
 namespace RodrigoChain.Core
 {
