@@ -20,7 +20,7 @@ namespace Unichain
         /// <summary>
         /// The amount of coins rewarded to the miner when a block is created
         /// </summary>
-        public int Reward { get; set; } = 100;
+        public double Reward { get; set; } = 100;
         /// <summary>
         /// A list with all pending <see cref="Transaction"/>, <see cref="TokenCreation"/> and
         /// <see cref="TokenTransaction"/>.
@@ -88,7 +88,9 @@ namespace Unichain
         public void MinePendingTransactions(Address minerAddress)
         {
             if (minerAddress.IsNull()) { throw new ArgumentNullException("The miner address is null!",new NullAddressException()); }
-            PendingTransactions.Insert(0, new Transaction(new User(true), minerAddress, this.Reward));
+            PendingTransactions.Insert(0, new Transaction(new User(true), minerAddress, this.Reward){
+                IsNetwork=true
+            });
             Block block = new(GetLatestBlock().Hash, PendingTransactions);
             if (!block.HasValidTransactions(this)) 
             { 

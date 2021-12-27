@@ -14,14 +14,14 @@ namespace Unichain
         public string PreviousHash { get; set; }
         public string Hash { get; set; }
         public int Nonce { get; set; } = 0;
-        public IList<BaseBlockChainEvent> Transactions { get; set; }
+        public IList<BaseBlockChainEvent> Events { get; set; }
 
-        public Block(string previousHash, IList<BaseBlockChainEvent> transactions)
+        public Block(string previousHash, IList<BaseBlockChainEvent> events)
         {
             Index = 0;
             Timestamp = DateTime.UtcNow.ToFileTimeUtc();
             PreviousHash = previousHash;
-            Transactions = transactions;
+            Events = events;
             Hash = CalculateHash();
         }
 
@@ -32,7 +32,7 @@ namespace Unichain
         /// <returns>A booleand representing the result</returns>
         public bool HasValidTransactions(Blockchain blockchain)
         {
-            foreach(var x in Transactions)
+            foreach(var x in Events)
             {
                 if(x.IsNetwork){
                     continue;
@@ -52,7 +52,7 @@ namespace Unichain
         public string CalculateHash()
         {
             //calculate sha512 hash using nftid, timestamp and burneraddress
-            var bytes = System.Text.Encoding.UTF8.GetBytes($"{Timestamp}-{PreviousHash ?? ""}-{JsonConvert.SerializeObject(Transactions)}-{Nonce}");
+            var bytes = System.Text.Encoding.UTF8.GetBytes($"{Timestamp}-{PreviousHash ?? ""}-{JsonConvert.SerializeObject(Events)}-{Nonce}");
             using (var hash = SHA512.Create())
             {
                 var hashedInputBytes = hash.ComputeHash(bytes);

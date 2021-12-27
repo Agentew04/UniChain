@@ -24,7 +24,7 @@ namespace Unichain.Events
         /// <summary>
         /// The amount of coins being transferred
         /// </summary>
-        public int Amount { get; set; }
+        public double Amount { get; set; }
 
 
         #endregion
@@ -38,7 +38,7 @@ namespace Unichain.Events
         /// <param name="to">The target addres to receive the money</param>
         /// <param name="amount">The amount of money to be transferred</param>
         /// <returns></returns>
-        public Transaction(User user, Address to, int amount) : base(EventType.Transaction,user)
+        public Transaction(User user, Address to, double amount) : base(EventType.Transaction,user)
         {
             EventType=EventType.Transaction;
             ActionOwner=user;

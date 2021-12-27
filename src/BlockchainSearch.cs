@@ -13,11 +13,52 @@ namespace Unichain
 
         public IEnumerable<T> Find<T>(Expression<Func<T, bool>> predicate) where T : BaseBlockChainEvent
         {
-            return Chain.SelectMany(block => block.Transactions.OfType<T>().Where(predicate.Compile()));
+            //find the objects that match T inside each block in this.Chain
+            foreach (var block in this.Chain)
+            {
+                if (block == null)
+                {
+                    continue;
+                }
+                if (block.Events == null)
+                {
+                    continue;
+                }
+                foreach (var obj in block.Events)
+                {
+                    if (obj is T)
+                    {
+                        var t = (T)obj;
+                        if (predicate.Compile().Invoke(t))
+                        {
+                            yield return t;
+                        }
+                    }
+                }
+            }
         }
         public IEnumerable<T> FindAll<T>() where T : BaseBlockChainEvent
         {
-            return Chain.SelectMany(block => block.Transactions.OfType<T>());
+            //find the objects that match T inside each block in this.Chain
+            foreach (var block in this.Chain)
+            {
+                if (block == null)
+                {
+                    continue;
+                }
+                if (block.Events == null)
+                {
+                    continue;
+                }
+                foreach (var obj in block.Events)
+                {
+                    if (obj is T)
+                    {
+                        var t = (T)obj;
+                        yield return t;
+                    }
+                }
+            }
         }
         #region pools
 
@@ -244,13 +285,18 @@ namespace Unichain
         /// </summary>
         /// <param name="address">The address to be checked</param>
         /// <returns></returns>
-        public int GetBalance(Address address){
+        public double GetBalance(Address address)
+        {
             var transactions = Find<Transaction>(x => x.FromAddress == address || x.ToAddress==address);
-            List<int> amounts = new List<int>();
-            if(transactions == null){
+            List<double> amounts = new();
+            if(transactions == null || transactions.Count() == 0){
                 return 0;
             }
             foreach(var transaction in transactions){
+                //check if null
+                if(transaction == null){
+                    continue;
+                }
                 if(transaction.FromAddress == address){
                     amounts.Add(-transaction.Amount);
                 }else{
@@ -267,7 +313,7 @@ namespace Unichain
         /// <param name="address"></param>
         /// <param name="amount"></param>
         /// <returns></returns>        
-        public bool HasEnoughBalance(Address address, int amount){
+        public bool HasEnoughBalance(Address address, double amount){
             var balance = GetBalance(address);
             return balance >= amount;
         }
