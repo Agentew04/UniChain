@@ -1,20 +1,18 @@
 ﻿using Xunit;
-using Unichain;
 using Unichain.Events;
 using Unichain.Core;
 using System.Collections.Generic;
-using System.Linq;
 using System;
 
-namespace Unichain.src.Tests
+namespace Unichain.Tests
 {
-    public class BlockchainSearchTest
+    public class BlockchainSearchTests
     {
         private readonly Blockchain _sut;
 
-        public BlockchainSearchTest()
+        public BlockchainSearchTests()
         {
-            _sut = new Blockchain();
+            _sut = new();
         }
 
         public PoolOpen PreparePoolEnvironment()

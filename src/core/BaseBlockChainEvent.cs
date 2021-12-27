@@ -15,7 +15,7 @@ namespace Unichain.Core
         public long Timestamp { get; set; }
 
         /// <summary>
-        /// The hash signed with the Address/Public Key
+        /// The hash signed with the Address/Public Key, it isn't included in the hash
         /// </summary>
         public string Signature { get; set; } /*is not included in the hash*/
 
