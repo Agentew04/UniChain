@@ -77,8 +77,8 @@ namespace Unichain.Events
             if (!VerifySignature())return false;
             if (HasFee)
             {
-                if (FeeTransaction == null) return false;
-                if (!FeeTransaction.IsValid(blockchain)) return false;
+                if (SubEvent == null) return false;
+                if (!SubEvent.IsValid(blockchain)) return false;
             }
             return true;
         }
