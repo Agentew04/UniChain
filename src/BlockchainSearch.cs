@@ -13,29 +13,22 @@ namespace Unichain
 
         public IEnumerable<T> Find<T>(Expression<Func<T, bool>> predicate) where T : BaseBlockChainEvent
         {
+            IEnumerable<T> result = Enumerable.Empty<T>();
             //find the objects that match T inside each block in this.Chain
             foreach (var block in this.Chain)
             {
-                if (block == null)
+                if (block == null || block.Events ==null)
                 {
                     continue;
                 }
-                if (block.Events == null)
-                {
-                    continue;
-                }
-                foreach (var obj in block.Events)
-                {
-                    if (obj is T)
-                    {
-                        var t = (T)obj;
-                        if (predicate.Compile().Invoke(t))
-                        {
-                            yield return t;
-                        }
-                    }
-                }
+                var events = from @event in block.Events
+                             where @event != null
+                             where @event.GetType() == typeof(T)
+                             where predicate.Compile().Invoke((T)@event)
+                             select (T)@event;
+                result = result.Concat(events);
             }
+            return result;
         }
         public IEnumerable<T> FindAll<T>() where T : BaseBlockChainEvent
         {
