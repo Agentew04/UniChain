@@ -37,7 +37,7 @@ namespace Unichain.Events
         /// <param name="metadata">The metadata of this token</param>
         public NFTMint(User user, NFTMetadata metadata) : base(EventType.NFTMint,user){
             this.ActionOwner=user;
-            this.Timestamp = DateTime.UtcNow.ToFileTimeUtc();
+            this.Timestamp = DateTime.UtcNow.Ticks;
             this.NFTMetadata=metadata;
             this.Owner=user.Address;
             this.NFTId = Guid.NewGuid();
@@ -49,13 +49,12 @@ namespace Unichain.Events
 
         public override bool IsValid(Blockchain blockchain)
         {
-            //TODO: check if nft already exists
-            
-            if( Signature == null) { return false; }
-            if (Owner.IsNull() || NFTMetadata == null){ return false; }
-            if (NFTMetadata.Name == null || NFTMetadata.Description == null){ return false; }
-            if (NFTMetadata.ImageUrl == null){ return false; }
-            if (!VerifySignature()) { return false; }
+            if(blockchain.IsNFTMinted(NFTId)) return false;
+            if (Signature == null) return false;
+            if (Owner.IsNull() || NFTMetadata == null)  return false;
+            if (NFTMetadata.Name == null || NFTMetadata.Description == null) return false;
+            if (NFTMetadata.ImageUrl == null) return false;
+            if (!VerifySignature()) return false;
             return true;
         }
 

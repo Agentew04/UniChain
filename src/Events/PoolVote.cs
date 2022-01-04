@@ -29,7 +29,7 @@ namespace Unichain.Events
             VoterAddress=user.Address;
             PoolId=poolId;
             VoteIndex=voteIndex;
-            Timestamp=DateTime.UtcNow.ToFileTimeUtc();
+            Timestamp=DateTime.UtcNow.Ticks;
         }
 
         #endregion

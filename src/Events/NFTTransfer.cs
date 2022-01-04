@@ -43,7 +43,7 @@ namespace Unichain.Events
             FromAddress = user.Address;
             ToAddress = toAddress;
             NFTId = tokenId;
-            Timestamp = DateTime.UtcNow.ToFileTimeUtc();
+            Timestamp = DateTime.UtcNow.Ticks;
         }
 
         #endregion
@@ -70,17 +70,15 @@ namespace Unichain.Events
         /// <returns>A boolean representing the result</returns>
         public override bool IsValid(Blockchain blockchain)
         {
-            //check addresses and amount
-
-            //TODO: check if the NFT exists
-            //TODO: check if the NFT is owned by the sender
-            //if (blockchain.GetTokenOrigin(this.TokenId).HasValue == false) { return false; }
-            //if (blockchain.GetTokenOrigin(this.TokenId).Value.TokenId != TokenId) { return false; }
-            if (this.Signature == null) { return false; }
-            if(NFTId==Guid.Empty || NFTId == new Guid()) { return false; }
-            if (this.FromAddress.IsNull() || this.ToAddress.IsNull()) { return false; }
-            //check signature
-            if (!VerifySignature()) { return false; }
+            if (!blockchain.IsNFTMinted(NFTId)) return false;
+            if (blockchain.IsNFTBurned(NFTId)) return false;
+            if (!blockchain.isNFTOwner(NFTId, FromAddress)) return false;
+            if (Signature == null) return false;
+            if (NFTId == Guid.Empty) return false;
+            if (NFTId == new Guid()) return false;
+            if (FromAddress.IsNull()) return false;
+            if (ToAddress.IsNull()) return false;
+            if (!VerifySignature()) return false;
 
             return true;
         }

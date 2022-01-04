@@ -1,4 +1,5 @@
 ﻿using Unichain.Events;
+using Newtonsoft.Json;
 
 namespace Unichain.Core
 {
@@ -57,6 +58,15 @@ namespace Unichain.Core
         public bool VerifySignature()
         {
             return this.ActionOwner.Address.VerifySign(CalculateHash(), this.Signature);
+        }
+
+        /// <summary>
+        /// Returns the current object in its JSON serialized form
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
         }
     }
 }

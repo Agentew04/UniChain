@@ -19,7 +19,7 @@ namespace Unichain
         public Block(string previousHash, IList<BaseBlockChainEvent> events)
         {
             Index = 0;
-            Timestamp = DateTime.UtcNow.ToFileTimeUtc();
+            Timestamp = DateTime.UtcNow.Ticks;
             PreviousHash = previousHash;
             Events = events;
             Hash = CalculateHash();

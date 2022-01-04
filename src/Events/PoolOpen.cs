@@ -25,7 +25,7 @@ namespace Unichain.Events
             Owner = user.Address;
             PoolId = Guid.NewGuid();
             Metadata = metadata;
-            Timestamp = DateTime.UtcNow.ToFileTimeUtc();
+            Timestamp = DateTime.UtcNow.Ticks;
 
         }
         #endregion
@@ -34,9 +34,10 @@ namespace Unichain.Events
 
         public override bool IsValid(Blockchain blockchain)
         {
-            if( Signature == null) { return false; }
-            if (Owner.IsNull() || Metadata == null){ return false; }
-            if (!VerifySignature()) { return false; }
+            if(blockchain.GetPoolById(PoolId) != null) return false;
+            if (Signature == null) return false;
+            if (Owner.IsNull() || Metadata == null)return false;
+            if (!VerifySignature()) return false;
             return true;
         }
 

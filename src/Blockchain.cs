@@ -73,7 +73,8 @@ namespace Unichain
             }
         }
         public void AddEvents(params BaseBlockChainEvent[] events){
-            foreach(var e in events){
+            foreach(var e in events)
+            {
                 AddEvent(e);
             }
         }
