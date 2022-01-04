@@ -11,7 +11,7 @@ namespace Unichain.Tests
         }
 
         [Fact]
-        public void AddressFromStringShouldReturnTrue()
+        public void Create_address_from_string()
         {
             Address address = new();
 
@@ -21,7 +21,7 @@ namespace Unichain.Tests
         }
 
         [Fact]
-        public void UserShouldVerifyMessage()
+        public void User_signing_and_verifying()
         {
             User user = new();
             string message = "Hello, world!";
@@ -33,7 +33,7 @@ namespace Unichain.Tests
         }
 
         [Fact]
-        public void IsNetworkShouldReturnTrue()
+        public void Network_address_is_flagged()
         {
             User user = new(true);
             Address address = new(true);

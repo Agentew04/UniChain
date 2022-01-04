@@ -52,23 +52,25 @@ namespace Unichain.Tests
             PoolOpen poolOpen1 = new(user1, poolMetadata1);
             poolOpen1.SignEvent(user1);
 
-            PoolVote poolVote1 = new(address1, poolOpen1.PoolId, 0);
-            PoolVote poolVote2 = new(address2, poolOpen1.PoolId, 1);
-            PoolVote poolVote3 = new(address3, poolOpen1.PoolId, 1);
-            PoolVote poolVote4 = new(address4, poolOpen1.PoolId, 2);
+            PoolVote poolVote1 = new(address1, poolOpen1.PoolId, 0, _sut);
+            PoolVote poolVote2 = new(address2, poolOpen1.PoolId, 1, _sut);
+            PoolVote poolVote3 = new(address3, poolOpen1.PoolId, 1, _sut);
+            PoolVote poolVote4 = new(address4, poolOpen1.PoolId, 2, _sut);
             poolVote1.SignEvent(address1);
             poolVote2.SignEvent(address2);
             poolVote3.SignEvent(address3);
             poolVote4.SignEvent(address4);
 
-            _sut.AddEvents(poolOpen1, poolVote1,poolVote2,poolVote3,poolVote4);
+            _sut.AddEvents(poolOpen1);
+            _sut.MinePendingTransactions(user1.Address);
+            _sut.AddEvents(poolVote1, poolVote2, poolVote3, poolVote4);
             _sut.MinePendingTransactions(user1.Address);
 
             return (poolOpen1.PoolId, address2.Address);
         }
 
         [Fact]
-        public void GetBalanceShouldReturnCorrectValue()
+        public void Get_address_balance()
         {
             //create transactions
             User user1 = new();
@@ -76,6 +78,7 @@ namespace Unichain.Tests
 
             Transaction transaction = new(user1, user2.Address, 20);
             transaction.SignEvent(user1);
+            _sut.MinePendingTransactions(user1.Address);
             _sut.AddEvent(transaction);
             _sut.MinePendingTransactions(user1.Address);
 
@@ -84,12 +87,13 @@ namespace Unichain.Tests
         }
 
         [Fact]
-        public void HasEnoughBalanceShouldReturnTrue()
+        public void Address_has_enough_balance()
         {
             //create transactions
             User user1 = new();
             User user2 = new();
 
+            _sut.MinePendingTransactions(user1.Address);
             Transaction transaction = new(user1, user2.Address, 20);
             transaction.SignEvent(user1);
             _sut.AddEvent(transaction);
@@ -101,7 +105,7 @@ namespace Unichain.Tests
         }
 
         [Fact]
-        public void GetPoolsShouldReturnCorrectValue()
+        public void Get_all_pools()
         {
             var pool = PreparePoolEnvironment();
 
@@ -112,7 +116,7 @@ namespace Unichain.Tests
         }
 
         [Fact]
-        public void GetPoolByIdShouldReturnCorrectPool()
+        public void Get_pool_by_its_id()
         {
             var pool = PreparePoolEnvironment();
 
@@ -121,7 +125,7 @@ namespace Unichain.Tests
         }
 
         [Fact]
-        public void GetTotalVotesShouldReturnCorrectCount()
+        public void Get_sum_of_votes_in_pool()
         {
             var(id, _) = PrepareVoteEnvironment();
 
@@ -130,9 +134,9 @@ namespace Unichain.Tests
         }
 
         [Fact]
-        public void GetVotesShouldReturnCorrectValues()
+        public void Get_all_votes_in_pool()
         {
-            var (id, address) = PrepareVoteEnvironment();
+            var (id, _) = PrepareVoteEnvironment();
 
             var votes = _sut.GetVotes(id);
             var expected = new List<int>() { 1, 2, 1 };
@@ -140,7 +144,7 @@ namespace Unichain.Tests
         }
 
         [Fact]
-        public void GetVoteShouldReturnCorrectValue()
+        public void Get_amount_of_votes_in_option()
         {
             var (id, address) = PrepareVoteEnvironment();
 
@@ -150,7 +154,7 @@ namespace Unichain.Tests
         }
 
         [Fact]
-        public void GetVoterOptionShouldReturnCorrectValue()
+        public void Get_what_someone_voted()
         {
             var(id,address) = PrepareVoteEnvironment();
 
