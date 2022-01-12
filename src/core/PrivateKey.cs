@@ -7,7 +7,7 @@ namespace Unichain.Core
     /// </summary>
     public class PrivateKey{
         public string Key {get;set;}
-        private NBitcoin.Key key;
+        private readonly Key key;
         public PrivateKey(){
             key = new Key();
             Key = key.ToHex();
