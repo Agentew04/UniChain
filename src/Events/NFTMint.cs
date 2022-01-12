@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Unichain.Core;
 using System;
 using System.Security.Cryptography;
 using System.Text;
+using Unichain.Core;
 
 namespace Unichain.Events
 {
@@ -24,7 +24,7 @@ namespace Unichain.Events
         /// <summary>
         /// The custom metadata for this Token
         /// </summary>
-        public NFTMetadata NFTMetadata {get;set;}
+        public NFTMetadata NFTMetadata { get; set; }
 
         #endregion
 
@@ -35,11 +35,12 @@ namespace Unichain.Events
         /// </summary>
         /// <param name="owner">The first owner for the token</param>
         /// <param name="metadata">The metadata of this token</param>
-        public NFTMint(User user, NFTMetadata metadata) : base(EventType.NFTMint,user){
-            this.ActionOwner=user;
+        public NFTMint(User user, NFTMetadata metadata) : base(EventType.NFTMint, user)
+        {
+            this.ActionOwner = user;
             this.Timestamp = DateTime.UtcNow.Ticks;
-            this.NFTMetadata=metadata;
-            this.Owner=user.Address;
+            this.NFTMetadata = metadata;
+            this.Owner = user.Address;
             this.NFTId = Guid.NewGuid();
         }
 
@@ -49,9 +50,9 @@ namespace Unichain.Events
 
         public override bool IsValid(Blockchain blockchain)
         {
-            if(blockchain.IsNFTMinted(NFTId)) return false;
+            if (blockchain.IsNFTMinted(NFTId)) return false;
             if (Signature == null) return false;
-            if (Owner.IsNull() || NFTMetadata == null)  return false;
+            if (Owner.IsNull() || NFTMetadata == null) return false;
             if (NFTMetadata.Name == null || NFTMetadata.Description == null) return false;
             if (NFTMetadata.ImageUrl == null) return false;
             if (!VerifySignature()) return false;

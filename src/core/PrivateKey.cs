@@ -5,24 +5,29 @@ namespace Unichain.Core
     /// <summary>
     /// A class representing a user's private key for signing and authorizing actions
     /// </summary>
-    public class PrivateKey{
-        public string Key {get;set;}
+    public class PrivateKey
+    {
+        public string Key { get; set; }
         private readonly Key key;
-        public PrivateKey(){
+        public PrivateKey()
+        {
             key = new Key();
             Key = key.ToHex();
         }
 
-        public NBitcoin.Key GetRawKey(){
+        public NBitcoin.Key GetRawKey()
+        {
             return key;
         }
 
-        public Address GetAddress(){
+        public Address GetAddress()
+        {
             var x = new Address(key.PubKey.ToHex());
             return x;
         }
-        
-        public string Sign(string s){
+
+        public string Sign(string s)
+        {
             return key.SignMessage(s);
         }
 

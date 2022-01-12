@@ -6,10 +6,10 @@ namespace Unichain.Exceptions
     {
         public InvalidKeyException() : base("The key provided was invalid!")
         {
-            
+
         }
 
-        public InvalidKeyException(string message) : base("The key provided was invalid!\nDescription: "+message)
+        public InvalidKeyException(string message) : base("The key provided was invalid!\nDescription: " + message)
         {
         }
     }

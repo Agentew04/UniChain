@@ -5,7 +5,8 @@ using Unichain.Events;
 
 namespace Unichain
 {
-    public class NFT{
+    public class NFT
+    {
         /// <summary>
         /// The unique Id for this Token
         /// </summary>
@@ -19,20 +20,24 @@ namespace Unichain
         /// <summary>
         /// The custom metadata for this Token
         /// </summary>
-        public NFTMetadata NFTMetadata {get;set;}
-        
-        public NFT(NFTMint mint, IList<NFTTransfer> transfers){
+        public NFTMetadata NFTMetadata { get; set; }
+
+        public NFT(NFTMint mint, IList<NFTTransfer> transfers)
+        {
             //get metadata from mint
             this.NFTMetadata = mint.NFTMetadata;
             this.NFTId = mint.NFTId;
 
             //check if transfers exist
-            if(transfers.Count == 0 || transfers == null){
+            if (transfers.Count == 0 || transfers == null)
+            {
                 //get owner from mint
                 this.Owner = mint.Owner;
-            }else{
+            }
+            else
+            {
                 //get owner from last transfer
-                this.Owner = transfers[transfers.Count-1].ToAddress;
+                this.Owner = transfers[transfers.Count - 1].ToAddress;
             }
         }
     }

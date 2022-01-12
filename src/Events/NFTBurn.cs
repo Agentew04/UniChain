@@ -1,7 +1,7 @@
-using Unichain.Core;
 using System;
 using System.Security.Cryptography;
 using System.Text;
+using Unichain.Core;
 
 namespace Unichain.Events
 {
@@ -14,7 +14,7 @@ namespace Unichain.Events
         /// </summary>
         /// <value></value>
         public Guid NFTId { get; set; }
-        
+
         /// <summary>
         /// The Address that burned this NFT
         /// </summary>
@@ -29,17 +29,17 @@ namespace Unichain.Events
         /// </summary>
         /// <param name="user">The user executing the action</param>
         /// <param name="nftId">The unique id of the NFT to be burned</param>
-        public NFTBurn(User user, Guid nftId) : base(EventType.NFTBurn,user)
+        public NFTBurn(User user, Guid nftId) : base(EventType.NFTBurn, user)
         {
-            ActionOwner=user;
+            ActionOwner = user;
             Timestamp = DateTime.UtcNow.Ticks;
             NFTId = nftId;
         }
 
         #endregion
-    
+
         #region Public Methods
-        
+
         public override void SignEvent(User user)
         {
             //TODO: check if the user is the owner of the NFT

@@ -1,9 +1,8 @@
-﻿using System.Security.Cryptography;
+﻿using System;
+using System.Security.Cryptography;
 using System.Text;
 using Unichain.Core;
 using Unichain.Exceptions;
-using Newtonsoft.Json;
-using System;
 
 namespace Unichain.Events
 {
@@ -40,23 +39,23 @@ namespace Unichain.Events
         /// <param name="to">The target addres to receive the money</param>
         /// <param name="amount">The amount of money to be transferred</param>
         /// <returns></returns>
-        public Transaction(User user, Address to, double amount) : base(EventType.Transaction,user)
+        public Transaction(User user, Address to, double amount) : base(EventType.Transaction, user)
         {
-            EventType=EventType.Transaction;
-            ActionOwner=user;
-            Amount=amount;
-            ToAddress=to;
-            FromAddress=user.Address;
+            EventType = EventType.Transaction;
+            ActionOwner = user;
+            Amount = amount;
+            ToAddress = to;
+            FromAddress = user.Address;
             Timestamp = DateTime.UtcNow.Ticks;
         }
 
         #endregion
 
         #region Methods
-        
+
         public override void SignEvent(User user)
         {
-            if ( user != this.FromAddress)
+            if (user != this.FromAddress)
             {
                 throw new InvalidKeyException();
             }
@@ -69,14 +68,16 @@ namespace Unichain.Events
         public override bool IsValid(Blockchain blockchain)
         {
             //check addresses and amount
-            if(FromAddress.IsNetWork && !ToAddress.IsNetWork){
+            if (FromAddress.IsNetWork && !ToAddress.IsNetWork)
+            {
                 return true;
             }
             if (FromAddress.IsNull() || ToAddress.IsNull() || Amount <= 0)
             {
                 return false;
             }
-            if(Signature==null || !VerifySignature()){
+            if (Signature == null || !VerifySignature())
+            {
                 return false;
             }
 

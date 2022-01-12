@@ -6,28 +6,41 @@ namespace Unichain.Core
     /// <summary>
     /// Represents a user doing actions in the BlockChain
     /// </summary>
-    public class User{
-        public Address Address {get;set;}
-        private PrivateKey PrivateKey {get;set;}
-        public User(){
+    public class User
+    {
+        public Address Address { get; set; }
+        private PrivateKey PrivateKey { get; set; }
+        public User()
+        {
             PrivateKey = new PrivateKey();
             Address = PrivateKey.GetAddress();
         }
-        public User(bool isNetwork){
-            if(isNetwork){
+        public User(bool isNetwork)
+        {
+            if (isNetwork)
+            {
                 Address = new Address(true);
-            }else{
+            }
+            else
+            {
                 PrivateKey = new PrivateKey();
                 Address = PrivateKey.GetAddress();
             }
-           
+
         }
+
+        public PrivateKey GetPrivateKey()
+        {
+            return PrivateKey;
+        }
+
         /// <summary>
         /// Signs the given string with the current Private Key
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        public string SignMessage(string message){
+        public string SignMessage(string message)
+        {
             return PrivateKey.Sign(message);
         }
         /// <summary>
@@ -36,8 +49,9 @@ namespace Unichain.Core
         /// <param name="message"></param>
         /// <param name="signature"></param>
         /// <returns></returns>
-        public bool VerifySignature(string message, string signature){
-            return Address.VerifySign(message,signature);
+        public bool VerifySignature(string message, string signature)
+        {
+            return Address.VerifySign(message, signature);
         }
 
         public string Encrypt(string s)
@@ -62,13 +76,13 @@ namespace Unichain.Core
             return HashCode.Combine(Address, PrivateKey);
         }
 
-        public static bool operator == (User a, Address b)=>a.Address.Equals(b);
-        public static bool operator != (User a, Address b)=>!a.Address.Equals(b);
-        public static bool operator == (User a, User b)=>a.Equals(b);
-        public static bool operator != (User a, User b)=>!a.Equals(b);
-        public static bool operator == (Address a, User b)=>b.Address.Equals(a);
-        public static bool operator != (Address a, User b)=>!b.Address.Equals(a);
+        public static bool operator ==(User a, Address b) => a.Address.Equals(b);
+        public static bool operator !=(User a, Address b) => !a.Address.Equals(b);
+        public static bool operator ==(User a, User b) => a.Equals(b);
+        public static bool operator !=(User a, User b) => !a.Equals(b);
+        public static bool operator ==(Address a, User b) => b.Address.Equals(a);
+        public static bool operator !=(Address a, User b) => !b.Address.Equals(a);
 
-        public static explicit operator Address(User u)=>u.Address;
+        public static explicit operator Address(User u) => u.Address;
     }
 }

@@ -21,7 +21,7 @@ namespace Unichain.Events
         /// A dictionary of additional metadata for the token
         /// </summary>
         /// <value></value>
-        public Dictionary<string,object> Metadata {get;set;} = new();
+        public Dictionary<string, object> Metadata { get; set; } = new();
 
     }
 }

@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
-using Unichain.Core;
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using Unichain.Core;
 
 namespace Unichain
 {
@@ -32,13 +32,15 @@ namespace Unichain
         /// <returns>A booleand representing the result</returns>
         public bool HasValidTransactions(Blockchain blockchain)
         {
-            foreach(var x in Events)
+            foreach (var x in Events)
             {
-                if(x.IsNetwork){
+                if (x.IsNetwork)
+                {
                     continue;
                 }
-                if (!x.IsValid(blockchain)){
-                    return false;   
+                if (!x.IsValid(blockchain))
+                {
+                    return false;
                 }
             }
             return true;
@@ -53,17 +55,15 @@ namespace Unichain
         {
             //calculate sha512 hash using nftid, timestamp and burneraddress
             var bytes = System.Text.Encoding.UTF8.GetBytes($"{Timestamp}-{PreviousHash ?? ""}-{JsonConvert.SerializeObject(Events)}-{Nonce}");
-            using (var hash = SHA512.Create())
-            {
-                var hashedInputBytes = hash.ComputeHash(bytes);
+            using var hash = SHA512.Create();
+            var hashedInputBytes = hash.ComputeHash(bytes);
 
-                // Convert to text
-                // StringBuilder Capacity is 128, because 512 bits / 8 bits in byte * 2 symbols for byte 
-                var hashedInputStringBuilder = new StringBuilder(128);
-                foreach (var b in hashedInputBytes)
-                    hashedInputStringBuilder.Append(b.ToString("X2"));
-                return hashedInputStringBuilder.ToString();
-            }
+            // Convert to text
+            // StringBuilder Capacity is 128, because 512 bits / 8 bits in byte * 2 symbols for byte 
+            var hashedInputStringBuilder = new StringBuilder(128);
+            foreach (var b in hashedInputBytes)
+                hashedInputStringBuilder.Append(b.ToString("X2"));
+            return hashedInputStringBuilder.ToString();
         }
 
 
@@ -74,10 +74,12 @@ namespace Unichain
         public void MineBlock(int difficulty)
         {
             var leadingZeros = new string('0', difficulty);
-            while (this.Hash == null || this.Hash.Substring(0, difficulty) != leadingZeros)
+            Console.WriteLine(Hash);
+            Console.WriteLine(leadingZeros);
+            while (string.IsNullOrWhiteSpace(Hash) || Hash[..difficulty] != leadingZeros)
             {
-                this.Nonce++;
-                this.Hash = this.CalculateHash();
+                Nonce++;
+                Hash = CalculateHash();
             }
         }
 

@@ -1,8 +1,8 @@
-﻿using Xunit;
-using Unichain.Events;
-using Unichain.Core;
+﻿using System;
 using System.Collections.Generic;
-using System;
+using Unichain.Core;
+using Unichain.Events;
+using Xunit;
 
 namespace Unichain.Tests
 {
@@ -33,8 +33,8 @@ namespace Unichain.Tests
 
             return poolOpen1;
         }
-        
-        public (Guid,Address) PrepareVoteEnvironment()
+
+        public (Guid, Address) PrepareVoteEnvironment()
         {
             User user1 = new();
             User address1 = new();
@@ -127,7 +127,7 @@ namespace Unichain.Tests
         [Fact]
         public void Get_sum_of_votes_in_pool()
         {
-            var(id, _) = PrepareVoteEnvironment();
+            var (id, _) = PrepareVoteEnvironment();
 
             var votes = _sut.GetTotalVotes(id);
             Assert.Equal(4, votes);
@@ -156,7 +156,7 @@ namespace Unichain.Tests
         [Fact]
         public void Get_what_someone_voted()
         {
-            var(id,address) = PrepareVoteEnvironment();
+            var (id, address) = PrepareVoteEnvironment();
 
             var voteindex = _sut.GetVoterOption(id, address);
             var expected = 1;

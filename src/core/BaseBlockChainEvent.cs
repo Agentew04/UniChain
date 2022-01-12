@@ -1,13 +1,14 @@
-﻿using Unichain.Events;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using System;
+using Unichain.Events;
 
 namespace Unichain.Core
 {
-    public abstract class BaseBlockChainEvent
+    public class BaseBlockChainEvent
     {
-        public EventType EventType { get; set;}
+        public EventType EventType { get; set; }
 
-        public User ActionOwner { get; set;}
+        public User ActionOwner { get; set; }
 
         /// <summary>
         /// The time when the object <see cref="Transaction"/> was created.
@@ -26,9 +27,10 @@ namespace Unichain.Core
         /// <value></value>
         public bool IsNetwork { get; set; }
 
-        public BaseBlockChainEvent(EventType eventType, User user){
-            EventType=eventType;
-            ActionOwner=user;
+        public BaseBlockChainEvent(EventType eventType, User user)
+        {
+            EventType = eventType;
+            ActionOwner = user;
         }
 
         /// <summary>
@@ -36,19 +38,19 @@ namespace Unichain.Core
         /// The hash, signature are left out of it. Uses SHA3-512
         /// </summary>
         /// <returns>The hash in Hexadecimal</returns>
-        public abstract string CalculateHash();
+        public virtual string CalculateHash() { throw new NotImplementedException(); }
 
         /// <summary>
         /// Checks if the current transaction is valid
         /// </summary>
         /// <returns>A boolean representing the result</returns>
-        public abstract bool IsValid(Blockchain blockchain);
+        public virtual bool IsValid(Blockchain blockchain) { throw new NotImplementedException(); }
 
         /// <summary>
         /// Sign the current event
         /// </summary>
         /// <param name="privateKey">The private key used to sign the transaction</param>
-        public abstract void SignEvent(User user);
+        public virtual void SignEvent(User user) { throw new NotImplementedException(); }
 
         /// <summary>
         /// Verifies if the transaction is signed by the owner
@@ -67,6 +69,32 @@ namespace Unichain.Core
         public override string ToString()
         {
             return JsonConvert.SerializeObject(this);
+        }
+
+        public static Type ToType(EventType evtype)
+        {
+            switch (evtype)
+            {
+                case EventType.Transaction:
+                    return typeof(Transaction);
+                case EventType.NFTTransfer:
+                    return typeof(NFTTransfer);
+                case EventType.NFTBurn:
+                    return typeof(NFTBurn);
+                case EventType.NFTMint:
+                    return typeof(NFTMint);
+                case EventType.PoolOpen:
+                    return typeof(PoolOpen);
+                case EventType.PoolVote:
+                    return typeof(PoolVote);
+                case EventType.DocumentSubmit:
+                    break;
+                case EventType.MessageSend:
+                    return typeof(MessageSendUser);
+                default:
+                    return typeof(Transaction);
+            }
+            return typeof(Transaction);
         }
     }
 }

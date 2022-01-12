@@ -17,7 +17,7 @@ namespace Unichain.Tests
 
             var pubkeystr = address.PublicKey;
             Address newaddr = new(pubkeystr);
-            Assert.True(address==newaddr);
+            Assert.True(address == newaddr);
         }
 
         [Fact]

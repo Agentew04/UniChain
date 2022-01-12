@@ -1,9 +1,9 @@
 using System;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using Unichain.Exceptions;
 using Unichain.Core;
-using System.Security.Cryptography;
+using Unichain.Exceptions;
 
 namespace Unichain.Events
 {
@@ -12,15 +12,15 @@ namespace Unichain.Events
         #region Variables
 
         public Address Owner { get; set; }
-        public Guid PoolId {get;set;}
+        public Guid PoolId { get; set; }
         public PoolMetadata Metadata { get; set; }
 
         #endregion
 
         #region Constructors
-        public PoolOpen(User user, PoolMetadata metadata) : base(EventType.PoolOpen,user)
+        public PoolOpen(User user, PoolMetadata metadata) : base(EventType.PoolOpen, user)
         {
-            ActionOwner=user;
+            ActionOwner = user;
             EventType = EventType.PoolOpen;
             Owner = user.Address;
             PoolId = Guid.NewGuid();
@@ -34,9 +34,9 @@ namespace Unichain.Events
 
         public override bool IsValid(Blockchain blockchain)
         {
-            if(blockchain.GetPoolById(PoolId) != null) return false;
+            if (blockchain.GetPoolById(PoolId) != null) return false;
             if (Signature == null) return false;
-            if (Owner.IsNull() || Metadata == null)return false;
+            if (Owner.IsNull() || Metadata == null) return false;
             if (!VerifySignature()) return false;
             return true;
         }
@@ -56,7 +56,7 @@ namespace Unichain.Events
 
         public override string CalculateHash()
         {
-            string json(object o)=>JsonSerializer.Serialize(o);
+            string json(object o) => JsonSerializer.Serialize(o);
 
             //calculate sha512 hash using nftid, timestamp and burneraddress
             var bytes = System.Text.Encoding.UTF8.GetBytes($"{Owner.ToString()}-{PoolId.ToString()}-{json(Metadata)}");

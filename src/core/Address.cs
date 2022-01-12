@@ -5,14 +5,16 @@ namespace Unichain.Core
     /// <summary>
     /// A class for holding a RodrigoChain's Address
     /// </summary>
-    public class Address{
-        public string PublicKey {get;set;}
-        public bool IsNetWork {get;set;}
+    public class Address
+    {
+        public string PublicKey { get; set; }
+        public bool IsNetWork { get; set; }
         private readonly PubKey key;
         /// <summary>
         /// Creates a new random address
         /// </summary>
-        public Address(){
+        public Address()
+        {
             key = new NBitcoin.Key().PubKey;
             PublicKey = key.ToHex();
         }
@@ -20,27 +22,34 @@ namespace Unichain.Core
         /// Creates a new address instance based on a address string
         /// </summary>
         /// <param name="publicKey"></param>
-        public Address(string publicKey){
-            if(publicKey=="network"){
+        public Address(string publicKey)
+        {
+            if (publicKey == "network")
+            {
                 IsNetWork = true;
                 return;
             }
             PublicKey = publicKey;
-            key = new PubKey(publicKey);            
+            key = new PubKey(publicKey);
         }
 
-        public Address(bool isNetwork){
-            if(isNetwork){
+        public Address(bool isNetwork)
+        {
+            if (isNetwork)
+            {
                 IsNetWork = true;
                 return;
-            }else{
+            }
+            else
+            {
                 key = new NBitcoin.Key().PubKey;
                 PublicKey = key.ToHex();
-            return;
+                return;
             }
         }
-        public bool VerifySign(string originalmessage, string signature){
-            return key.VerifyMessage(originalmessage,signature);
+        public bool VerifySign(string originalmessage, string signature)
+        {
+            return key.VerifyMessage(originalmessage, signature);
         }
 
         public string Encrypt(string originalmessage)
@@ -55,8 +64,10 @@ namespace Unichain.Core
         /// Checks if the address is null, empty or whitespace
         /// </summary>
         /// <returns></returns>
-        public bool IsNull(){
-            if(IsNetWork){
+        public bool IsNull()
+        {
+            if (IsNetWork)
+            {
                 return false;
             }
             return string.IsNullOrWhiteSpace(PublicKey);
@@ -83,20 +94,20 @@ namespace Unichain.Core
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static bool operator ==(Address a, Address b)=> a.PublicKey==b.PublicKey;
+        public static bool operator ==(Address a, Address b) => a.PublicKey == b.PublicKey;
         /// <summary>
         /// Checks if both addresses are different
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static bool operator !=(Address a, Address b)=> !(a==b);
-        public static bool operator ==(Address a, string b)=> a.PublicKey.Equals(b);
-        public static bool operator !=(Address a, string b)=> !(a==b);
-        public static bool operator ==(string a, Address b)=> b==a;
-        public static bool operator !=(string a, Address b)=> !(b==a);
+        public static bool operator !=(Address a, Address b) => !(a == b);
+        public static bool operator ==(Address a, string b) => a.PublicKey.Equals(b);
+        public static bool operator !=(Address a, string b) => !(a == b);
+        public static bool operator ==(string a, Address b) => b == a;
+        public static bool operator !=(string a, Address b) => !(b == a);
 
-        #endregion  
-        
+        #endregion
+
     }
 }

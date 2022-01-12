@@ -1,7 +1,6 @@
-﻿using Unichain.Events;
+﻿using Unichain.Core;
+using Unichain.Events;
 using Xunit;
-using Unichain.Core;
-using System;
 
 namespace Unichain.Tests
 {
@@ -22,7 +21,7 @@ namespace Unichain.Tests
             {
                 Name = "Test pool",
                 Description = "A test pool for testing purposes",
-                Options = new string[] { "option1", "option2", "option3"},
+                Options = new string[] { "option1", "option2", "option3" },
                 Fee = 15
             };
             PoolOpen po = new(user, pm);

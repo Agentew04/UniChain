@@ -1,8 +1,8 @@
 ﻿using NBitcoin;
-using Unichain.Core;
 using System;
 using System.Security.Cryptography;
 using System.Text;
+using Unichain.Core;
 
 namespace Unichain.Events
 {
@@ -37,7 +37,7 @@ namespace Unichain.Events
         /// <param name="fromAddress">Same of the <see cref="PubKey"/></param>
         /// <param name="toAddress">The Address of the receiver</param>
         /// <param name="tokenId">The Id of the token being transferred</param>
-        public NFTTransfer(User user, Address toAddress, Guid tokenId) : base(EventType.NFTTransfer,user)
+        public NFTTransfer(User user, Address toAddress, Guid tokenId) : base(EventType.NFTTransfer, user)
         {
             ActionOwner = user;
             FromAddress = user.Address;
@@ -49,7 +49,7 @@ namespace Unichain.Events
         #endregion
 
         #region Methods
-        
+
         public override void SignEvent(User user)
         {
             //check is the owner making the transaction
