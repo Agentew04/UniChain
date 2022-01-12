@@ -8,7 +8,7 @@ namespace Unichain.Core
     public class Address{
         public string PublicKey {get;set;}
         public bool IsNetWork {get;set;}
-        private NBitcoin.PubKey key;
+        private readonly PubKey key;
         /// <summary>
         /// Creates a new random address
         /// </summary>
@@ -67,7 +67,7 @@ namespace Unichain.Core
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public override bool Equals(object obj) => obj is Address && PublicKey.Equals(((Address)obj).PublicKey);
+        public override bool Equals(object obj) => obj is Address address && PublicKey.Equals(address.PublicKey);
 
         public override int GetHashCode() => base.GetHashCode();
 

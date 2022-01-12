@@ -43,7 +43,7 @@ public class Program
 
 
         // CHECKING FLAGS
-        if(args.Contains("-h") || args.Contains("--help"))
+        if(args.Contains("-h") || args.Contains("--help") || args[0]=="help")
         {
             ShowHelp();
             return;
