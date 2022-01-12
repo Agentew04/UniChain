@@ -19,10 +19,12 @@ become a node and help the network stay up.
 
 ## Usage
 
+### Library
+
 After the NuGet Package has been added to your project, you can
 use it as following
 
-```c#
+```cs
 using UniChain.Events;
 using UniChain.Core;
 
@@ -39,6 +41,23 @@ blockchain.MinePendingTransactions((Address)currentUser); // this address will r
 
 Console.WriteLine(blockchain.GetBalance(currentUser.Address));
 // prints out: 90
+```
+
+### Command Line Interface (CLI)
+
+You can download the latest CLI executable version [here](https://github.com/Agentew04/Unichain/releases/latest)
+
+Sample usage:
+```
+## Creating a new blockchain
+unichain create -f ./unichain.json  ==> You can leave the '-f' flag to autogenerate the file!
+
+
+unichain -h OR unichain --help OR unicain help  ==>  general help
+unichain mine -h OR unichain --help  ==>  sub-command specific help
+
+unichain print --base64  ==> Prints out the entire blockchain in Base-64 format
+unichain print --dump  ==> Dumps all output text to a file
 ```
 
 ## Support
