@@ -108,14 +108,53 @@ public class Program
         }
     }
 
-    public static void ShowHelp()
+    public static void ShowHelp(string subcommand = "")
     {
-        Print(@"
-Welcome to the UniChain CLI!
+        Print("Welcome to the UniChain CLI Helper!");
+        switch (subcommand)
+        {
+            case "print":
+                Print(@"
+Possible flags for 'print' sub-command:
+  -f  --file    => Path to the json file that the blockchain is stored
+  -h  --hexadec => Prints out the chain in hexadecimal(JSON text bytes)
+  -b  --binary  => Prints out the chain in binary(JSON text bytes)
+  -o  --octal   => Prints out the chain in octal(JSON text bytes)
+      --base64  => Prints out the chain in base 64(JSON text bytes)");
+                break;
+            case "mine":
+                Print(@"
+Possible flags for 'mine' sub-command:
+  -a  --address => Sets the address that will receive the coins
+  -f  --file    => Path to the json file that the blockchain is stored");
+                break;
+            case "generate":
+                Print(@"
+Possible flags for 'generate' sub-command:
+  -n  --number => Sets the number of addresses and users to generate, defaults to 1
+  -d  --dump   => Dumps all information to a text file");
+                break;
+            case "get":
+                Print(@"
+Possible flags and sub-commands for 'get' sub-command:
+  -f  --file    => Path to the json file that the blockchain is stored
+  -a  --address => The address to be searched, works with '--nft' and '--balance'
+      --balance => Gets the token balance of a address
+      --nft     => Gets all NFTs a address has");
+                break;
+            default:
+                Print(@"
+Possible arguments and sub-commands:
+      create   => Creates a new blockchain in a file
+      connect  => Connects the current pc to the network
+      add      => Add a event to the pending transactions
+      mine     => Mine all pending transactions
+      generate => Generate a number of key pairs (Users and Addresses)
+      get      => Search for something inside the blockchain
+  -h  --help   => Display this help menu
+  -f  --file   => Path to the json file that the blockchain is stored");
+                break;
+        }
 
-Possible arguments:
-  -h  --help  => Display this help menu
-  -f  --file  => Path to the json file that the blockchain is stored
-      create  => Creates a new blockchain in a file");
     }
 }
