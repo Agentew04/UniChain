@@ -74,8 +74,6 @@ namespace Unichain
         public void MineBlock(int difficulty)
         {
             var leadingZeros = new string('0', difficulty);
-            Console.WriteLine(Hash);
-            Console.WriteLine(leadingZeros);
             while (string.IsNullOrWhiteSpace(Hash) || Hash[..difficulty] != leadingZeros)
             {
                 Nonce++;
