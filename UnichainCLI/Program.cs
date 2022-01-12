@@ -1,11 +1,23 @@
-﻿using System.IO;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Bson;
+using Unichain.Core;
 
 namespace Unichain.Cli;
 
 
 public class Program
 {
+    public static Dictionary<string, bool> Commands { get; set; } = new()
+    {
+        { "create", false },
+        { "connect", true },
+        { "add", true },
+        { "mine", true },
+        { "generate", false },
+        { "get", true},
+        { "print", true},
+    };
+
     public static void Main(string[] args)
     {
         if(args.Length == 0)
@@ -76,7 +88,7 @@ public class Program
         if (!(args.Contains("-f") || args.Contains("-file"))) return false;
         for (int i = 0; i < args.Length; i++)
         {
-            if(args[i]=="-f" || args[i] == "-file")
+            if (args[i] == "-f" || args[i] == "--file")
             {
                 flagindex = i;
             }
@@ -84,28 +96,138 @@ public class Program
         try
         {
             filepath = args[flagindex + 1];
-        }catch (Exception)
+        }
+        catch (Exception)
         {
             return false;
         }
         if (!File.Exists(filepath)) return false;
         filepath = Path.GetFullPath(filepath);
-        if (Path.GetExtension(filepath) != ".json")return false;
+        if (Path.GetExtension(filepath) != ".json") return false;
         return true;
     }
 
     public static void CreateChain(string path)
     {
         Blockchain blockchain = new();
-        var jsonserialized = JsonConvert.SerializeObject(blockchain, Formatting.Indented);
+        SaveBlockChain(path, blockchain);
+    }
+
+    public static bool TryGetNumber(string[] args, out int number)
+    {
+        number = 0;
+        int flagindex = 0;
+        if (args == null || args.Length == 0) return false;
+        if (!(args.Contains("-n") || args.Contains("--number"))) return false;
+        for (int i = 0; i < args.Length; i++)
+        {
+            if (args[i] == "-n" || args[i] == "--number")
+            {
+                flagindex = i;
+            }
+        }
+        string? strnum;
         try
         {
-            File.WriteAllText(path, jsonserialized);
-        }catch (Exception e)
-        {
-            Print(e.Message);
-            Environment.Exit(1);
+            strnum = args[flagindex + 1];
         }
+        catch (Exception)
+        {
+            return false;
+        }
+        if(strnum==null)return false;
+        number = Convert.ToInt32(strnum);
+        return true;
+    }
+
+    public static Blockchain ParseBlockchain(string path)
+    {
+        string data;
+        try
+        {
+            data = File.ReadAllText(path);
+        }
+        catch (Exception ex)
+        {
+            Print(ex.Message);
+            Environment.Exit(2);
+            return null;
+        }
+        //byte[] bytes = Convert.FromBase64String(data);
+
+        //using MemoryStream ms = new(bytes);
+        //using BsonDataReader reader = new(ms);            //this is in BSON
+
+        //JsonSerializer serializer = new();
+        //Blockchain? blockchain = serializer.Deserialize<Blockchain>(reader);
+        var blockchain = JsonConvert.DeserializeObject<Blockchain>(data); //this is in plain JSON
+
+        if (blockchain == null)
+        {
+            Print("Failed to load blockchain!");
+            Environment.Exit(3);
+            return null;
+        }
+        return blockchain;
+    }
+
+    public static void SaveBlockChain(string path, Blockchain blockchain)
+    {
+        //using MemoryStream ms = new();
+        //using BsonDataWriter writer = new(ms);
+
+        //JsonSerializer serializer = new();            //this is using BSON
+        //serializer.Serialize(writer, blockchain);
+
+        //string data = Convert.ToBase64String(ms.ToArray());
+        string data = JsonConvert.SerializeObject(blockchain, Formatting.Indented); // this is in plain json
+
+        try
+        {
+            File.WriteAllText(path, data);
+        }
+        catch (Exception ex)
+        {
+            Print(ex.Message);
+            Environment.Exit(2);
+            return;
+        }
+    }
+
+    public static bool TryGetAddress(string[] args, out Address? address)
+    {
+        address = null;
+        int flagindex = 0;
+        if (args == null || args.Length == 0) return false;
+        if (!(args.Contains("-a") || args.Contains("--address"))) return false;
+        for (int i = 0; i < args.Length; i++)
+        {
+            if (args[i] == "-a" || args[i] == "--address")
+            {
+                flagindex = i;
+            }
+        }
+        string? straddr;
+        try
+        {
+            straddr = args[flagindex + 1];
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+        if (string.IsNullOrWhiteSpace(straddr)) return false;
+        try
+        {
+            address = new Address(straddr);
+        }
+        catch (Exception ex)
+        {
+            Print(ex.Message);
+            Environment.Exit(4);
+            return false;
+        }
+        return true;
     }
 
     public static void ShowHelp(string subcommand = "")
