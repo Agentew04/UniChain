@@ -43,6 +43,12 @@ namespace Unichain.Core
             return key.VerifyMessage(originalmessage,signature);
         }
 
+        public string Encrypt(string originalmessage)
+        {
+            var encrypted = key.Encrypt(originalmessage);
+            return encrypted;
+        }
+
         #region Defaults and operators
 
         /// <summary>

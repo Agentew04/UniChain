@@ -40,6 +40,16 @@ namespace Unichain.Core
             return Address.VerifySign(message,signature);
         }
 
+        public string Encrypt(string s)
+        {
+            return PrivateKey.Encrypt(s);
+        }
+
+        public string Decrypt(string s)
+        {
+            return PrivateKey.Decrypt(s);
+        }
+
         public override bool Equals(object obj)
         {
             return obj is User user &&

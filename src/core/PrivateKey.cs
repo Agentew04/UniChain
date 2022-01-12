@@ -26,5 +26,14 @@ namespace Unichain.Core
             return key.SignMessage(s);
         }
 
+        public string Decrypt(string s)
+        {
+            return key.Decrypt(s);
+        }
+
+        public string Encrypt(string s)
+        {
+            return key.PubKey.Encrypt(s);
+        }
     }
 }

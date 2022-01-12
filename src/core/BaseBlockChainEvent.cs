@@ -57,7 +57,7 @@ namespace Unichain.Core
         /// <returns>A boolean representing the result</returns>
         public bool VerifySignature()
         {
-            return this.ActionOwner.Address.VerifySign(CalculateHash(), this.Signature);
+            return ActionOwner.Address.VerifySign(CalculateHash(), Signature);
         }
 
         /// <summary>
