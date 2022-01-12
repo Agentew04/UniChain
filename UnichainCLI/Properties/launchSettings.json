@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "UnichainCLI": {
+      "commandName": "Project",
+      "commandLineArgs": "mine -f ./unichain.json -a 0283940cdff0cdc280fe28314817b3263744daece10c848b6059a385f484851e21"
+    }
+  }
+}

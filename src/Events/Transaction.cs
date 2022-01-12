@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Security.Cryptography;
 using System.Text;
 using Unichain.Core;
@@ -47,6 +48,19 @@ namespace Unichain.Events
             ToAddress = to;
             FromAddress = user.Address;
             Timestamp = DateTime.UtcNow.Ticks;
+        }
+
+        [JsonConstructor]
+        public Transaction(Address FromAddress, Address ToAddress, double Amount,
+            EventType EventType, long Timestamp, string Signature,bool IsNetwork):base(EventType.Transaction,null)
+        {
+            this.FromAddress = FromAddress;
+            this.ToAddress = ToAddress;
+            this.Amount = Amount;
+            this.EventType = EventType;
+            this.Timestamp = Timestamp;
+            this.Signature = Signature;
+            this.IsNetwork = IsNetwork;
         }
 
         #endregion

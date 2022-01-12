@@ -1,9 +1,17 @@
-﻿using Newtonsoft.Json;
+﻿using JsonSubTypes;
+using Newtonsoft.Json;
 using System;
 using Unichain.Events;
 
 namespace Unichain.Core
 {
+    [JsonConverter(typeof(JsonSubtypes), "EventType")]
+    [JsonSubtypes.KnownSubType(typeof(Transaction), EventType.Transaction)]
+    [JsonSubtypes.KnownSubType(typeof(NFTMint), EventType.NFTMint)]
+    [JsonSubtypes.KnownSubType(typeof(NFTTransfer), EventType.NFTTransfer)]
+    [JsonSubtypes.KnownSubType(typeof(NFTBurn), EventType.NFTBurn)]
+    [JsonSubtypes.KnownSubType(typeof(PoolOpen), EventType.PoolOpen)]
+    [JsonSubtypes.KnownSubType(typeof(PoolVote), EventType.PoolVote)]
     public class BaseBlockChainEvent
     {
         public EventType EventType { get; set; }

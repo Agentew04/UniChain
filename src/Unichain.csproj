@@ -5,6 +5,7 @@
     <RootNamespace>Unichain</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="JsonSubTypes" Version="1.8.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
     <PackageReference Include="NBitcoin" Version="5.0.81" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
