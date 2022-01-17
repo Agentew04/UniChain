@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using Ionic.Zip;
 using Newtonsoft.Json;
@@ -11,12 +12,25 @@ namespace Unichain.Parsing
 {
     public class BlockchainParser
     {
-        public static void SaveBlockchain(string path, Blockchain blockchain) 
+        public static MemoryStream SerializeBlockchain(Blockchain blockchain, StreamEncryptor.Auth auth) 
         {
-            using ZipFile zipfile = new(path);
+            bool isencrypted = auth == null || auth.Key==null || auth.Key == Array.Empty<byte>();
+            using ZipFile zipfile = new();
             AddBlocks(zipfile, blockchain.Chain);
             AddBlockchainInfo(zipfile, blockchain);
+            using MemoryStream memoryStream = new();
+            zipfile.Save(memoryStream);
 
+            if (isencrypted)
+            {
+                return StreamEncryptor.EncryptStream(memoryStream, auth);
+            }
+            else return memoryStream;
+        }
+
+        public static MemoryStream SerializeBlockchain(Blockchain blockchain)
+        {
+            return SerializeBlockchain(blockchain, null);
         }
 
         private static IEnumerable<ZipEntry> AddBlocks(ZipFile zipfile, List<Block> chain)
