@@ -3,6 +3,7 @@ using Newtonsoft.Json.Bson;
 using System.Text;
 using System.Text.Unicode;
 using Unichain.Core;
+using Unichain.Parsing;
 
 namespace Unichain.CLI;
 
@@ -55,7 +56,7 @@ public class Program
                 {
                     #region create
                     case "create":
-                        if (!ispathinput)
+                        if (path=="") // it doesn't work using ispathinput
                         {
                             //path not found
                             Console.WriteLine("No parameter for the file location found, do you want to create one" +
@@ -250,6 +251,7 @@ public class Program
             if (args[i] == "-f" || args[i] == "--file")
             {
                 flagindex = i;
+                break;
             }
         }
         try
@@ -262,7 +264,7 @@ public class Program
         }
         if (!File.Exists(filepath)) return false;
         filepath = Path.GetFullPath(filepath);
-        if (Path.GetExtension(filepath) != ".json") return false;
+        if (Path.GetExtension(filepath) != ".chain") return false;
         return true;
     }
 
@@ -332,12 +334,11 @@ public class Program
 
     public static void SaveBlockChain(string path, Blockchain blockchain)
     {
-        
-        string data = JsonConvert.SerializeObject(blockchain, Formatting.Indented); // this is in plain json
-
+        BlockchainParser parser = new();
+        using MemoryStream ms = parser.SerializeBlockchain(blockchain);
         try
         {
-            File.WriteAllText(path, data);
+            File.WriteAllBytes(path, ms.ToArray());
         }
         catch (Exception ex)
         {
