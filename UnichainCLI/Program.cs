@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Unicode;
 using Unichain.Core;
 
-namespace Unichain.Cli;
+namespace Unichain.CLI;
 
 
 public class Program
@@ -204,6 +204,26 @@ public class Program
 
                 break;
             #endregion
+            #region get
+            case "get":
+                bc = ParseBlockchain(path);
+                bool isbalance = args.Contains("--balance");
+                bool isnft = args.Contains("--nft");
+                bool hasaddress = TryGetAddress(args, out Address? address);
+                if (hasaddress)
+                {
+                    if (isbalance)
+                    {
+                        Print($"{bc.GetBalance(address)}");
+                        Environment.Exit(0);
+                    }
+                    if (isnft)
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+                break;
+            #endregion
             default:
                 break;
         }
@@ -312,13 +332,7 @@ public class Program
 
     public static void SaveBlockChain(string path, Blockchain blockchain)
     {
-        //using MemoryStream ms = new();
-        //using BsonDataWriter writer = new(ms);
-
-        //JsonSerializer serializer = new();            //this is using BSON
-        //serializer.Serialize(writer, blockchain);
-
-        //string data = Convert.ToBase64String(ms.ToArray());
+        
         string data = JsonConvert.SerializeObject(blockchain, Formatting.Indented); // this is in plain json
 
         try
@@ -332,7 +346,7 @@ public class Program
             return;
         }
     }
-
+    
     public static bool TryGetAddress(string[] args, out Address? address)
     {
         address = null;

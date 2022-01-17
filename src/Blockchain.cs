@@ -12,7 +12,7 @@ namespace Unichain
         /// <summary>
         /// Represents the Chain of <see cref="Block"/> for this blockchain
         /// </summary>
-        public IList<Block> Chain { get; private set; } = new List<Block>();
+        public List<Block> Chain { get; private set; } = new List<Block>();
         /// <summary>
         /// The difficulty, or the number of zeros in the start of the hash
         /// </summary>
@@ -52,7 +52,7 @@ namespace Unichain
         /// <returns>The latest block</returns>
         private Block GetLatestBlock()
         {
-            return Chain[Chain.Count - 1];
+            return Chain[^1];
         }
 
         #region add to chain
