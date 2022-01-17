@@ -22,7 +22,7 @@ become a node and help the network stay up.
 ### Library
 
 After the NuGet Package has been added to your project, you can
-use it as following
+use it as following (C#)
 
 ```cs
 using UniChain.Events;
