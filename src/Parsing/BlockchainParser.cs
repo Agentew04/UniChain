@@ -12,6 +12,12 @@ namespace Unichain.Parsing
 {
     public class BlockchainParser
     {
+        /// <summary>
+        /// Serializes a blockchain with AES encryption(2048 key and block size)
+        /// </summary>
+        /// <param name="blockchain">The blockchain that will be serialized</param>
+        /// <param name="auth">A object containing the Key and IV</param>
+        /// <returns>The Stream containing all data</returns>
         public static MemoryStream SerializeBlockchain(Blockchain blockchain, StreamEncryptor.Auth auth) 
         {
             bool isencrypted = auth == null || auth.Key==null || auth.Key == Array.Empty<byte>();
@@ -28,11 +34,22 @@ namespace Unichain.Parsing
             else return memoryStream;
         }
 
+        /// <summary>
+        /// Serializes a blockchain without any encryption
+        /// </summary>
+        /// <param name="blockchain">The blockchain to be serialized</param>
+        /// <returns>The Stream containg all the data</returns>
         public static MemoryStream SerializeBlockchain(Blockchain blockchain)
         {
             return SerializeBlockchain(blockchain, null);
         }
 
+        /// <summary>
+        /// Adds all blocks from the chain to the <see cref="ZipFile"/>
+        /// </summary>
+        /// <param name="zipfile">The main <see cref="ZipFile"/></param>
+        /// <param name="chain">The blockchain that will be used</param>
+        /// <returns>A collection containing all entries created</returns>
         private static IEnumerable<ZipEntry> AddBlocks(ZipFile zipfile, List<Block> chain)
         {
             for (int i = 0; i < chain.Count; i++)
@@ -44,6 +61,12 @@ namespace Unichain.Parsing
             }
         }
 
+        /// <summary>
+        /// Adds to the main file a info.bin containing useful information to the blockchain
+        /// </summary>
+        /// <param name="zipfile">The main ZipFile</param>
+        /// <param name="blockchain">The blockchain</param>
+        /// <returns>The ZipEntry created</returns>
         private static ZipEntry AddBlockchainInfo(ZipFile zipfile, Blockchain blockchain)
         {
             using MemoryStream memoryStream = new();
@@ -55,6 +78,11 @@ namespace Unichain.Parsing
             return zipfile.AddEntry("info.bin", memoryStream);
         }
 
+        /// <summary>
+        /// Creates a <see cref="ZipFile"/> containing the block and saves it to a memoryStream
+        /// </summary>
+        /// <param name="block">The block to be converted</param>
+        /// <returns>The stream containing the zip bytes</returns>
         private static MemoryStream CreateBlockFile(Block block)
         {
             using MemoryStream blockStream = new();
@@ -77,6 +105,11 @@ namespace Unichain.Parsing
             return blockStream;
         }
 
+        /// <summary>
+        /// Encodes the JSON bytes in Base 64 and put it in a string
+        /// </summary>
+        /// <param name="e">The event to be converted</param>
+        /// <returns>A base64 string</returns>
         private static string GetBase64DataFromEvent(BaseBlockChainEvent e)
         {
             var json = e.ToString();
@@ -86,7 +119,7 @@ namespace Unichain.Parsing
 
 
         /// <summary>
-        /// Returns a hexadecimal sector name for this block
+        /// Returns a hexadecimal sector name for this block and its sub-index
         /// </summary>
         /// <param name="totalLength"></param>
         /// <param name="currentIndex"></param>

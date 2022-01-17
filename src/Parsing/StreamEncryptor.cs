@@ -12,6 +12,12 @@ namespace Unichain.Parsing
     {
         public record Auth(byte[] Key, byte[] IV);
 
+        /// <summary>
+        /// Encrypts a Stream using AES. Key and Block size is 2048 for safety.
+        /// </summary>
+        /// <param name="inStream">The stream that will be encrypted</param>
+        /// <param name="auth">The Auth object</param>
+        /// <returns>A stream containing all cypher data</returns>
         public static MemoryStream EncryptStream(Stream inStream, Auth auth)
         {
             using Aes aes = Aes.Create();
@@ -28,6 +34,12 @@ namespace Unichain.Parsing
             return memoryStream;
         }
 
+        /// <summary>
+        /// Decrypts a <see cref="Stream"/> containing cyphertext. Uses AES with 2048 as Key and Block size.
+        /// </summary>
+        /// <param name="inStream">The encrypted <see cref="Stream"/></param>
+        /// <param name="auth">A object containing Key and IV</param>
+        /// <returns>A <see cref="Stream"/> containing decrypted data</returns>
         public static MemoryStream DecryptStream(Stream inStream, Auth auth)
         {
             using Aes aes = Aes.Create();
@@ -44,6 +56,11 @@ namespace Unichain.Parsing
             return memoryStream;
         }
 
+        /// <summary>
+        /// Copies a <see cref="Stream"/> to another in chunks
+        /// </summary>
+        /// <param name="input">The input</param>
+        /// <param name="output">The output</param>
         public static void CopyStream(Stream input, Stream output)
         {
             byte[] buffer = new byte[32768];
