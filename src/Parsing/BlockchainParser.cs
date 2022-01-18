@@ -5,7 +5,6 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Ionic.Zip;
-using ICSharpCode.SharpZipLib.GZip;
 using Newtonsoft.Json;
 using Unichain.Core;
 using System.Text.RegularExpressions;
@@ -83,7 +82,6 @@ namespace Unichain.Parsing
                 //get sector for this block
                 var(sector,subindex) = GetSector(i);
                 MemoryStream blockStream = SerializeBlock(chain[i]);
-                streams.Add(blockStream);
                 entries.Add(zipfile.AddEntry($"chain\\{sector}\\{subindex}.block", blockStream));
             }
             return entries;
@@ -91,20 +89,17 @@ namespace Unichain.Parsing
 
         private static IEnumerable<Block> GetBlocks(ZipFile zipfile)
         {
-            var sectors = zipfile.Where(entry => entry.FileName.Contains("chain/"));
-            PriorityQueue<ZipEntry,int> queue = new();
-            foreach (var sector in sectors)
-            {
-                Regex regex = new Regex(@"\d+(?=.block)");
-                var hex = regex.Match(sector.FileName).Value;
-                var priority = int.Parse(hex, System.Globalization.NumberStyles.HexNumber);
-                queue.Enqueue(sector, priority);
-            }
+            Regex isBlock = new(@"^chain\/[0-9|a-f]+\/\d+\.block$");
+            Regex getSector = new(@"(?<=chain\/)[0-9|a-f]+(?=\/\d+\.block$)");
+            Regex getNum = new(@"(?<=\/)\d+?(?=\.block$)");
+            var blocks = zipfile.Where(entry => isBlock.IsMatch(entry.FileName));
+            Queue<ZipEntry> queue = new(blocks);
             while(queue.Count > 0)
             {
-                var sector = queue.Dequeue();
-                var reader = sector.OpenReader();
-                yield return DeserializeBlock(reader);
+                using MemoryStream ms = new();
+                // must extract to memory
+                queue.Dequeue().Extract(ms); 
+                yield return DeserializeBlock(ms);
             }
         }
 
@@ -181,7 +176,8 @@ namespace Unichain.Parsing
         /// <returns></returns>
         private static Block DeserializeBlock(Stream zipStream)
         {
-            zipStream.Seek(0, SeekOrigin.Begin);
+            zipStream.Seek(0,SeekOrigin.Begin);
+            // it's not recognizing as zipfile
             using ZipFile zipFile = ZipFile.Read(zipStream);
             using var binStream = zipFile.Where(x => x.FileName.Contains("info.bin")).FirstOrDefault().OpenReader();
             using BinaryReader binaryReader = new(binStream);
@@ -234,7 +230,7 @@ namespace Unichain.Parsing
         private static (string sector, int subindex) GetSector(int currentIndex)
         {
             int sectorInt = (int)Math.Floor((decimal)currentIndex / 100);
-            int subindex = ((currentIndex / 100) - sectorInt) * 100;
+            int subindex = (int)((((decimal)currentIndex / 100m) - (decimal)sectorInt) * 100m);
             string sectorHex = sectorInt.ToString("X");
             return (sectorHex, subindex);
         }
