@@ -12,7 +12,7 @@ namespace Unichain
         /// <summary>
         /// Represents the Chain of <see cref="Block"/> for this blockchain
         /// </summary>
-        public List<Block> Chain { get; private set; } = new List<Block>();
+        public List<Block> Chain { get; init; } = new List<Block>();
         /// <summary>
         /// The difficulty, or the number of zeros in the start of the hash
         /// </summary>

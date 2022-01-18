@@ -2,11 +2,15 @@
   "profiles": {
     "MineChain": {
       "commandName": "Project",
-      "commandLineArgs": "mine -f ./unichain.json -a 0283940cdff0cdc280fe28314817b3263744daece10c848b6059a385f484851e21"
+      "commandLineArgs": "mine -f ./unichain.chain -a 0283940cdff0cdc280fe28314817b3263744daece10c848b6059a385f484851e21"
     },
     "Create Chain": {
       "commandName": "Project",
       "commandLineArgs": "create -f ./unichain.chain"
+    },
+    "Print Chain": {
+      "commandName": "Project",
+      "commandLineArgs": "print -f ./unichain.chain"
     }
   }
 }

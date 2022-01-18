@@ -303,26 +303,9 @@ public class Program
 
     public static Blockchain ParseBlockchain(string path)
     {
-        string data;
-        try
-        {
-            data = File.ReadAllText(path);
-        }
-        catch (Exception ex)
-        {
-            Print(ex.Message);
-            Environment.Exit(2);
-            return null;
-        }
-        //byte[] bytes = Convert.FromBase64String(data);
-
-        //using MemoryStream ms = new(bytes);
-        //using BsonDataReader reader = new(ms);            //this is in BSON
-
-        //JsonSerializer serializer = new();
-        //Blockchain? blockchain = serializer.Deserialize<Blockchain>(reader);
-        var blockchain = JsonConvert.DeserializeObject<Blockchain>(data); //this is in plain JSON
-
+        BlockchainParser parser = new();
+        using FileStream stream = new(path, FileMode.Open);
+        Blockchain blockchain = parser.DeserializeBlockchain(stream);
         if (blockchain == null)
         {
             Print("Failed to load blockchain!");

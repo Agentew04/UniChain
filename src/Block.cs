@@ -25,6 +25,14 @@ namespace Unichain
             Hash = CalculateHash();
         }
 
+        /// <summary>
+        /// Creates an empty instance of the <see cref="Block"/> class
+        /// </summary>
+        public Block()
+        {
+
+        }
+
 
         /// <summary>
         /// Check if all the <see cref="Transaction"/>, <seealso cref="TokenCreation"/> are valid
