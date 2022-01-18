@@ -13,13 +13,14 @@ to organize current and available IPs in the network.
 ## Installation
 
 There is a NuGet Package [here]() to develop apps that use this
-blockchain solution. There is also a app that will make your computer
-become a node and help the network stay up.
+blockchain solution. There is also a CLI tool that make your computer
+become a node and interacts with the main network. In the future
+there will be a Desktop App for creating and managing your wallet.
 
 
 ## Usage
 
-### Library
+### As a library in your project
 
 After the NuGet Package has been added to your project, you can
 use it as following (C#)
@@ -45,8 +46,12 @@ Console.WriteLine(blockchain.GetBalance(currentUser.Address));
 
 ### Command Line Interface (CLI)
 
-You can download the latest CLI executable version [here](https://github.com/Agentew04/Unichain/releases/latest)
+You can download the latest CLI executable version [here](https://github.com/Agentew04/Unichain/releases/latest).
+After you installed it, you can add the folder containing the `.exe` to your system PATH (if you don't know how read [this](https://docs.microsoft.com/en-us/previous-versions/office/developer/sharepoint-2010/ee537574(v=office.14)#to-add-a-path-to-the-path-environment-variable)).
 
+### Desktop App
+
+The app has not been developed yet
 Sample usage:
 ```
 ## Creating a new blockchain
