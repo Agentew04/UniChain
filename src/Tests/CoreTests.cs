@@ -1,4 +1,5 @@
-﻿using Unichain.Core;
+﻿#if DEBUG
+using Unichain.Core;
 using Xunit;
 
 namespace Unichain.Tests
@@ -43,3 +44,4 @@ namespace Unichain.Tests
         }
     }
 }
+#endif

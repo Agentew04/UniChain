@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if DEBUG
+using System;
 using System.Collections.Generic;
 using Unichain.Core;
 using Unichain.Events;
@@ -164,3 +165,4 @@ namespace Unichain.Tests
         }
     }
 }
+#endif
