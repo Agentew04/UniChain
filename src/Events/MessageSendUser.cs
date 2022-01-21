@@ -10,7 +10,7 @@ namespace Unichain.Events
 
         public string Message { get; set; }
 
-        public MessageSendUser(User sender, Address receiver, string message) : base(EventType.MessageSend, sender)
+        public MessageSendUser(User sender, Address receiver, string message) : base(EventType.MessageSendUser, sender)
         {
             SenderAddress = sender.Address;
             ReceiverAddress = receiver;

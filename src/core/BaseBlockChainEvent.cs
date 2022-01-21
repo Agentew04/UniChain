@@ -97,7 +97,7 @@ namespace Unichain.Core
                     return typeof(PoolVote);
                 case EventType.DocumentSubmit:
                     break;
-                case EventType.MessageSend:
+                case EventType.MessageSendUser:
                     return typeof(MessageSendUser);
                 default:
                     return typeof(Transaction);

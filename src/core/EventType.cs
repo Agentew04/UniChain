@@ -10,6 +10,7 @@
         PoolVote,
         PoolClose,
         DocumentSubmit,
-        MessageSend
+        MessageSendUser,
+        MessageSendGroup,
     }
 }

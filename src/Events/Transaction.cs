@@ -52,7 +52,7 @@ namespace Unichain.Events
 
         [JsonConstructor]
         public Transaction(Address FromAddress, Address ToAddress, double Amount,
-            EventType EventType, long Timestamp, string Signature,bool IsNetwork):base(EventType.Transaction,null)
+            EventType EventType, long Timestamp, string Signature, bool IsNetwork) : base(EventType.Transaction, null)
         {
             this.FromAddress = FromAddress;
             this.ToAddress = ToAddress;

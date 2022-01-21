@@ -52,14 +52,16 @@ namespace Unichain
 
         public static Pool Parse(PoolOpen poolOpen, IEnumerable<PoolVote> poolVotes = null)
         {
-            Pool pool = new Pool();
-            pool.Owner = poolOpen.Owner;
-            pool.PoolId = poolOpen.PoolId;
-            pool.Name = poolOpen.Metadata.Name;
-            pool.Description = poolOpen.Metadata.Description;
-            pool.Fee = poolOpen.Metadata.Fee;
-            pool.MinimumAmountToVote = poolOpen.Metadata.MinimumAmountToVote;
-            pool.Deadline = poolOpen.Metadata.Deadline;
+            Pool pool = new()
+            {
+                Owner = poolOpen.Owner,
+                PoolId = poolOpen.PoolId,
+                Name = poolOpen.Metadata.Name,
+                Description = poolOpen.Metadata.Description,
+                Fee = poolOpen.Metadata.Fee,
+                MinimumAmountToVote = poolOpen.Metadata.MinimumAmountToVote,
+                Deadline = poolOpen.Metadata.Deadline
+            };
             //a dictionary like <index,(description,votes)>
             Dictionary<int, (string, int)> options = new();
             //add option to dictionary

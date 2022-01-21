@@ -1,20 +1,18 @@
-﻿using System;
+﻿using Ionic.Zip;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
-using Ionic.Zip;
-using Newtonsoft.Json;
-using Unichain.Core;
 using System.Text.RegularExpressions;
+using Unichain.Core;
 
 namespace Unichain.Parsing
 {
     public class BlockchainParser
     {
         private readonly List<Stream> streams = new();
-        private readonly MemoryStream outputStream = new();
 
         /// <summary>
         /// Serializes a blockchain with AES encryption(2048 key and block size)
@@ -54,7 +52,7 @@ namespace Unichain.Parsing
         public Blockchain DeserializeBlockchain(Stream stream)
         {
             ZipFile zipFile = ZipFile.Read(stream);
-            var (diff,reward) = GetBlockchainInfo(zipFile);
+            var (diff, reward) = GetBlockchainInfo(zipFile);
             var blockchain = new Blockchain(1)
             {
                 Chain = GetBlocks(zipFile).ToList(),
@@ -80,7 +78,7 @@ namespace Unichain.Parsing
             for (int i = 0; i < chain.Count; i++)
             {
                 //get sector for this block
-                var(sector,subindex) = GetSector(i);
+                var (sector, subindex) = GetSector(i);
                 MemoryStream blockStream = SerializeBlock(chain[i]);
                 entries.Add(zipfile.AddEntry($"chain\\{sector}\\{subindex}.block", blockStream));
             }
@@ -94,11 +92,11 @@ namespace Unichain.Parsing
             Regex getNum = new(@"(?<=\/)\d+?(?=\.block$)");
             var blocks = zipfile.Where(entry => isBlock.IsMatch(entry.FileName));
             Queue<ZipEntry> queue = new(blocks);
-            while(queue.Count > 0)
+            while (queue.Count > 0)
             {
                 using MemoryStream ms = new();
                 // must extract to memory
-                queue.Dequeue().Extract(ms); 
+                queue.Dequeue().Extract(ms);
                 yield return DeserializeBlock(ms);
             }
         }
@@ -155,10 +153,10 @@ namespace Unichain.Parsing
 
             ZipFile blockfile = new();
             blockfile.AddEntry("info.bin", infoMStream);
-            
+
             List<string> events = new();
-            if(block.Events!=null) 
-                foreach (var @event in block.Events) 
+            if (block.Events != null)
+                foreach (var @event in block.Events)
                     events.Add(GetBase64DataFromEvent(@event));
             var eventsjson = JsonConvert.SerializeObject(events);
             blockfile.AddEntry("events.json", eventsjson);
@@ -176,7 +174,7 @@ namespace Unichain.Parsing
         /// <returns></returns>
         private static Block DeserializeBlock(Stream zipStream)
         {
-            zipStream.Seek(0,SeekOrigin.Begin);
+            zipStream.Seek(0, SeekOrigin.Begin);
             // it's not recognizing as zipfile
             using ZipFile zipFile = ZipFile.Read(zipStream);
             using var binStream = zipFile.Where(x => x.FileName.Contains("info.bin")).FirstOrDefault().OpenReader();

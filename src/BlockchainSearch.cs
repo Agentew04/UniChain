@@ -45,9 +45,8 @@ namespace Unichain
                 }
                 foreach (var obj in block.Events)
                 {
-                    if (obj is T)
+                    if (obj is T t)
                     {
-                        var t = (T)obj;
                         yield return t;
                     }
                 }
@@ -151,7 +150,7 @@ namespace Unichain
         /// </summary>
         /// <param name="nftId">The id to be searched</param>
         /// <returns>A tuple with the current owner and if it has been burned of not</returns>
-        public (Address, bool) getCurrentNFTOwner(Guid nftId)
+        public (Address, bool) GetCurrentNFTOwner(Guid nftId)
         {
             //get NFTMint
             var nftMint = Find<NFTMint>(x => x.NFTId == nftId).FirstOrDefault();
@@ -190,9 +189,9 @@ namespace Unichain
         /// <param name="nftId">The Id to be searched</param>
         /// <param name="owner">The Address to be searched</param>
         /// <returns>The result of the operation</returns>
-        public bool isNFTOwner(Guid nftId, Address owner)
+        public bool IsNFTOwner(Guid nftId, Address owner)
         {
-            var (address, _) = getCurrentNFTOwner(nftId);
+            var (address, _) = GetCurrentNFTOwner(nftId);
             return address == owner;
         }
 
@@ -306,7 +305,7 @@ namespace Unichain
         {
             var transactions = Find<Transaction>(x => x.FromAddress == address || x.ToAddress == address);
             List<double> amounts = new();
-            if (transactions == null || transactions.Count() == 0)
+            if (transactions == null || !transactions.Any())
             {
                 return 0;
             }
