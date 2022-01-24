@@ -6,7 +6,7 @@ namespace Unichain.CLI
     public static class Utils
     {
 
-        public static bool HasFlag(string[] args, (string min, string max) flag)
+        public static bool HasFlag(string[] args, Flag flag)
         {
             if (args.Length == 0)
             {
@@ -16,7 +16,7 @@ namespace Unichain.CLI
             {
                 return false;
             }
-            var result = args.Contains(flag.min) || args.Contains(flag.max);
+            var result = args.Contains(flag.Name) || args.Contains(flag.Simplified);
             return result;
         }
 

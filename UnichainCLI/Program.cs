@@ -30,12 +30,17 @@ public class Program
         }
 
         // CHECKING FOR HELP
-        if (Utils.HasFlag(args, ("-h", "--help")))
+        if (Utils.HasFlag(args, new("help","h")))
         {
             if (Commands.ContainsKey(args[0]))
             {
-                // IS SPECIFIC HELP
-                ShowHelp(args[0]);
+                // CHECK IF IS ADD
+                bool hasType = Utils.TryGetArgument(args, new("type", "t"), out string typestr);
+                if (args[0]=="add" && hasType)
+                {
+                    ShowHelp(args[0],Utils.ParseEventType(typestr));
+                }
+                else ShowHelp(args[0]);
             }
             else
             {
@@ -77,7 +82,7 @@ public class Program
         // CHECK FOR PATH AVAILABILITY
         if (!ispathinput)
         {
-            Utils.Print("Please provide a valid path for the .json file containing the blockchain data using the '-f' flag.");
+            Utils.Print("Please provide a valid path for the .chain file containing the blockchain data using the '-f' flag.");
             Environment.Exit(3);
             return;
         }
@@ -103,23 +108,7 @@ public class Program
             #endregion
             #region get
             case "get":
-                var bc = Utils.ParseBlockchain(path);
-                bool isbalance = args.Contains("--balance");
-                bool isnft = args.Contains("--nft");
-                bool hasaddress = Utils.TryGetArgument(args,new("address","a"), out string addressStr);
-                Address address = new(addressStr);
-                if (hasaddress)
-                {
-                    if (isbalance)
-                    {
-                        Utils.Print($"{bc.GetBalance(address)}");
-                        Environment.Exit(0);
-                    }
-                    if (isnft)
-                    {
-                        throw new NotImplementedException();
-                    }
-                }
+                Get.Exec(args, path);
                 break;
             #endregion
             default:
@@ -181,6 +170,11 @@ Flags for the Pool Vote event:
 
     public static void ShowHelp(string subcommand = "", EventType? type = null)
     {
+        if(subcommand == "add" && type != null)
+        {
+            ShowAddHelp(type.Value);
+            return;
+        }
         Utils.Print("Welcome to the UniChain CLI Helper!");
         switch (subcommand)
         {
