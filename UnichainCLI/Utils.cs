@@ -20,20 +20,6 @@ namespace Unichain.CLI
             return result;
         }
 
-        public static EventType ParseEventType(string s) => s switch
-        {
-            "transaction" => EventType.Transaction,
-            "nftmint" => EventType.NFTMint,
-            "nfttransfer" => EventType.NFTMint,
-            "nftburn" => EventType.NFTBurn,
-            "poolopen" => EventType.PoolOpen,
-            "poolvote" => EventType.PoolVote,
-            "msgsenduser" => EventType.MessageSendUser,
-            "msgsendgroup" => EventType.MessageSendGroup,
-            "docsubmit" => EventType.DocumentSubmit,
-            _ => throw new ArgumentException("Event does not exist!"),
-        };
-
         public static void Print(string s) => Console.WriteLine(s);
 
         public static bool TryGetArgument(string[] args, Flag flag, out string result)
@@ -140,7 +126,7 @@ namespace Unichain.CLI
 
         public static Blockchain ParseBlockchain(string path)
         {
-            BlockchainParser parser = new();
+            using BlockchainParser parser = new();
             using FileStream stream = new(path, FileMode.Open);
             Blockchain blockchain = parser.DeserializeBlockchain(stream);
             if (blockchain == null)

@@ -1,19 +1,22 @@
-﻿using JsonSubTypes;
+﻿using Ardalis.SmartEnum.JsonNet;
+using JsonSubTypes;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using Unichain.Events;
 
 namespace Unichain.Core
 {
     [JsonConverter(typeof(JsonSubtypes), "EventType")]
-    [JsonSubtypes.KnownSubType(typeof(Transaction), EventType.Transaction)]
-    [JsonSubtypes.KnownSubType(typeof(NFTMint), EventType.NFTMint)]
-    [JsonSubtypes.KnownSubType(typeof(NFTTransfer), EventType.NFTTransfer)]
-    [JsonSubtypes.KnownSubType(typeof(NFTBurn), EventType.NFTBurn)]
-    [JsonSubtypes.KnownSubType(typeof(PoolOpen), EventType.PoolOpen)]
-    [JsonSubtypes.KnownSubType(typeof(PoolVote), EventType.PoolVote)]
+    [JsonSubtypes.KnownSubType(typeof(Transaction), nameof(EventType.Transaction))]
+    [JsonSubtypes.KnownSubType(typeof(NFTMint), nameof(EventType.NFTMint))]
+    [JsonSubtypes.KnownSubType(typeof(NFTTransfer), nameof(EventType.NFTTransfer))]
+    [JsonSubtypes.KnownSubType(typeof(NFTBurn), nameof(EventType.NFTBurn))]
+    [JsonSubtypes.KnownSubType(typeof(PoolOpen), nameof(EventType.PoolOpen))]
+    [JsonSubtypes.KnownSubType(typeof(PoolVote), nameof(EventType.PoolVote))]
     public class BaseBlockChainEvent
     {
+        [JsonConverter(typeof(SmartEnumNameConverter<EventType, int>))]
         public EventType EventType { get; set; }
 
         public User ActionOwner { get; set; }
@@ -83,21 +86,21 @@ namespace Unichain.Core
         {
             switch (evtype)
             {
-                case EventType.Transaction:
+                case var _ when evtype == EventType.Transaction:
                     return typeof(Transaction);
-                case EventType.NFTTransfer:
+                case var _ when evtype == EventType.NFTTransfer:
                     return typeof(NFTTransfer);
-                case EventType.NFTBurn:
+                case var _ when evtype == EventType.NFTBurn:
                     return typeof(NFTBurn);
-                case EventType.NFTMint:
+                case var _ when evtype == EventType.NFTMint:
                     return typeof(NFTMint);
-                case EventType.PoolOpen:
+                case var _ when evtype == EventType.PoolOpen:
                     return typeof(PoolOpen);
-                case EventType.PoolVote:
+                case var _ when evtype == EventType.PoolVote:
                     return typeof(PoolVote);
-                case EventType.DocumentSubmit:
+                case var _ when evtype == EventType.DocumentSubmit:
                     break;
-                case EventType.MessageSendUser:
+                case var _ when evtype == EventType.MessageSendUser:
                     return typeof(MessageSendUser);
                 default:
                     return typeof(Transaction);

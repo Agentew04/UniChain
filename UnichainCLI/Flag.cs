@@ -21,8 +21,8 @@
 
         public Flag(string name, string simple)
         {
-            _Simplified = simple;
-            _Name = name;
+            _Simplified = "-"+simple;
+            _Name = "--"+name;
         }
     }
 }

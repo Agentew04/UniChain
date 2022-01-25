@@ -35,10 +35,10 @@ public class Program
             if (Commands.ContainsKey(args[0]))
             {
                 // CHECK IF IS ADD
-                bool hasType = Utils.TryGetArgument(args, new("type", "t"), out string typestr);
+                bool hasType = Utils.TryGetArgument(args, new("type", "t"), out string typeStr);
                 if (args[0]=="add" && hasType)
                 {
-                    ShowHelp(args[0],Utils.ParseEventType(typestr));
+                    ShowHelp(args[0],EventType.FromCLIString(typeStr));
                 }
                 else ShowHelp(args[0]);
             }
@@ -103,7 +103,7 @@ public class Program
             #endregion
             #region add
             case "add":
-
+                Add.Exec(args,path);
                 break;
             #endregion
             #region get
@@ -124,44 +124,44 @@ public class Program
     
     public static void ShowAddHelp(EventType type)
     {
-        switch (type)
+        switch (type.Name)
         {
-            case EventType.Transaction:
+            case nameof(EventType.Transaction):
                 Utils.Print(@"
 Flags for Transaction event:
       --amount   => It's the amount of money that will be sent
       --receiver => The address that will receive the money");
                 break;
-            case EventType.NFTTransfer:
+            case nameof(EventType.NFTTransfer):
                 Utils.Print(@"
 Flags for NFT Transfer event:
   -i  --id       => The Id(Guid) of the NFT that will be transferred
       --receiver => The address that will receive the NFT");
                 break;
-            case EventType.NFTBurn:
+            case nameof(EventType.NFTBurn):
                 Utils.Print(@"
 Flags for NFT Burn event:
   -i  --id => The Id(Guid) of the NFT that will be burned");
                 break;
-            case EventType.NFTMint:
+            case nameof(EventType.NFTMint):
                 Utils.Print(@"
 Flags for NFT Mint event:
   -m  --meta => The path to the .json file containing the metadata");
                 break;
-            case EventType.PoolOpen:
+            case nameof(EventType.PoolOpen):
                 Utils.Print(@"
 Flags for Pool Open event:
   -m  --meta => The path to the .json file containing the metadata");
                 break;
-            case EventType.PoolVote:
+            case nameof(EventType.PoolVote):
                 Utils.Print(@"
 Flags for the Pool Vote event:
   -i  --id   => The Id(Guid) of the Pool that will receive the vote
   -v  --vote => The index of the vote cast");
                 break;
-            case EventType.DocumentSubmit:
+            case nameof(EventType.DocumentSubmit):
                 break;
-            case EventType.MessageSendUser:
+            case nameof(EventType.MessageSendUser):
                 break;
             default:
                 break;
@@ -172,7 +172,7 @@ Flags for the Pool Vote event:
     {
         if(subcommand == "add" && type != null)
         {
-            ShowAddHelp(type.Value);
+            ShowAddHelp(type);
             return;
         }
         Utils.Print("Welcome to the UniChain CLI Helper!");
@@ -186,7 +186,7 @@ Mandatory flags for 'add' sub-command:
                      ['transaction', 'nftmint', 'nfttransfer', 'nftburn',
                       'poolopen', 'poolvote', 'msgsenduser', 'msgsendgroup',
                       'docsubmit']");
-                if (type != null) ShowAddHelp(type.GetValueOrDefault());
+                if (type != null) ShowAddHelp(type);
                 break;
             case "print":
                 Utils.Print(@"

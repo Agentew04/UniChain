@@ -1,5 +1,6 @@
 ﻿using Ionic.Zip;
 using Newtonsoft.Json;
+using SimpleBase;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,9 +11,9 @@ using Unichain.Core;
 
 namespace Unichain.Parsing
 {
-    public class BlockchainParser
+    public class BlockchainParser : IDisposable
     {
-        private readonly List<Stream> streams = new();
+        private readonly List<IDisposable> streams = new();
 
         /// <summary>
         /// Serializes a blockchain with AES encryption(2048 key and block size)
@@ -24,7 +25,9 @@ namespace Unichain.Parsing
         {
             bool isencrypted = !(auth == null || auth.Key == null || auth.Key == Array.Empty<byte>());
             MemoryStream memoryStream = new();
+            streams.Add(memoryStream);
             ZipFile zipfile = new();
+            streams.Add(zipfile);
             AddBlocks(zipfile, blockchain.Chain);
             AddBlockchainInfo(zipfile, blockchain);
             zipfile.Save(memoryStream);
@@ -52,6 +55,8 @@ namespace Unichain.Parsing
         public Blockchain DeserializeBlockchain(Stream stream)
         {
             ZipFile zipFile = ZipFile.Read(stream);
+            streams.Add(stream);
+            streams.Add(zipFile);
             var (diff, reward) = GetBlockchainInfo(zipFile);
             var blockchain = new Blockchain(1)
             {
@@ -81,11 +86,12 @@ namespace Unichain.Parsing
                 var (sector, subindex) = GetSector(i);
                 MemoryStream blockStream = SerializeBlock(chain[i]);
                 entries.Add(zipfile.AddEntry($"chain\\{sector}\\{subindex}.block", blockStream));
+                streams.Add(blockStream);
             }
             return entries;
         }
 
-        private static IEnumerable<Block> GetBlocks(ZipFile zipfile)
+        private IEnumerable<Block> GetBlocks(ZipFile zipfile)
         {
             Regex isBlock = new(@"^chain\/[0-9|a-f]+\/\d+\.block$");
             Regex getSector = new(@"(?<=chain\/)[0-9|a-f]+(?=\/\d+\.block$)");
@@ -94,7 +100,8 @@ namespace Unichain.Parsing
             Queue<ZipEntry> queue = new(blocks);
             while (queue.Count > 0)
             {
-                using MemoryStream ms = new();
+                MemoryStream ms = new();
+                streams.Add(ms); //was using; here
                 // must extract to memory
                 queue.Dequeue().Extract(ms);
                 yield return DeserializeBlock(ms);
@@ -110,13 +117,14 @@ namespace Unichain.Parsing
         private ZipEntry AddBlockchainInfo(ZipFile zipfile, Blockchain blockchain)
         {
             MemoryStream memoryStream = new();
-            streams.Add(memoryStream);
             BinaryWriter binaryWriter = new(memoryStream);
             binaryWriter.Write(blockchain.Difficulty);
             binaryWriter.Write(blockchain.Reward);
             binaryWriter.Flush();
             memoryStream.Seek(0, SeekOrigin.Begin);
             var entry = zipfile.AddEntry("info.bin", memoryStream);
+            streams.Add(memoryStream);
+            streams.Add(binaryWriter);
             return entry;
         }
 
@@ -143,7 +151,7 @@ namespace Unichain.Parsing
         {
             MemoryStream blockStream = new();
             using MemoryStream infoMStream = new();
-            using BinaryWriter binaryWriter = new(infoMStream);
+            using BinaryWriter binaryWriter = new(infoMStream); // i think these can stay disposed here
             binaryWriter.Write(block.Index);
             binaryWriter.Write(block.Timestamp);
             binaryWriter.Write(block.Nonce);
@@ -157,7 +165,7 @@ namespace Unichain.Parsing
             List<string> events = new();
             if (block.Events != null)
                 foreach (var @event in block.Events)
-                    events.Add(GetBase64DataFromEvent(@event));
+                    events.Add(GetJsonDataFromEvent(@event));
             var eventsjson = JsonConvert.SerializeObject(events);
             blockfile.AddEntry("events.json", eventsjson);
 
@@ -191,9 +199,8 @@ namespace Unichain.Parsing
             List<BaseBlockChainEvent> events = new();
             foreach (var eventdata in eventdatalist)
             {
-                byte[] data = Convert.FromBase64String(eventdata);
-                var json = Encoding.UTF8.GetString(data, 0, data.Length);
-                events.Add(JsonConvert.DeserializeObject<BaseBlockChainEvent>(json));
+                events.Add(JsonConvert.DeserializeObject<BaseBlockChainEvent>(eventdata));
+                // because of the compression, plaintext is the best way to go
             }
             return new Block()
             {
@@ -211,11 +218,15 @@ namespace Unichain.Parsing
         /// </summary>
         /// <param name="e">The event to be converted</param>
         /// <returns>A base64 string</returns>
-        private static string GetBase64DataFromEvent(BaseBlockChainEvent e)
+        private static string GetJsonDataFromEvent(BaseBlockChainEvent e)
         {
             var json = e.ToString();
-            byte[] bytes = Encoding.UTF8.GetBytes(json);
-            return Convert.ToBase64String(bytes);
+            return json;
+            // plain text is better than encoded because of the compression
+            // or idk, i tested and this was better than the others
+            //byte[] bytes = Encoding.UTF8.GetBytes(json);
+            //return Convert.ToBase64String(bytes);
+            //return Base85.Z85.Encode(bytes);
         }
 
 
@@ -233,6 +244,21 @@ namespace Unichain.Parsing
             return (sectorHex, subindex);
         }
 
+        public void Dispose()
+        {
+            foreach (var disposable in streams)
+            {
+                try
+                {
+                    disposable.Dispose();
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+            }
+            GC.SuppressFinalize(this);
+        }
         #endregion
     }
 }

@@ -1,3 +1,4 @@
+using System;
 
 namespace Unichain.Events
 {
@@ -20,7 +21,7 @@ namespace Unichain.Events
         /// An array of options that can be chosen
         /// </summary>
         /// <value></value>
-        public string[] Options { get; set; } = new string[0];
+        public string[] Options { get; set; } = Array.Empty<string>();
 
         /// <summary>
         /// The amount of currency paid to vote in 
