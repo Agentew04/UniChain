@@ -1,4 +1,6 @@
 ﻿using Ardalis.SmartEnum;
+using System;
+using Unichain.Events;
 
 namespace Unichain.Core
 {
@@ -18,6 +20,32 @@ namespace Unichain.Core
 
         private EventType(string name, int value) : base(name, value)
         {
+        }
+
+        public static Type ToType(EventType type)
+        {
+            switch (type)
+            {
+                case var _ when type == Transaction:
+                    return typeof(Transaction);
+                case var _ when type == NFTTransfer:
+                    return typeof(NFTTransfer);
+                case var _ when type == NFTBurn:
+                    return typeof(NFTBurn);
+                case var _ when type == NFTMint:
+                    return typeof(NFTMint);
+                case var _ when type == PoolOpen:
+                    return typeof(PoolOpen);
+                case var _ when type == PoolVote:
+                    return typeof(PoolVote);
+                case var _ when type == DocumentSubmit:
+                    break;
+                case var _ when type == MessageSendUser:
+                    return typeof(MessageSendUser);
+                case var _ when type == MessageSendGroup:
+                    break;
+            }
+            return null;
         }
 
         public static EventType FromCLIString(string input) => input switch

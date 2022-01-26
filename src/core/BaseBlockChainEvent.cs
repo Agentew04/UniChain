@@ -81,31 +81,5 @@ namespace Unichain.Core
         {
             return JsonConvert.SerializeObject(this);
         }
-
-        public static Type ToType(EventType evtype)
-        {
-            switch (evtype)
-            {
-                case var _ when evtype == EventType.Transaction:
-                    return typeof(Transaction);
-                case var _ when evtype == EventType.NFTTransfer:
-                    return typeof(NFTTransfer);
-                case var _ when evtype == EventType.NFTBurn:
-                    return typeof(NFTBurn);
-                case var _ when evtype == EventType.NFTMint:
-                    return typeof(NFTMint);
-                case var _ when evtype == EventType.PoolOpen:
-                    return typeof(PoolOpen);
-                case var _ when evtype == EventType.PoolVote:
-                    return typeof(PoolVote);
-                case var _ when evtype == EventType.DocumentSubmit:
-                    break;
-                case var _ when evtype == EventType.MessageSendUser:
-                    return typeof(MessageSendUser);
-                default:
-                    return typeof(Transaction);
-            }
-            return typeof(Transaction);
-        }
     }
 }
