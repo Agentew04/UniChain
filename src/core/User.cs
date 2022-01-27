@@ -28,6 +28,15 @@ namespace Unichain.Core
             }
 
         }
+        public User(string privateKey)
+        {
+            PrivateKey = new()
+            {
+                Key = privateKey
+            };
+            Address address = PrivateKey.GetAddress();
+        }
+
 
         public PrivateKey GetPrivateKey()
         {

@@ -44,6 +44,7 @@ namespace Unichain.CLI.Commands
                 //Utils.Print()
                 return 3;
             }
+            User user = new(privkey);
             EventType eventType = EventType.FromCLIString(typeStr);
             
             switch (eventType)
