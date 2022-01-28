@@ -59,7 +59,8 @@ namespace Unichain
 
         /// <summary>
         /// Adds a new event to the pending transactions list
-        /// /// </summary>
+        /// </summary>
+        /// <exception cref="InvalidTransactionException">Thrown when the transaction is invalid</exception>
         public void AddEvent(BaseBlockChainEvent e)
         {
             //special checks
@@ -74,13 +75,12 @@ namespace Unichain
                     throw new InvalidTransactionException("Cannot add a transaction to the network");
                 }
             }
-
-
             //add to the pending transactions
             if (e.IsValid(this))
             {
                 PendingTransactions.Add(e);
             }
+            else throw new InvalidTransactionException("Invalid transaction!");
         }
         public void AddEvents(params BaseBlockChainEvent[] events)
         {
@@ -97,6 +97,8 @@ namespace Unichain
         /// in the blockchain
         /// </summary>
         /// <param name="minerAddress">The address that will receive all the rewards</param>
+        /// <exception cref="ArgumentNullException">Throuw when the miner Address is null</exception>
+        /// <exception cref="InvalidTransactionException">Thrown when the block made is not valid</exception>
         public void MinePendingTransactions(Address minerAddress)
         {
             if (minerAddress.IsNull()) { throw new ArgumentNullException("The miner address is null!", new NullAddressException()); }

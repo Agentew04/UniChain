@@ -4,6 +4,7 @@ using System;
 using System.Security.Cryptography;
 using System.Text;
 using Unichain.Core;
+using Unichain.Exceptions;
 
 namespace Unichain.Events
 {
@@ -102,7 +103,7 @@ namespace Unichain.Events
         {
             if (user.Address != this.Owner)
             {
-                throw new Exception("Invalid key");
+                throw new InvalidKeyException();
             }
 
             var hash = CalculateHash();

@@ -150,6 +150,7 @@ namespace Unichain
         /// </summary>
         /// <param name="nftId">The id to be searched</param>
         /// <returns>A tuple with the current owner and if it has been burned of not</returns>
+        /// <exception cref="NFTNotFoundException">Thrown when a NFT is not found</exception>
         public (Address, bool) GetCurrentNFTOwner(Guid nftId)
         {
             //get NFTMint
@@ -200,6 +201,7 @@ namespace Unichain
         /// </summary>
         /// <param name="nftId">The id to be searched</param>
         /// <returns>An IEnumerable containing no duplicates</returns>
+        /// <exception cref="NFTNotFoundException">Thrown when a NFT is not found</exception>
         public IEnumerable<Address> GetNFTOwners(Guid nftId)
         {
             //get NFTMint
@@ -252,6 +254,7 @@ namespace Unichain
         /// </summary>
         /// <param name="nftId">The id to be searched</param>
         /// <returns>An NFT object</returns>
+        /// <exception cref="NFTNotFoundException">Thrown when a NFT is not found</exception>
         public NFT GetNFT(Guid nftId)
         {
             //get NFTMint

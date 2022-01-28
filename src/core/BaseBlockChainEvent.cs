@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
 using Unichain.Events;
+using Unichain.Exceptions;
 
 namespace Unichain.Core
 {
@@ -61,6 +62,7 @@ namespace Unichain.Core
         /// Sign the current event
         /// </summary>
         /// <param name="privateKey">The private key used to sign the transaction</param>
+        /// <exception cref="InvalidKeyException"></exception>
         public virtual void SignEvent(User user) { throw new NotImplementedException(); }
 
         /// <summary>
