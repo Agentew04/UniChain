@@ -1,27 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Unichain.Core;
+﻿using Unichain.Core;
 
 namespace Unichain.CLI.Commands
 {
     internal class Mine
     {
-        internal static void Exec(string[] args, string path)
+        internal static int Exec(string[] args, string path)
         {
             var bc = Utils.ParseBlockchain(path);
+            if (bc == null) return 4;
+
             var isaddrfound = Utils.TryGetArgument(args, new()
             {
                 Name = "address",
                 Simplified = "a"
-            },out string mineraddress);
+            }, out string mineraddress);
             if (!isaddrfound)
             {
                 Utils.Print("Please provide a address to receive the miner reward!");
-                Environment.Exit(5);
-                return;
+                return 1; //bad command
             }
             Utils.Print($"Mining with this address: {mineraddress}");
             bc.MinePendingTransactions(new Address(mineraddress));
@@ -29,7 +25,7 @@ namespace Unichain.CLI.Commands
 
             //save chain
             Utils.SaveBlockChain(path, bc);
-            Environment.Exit(0);
+            return 0;
         }
     }
 }

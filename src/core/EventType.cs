@@ -14,7 +14,7 @@ namespace Unichain.Core
         public static readonly EventType PoolVote = new("PoolVote", 5);
         public static readonly EventType MessageSendUser = new("MessageSendUser", 6);
         public static readonly EventType MessageSendGroup = new("MessageSendGroup", 7);
-        public static readonly EventType DocumentSubmit = new("DocumentSubmit",  8);
+        public static readonly EventType DocumentSubmit = new("DocumentSubmit", 8);
 
 
 
@@ -64,13 +64,13 @@ namespace Unichain.Core
 
     }
 }
-        //Transaction,
-        //NFTTransfer,
-        //NFTBurn,
-        //NFTMint,
-        //PoolOpen,
-        //PoolVote,
-        //PoolClose,
-        //DocumentSubmit,
-        //MessageSendUser,
-        //MessageSendGroup,
+//Transaction,
+//NFTTransfer,
+//NFTBurn,
+//NFTMint,
+//PoolOpen,
+//PoolVote,
+//PoolClose,
+//DocumentSubmit,
+//MessageSendUser,
+//MessageSendGroup,

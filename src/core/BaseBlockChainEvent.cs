@@ -1,7 +1,6 @@
 ﻿using Ardalis.SmartEnum.JsonNet;
 using JsonSubTypes;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using System;
 using Unichain.Events;
 using Unichain.Exceptions;

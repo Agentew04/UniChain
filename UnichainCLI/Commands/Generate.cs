@@ -25,7 +25,7 @@ namespace Unichain.CLI.Commands
                     for (int i = 0; i < number; i++)
                     {
                         User user = new();
-                        if (!isdump) Utils.Print($"User nº {i+1} - \n    PrivateKey: {user.GetPrivateKey().Key}\n    PublicKey: {user.Address}");
+                        if (!isdump) Utils.Print($"User nº {i + 1} - \n    PrivateKey: {user.GetPrivateKey().Key}\n    PublicKey: {user.Address}");
                         users.Add((user, i));
                     }
                     if (isdump)

@@ -1,5 +1,4 @@
-﻿using Unichain.Core;
-using Unichain.Parsing;
+﻿using Unichain.Parsing;
 
 namespace Unichain.CLI
 {
@@ -124,15 +123,14 @@ namespace Unichain.CLI
             }
         }
 
-        public static Blockchain ParseBlockchain(string path)
+        public static Blockchain? ParseBlockchain(string path)
         {
             using BlockchainParser parser = new();
             using FileStream stream = new(path, FileMode.Open);
             Blockchain blockchain = parser.DeserializeBlockchain(stream);
             if (blockchain == null)
             {
-                Utils.Print("Failed to load blockchain!");
-                Environment.Exit(3);
+                Print("Failed to load blockchain!");
                 return null;
             }
             return blockchain;

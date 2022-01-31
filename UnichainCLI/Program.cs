@@ -1,8 +1,5 @@
-﻿using Newtonsoft.Json;
-using System.Text;
-using Unichain.CLI.Commands;
+﻿using Unichain.CLI.Commands;
 using Unichain.Core;
-using Unichain.Parsing;
 
 namespace Unichain.CLI;
 
@@ -20,6 +17,8 @@ public class Program
         { "get", true },
         { "print", true },
     };
+    public static int ExitCode { get; set; } = 0;
+    public static bool IsCommand { get; set; }
 
     public static void Main(string[] args)
     {
@@ -28,24 +27,22 @@ public class Program
             Console.WriteLine("Type -h for help");
             return;
         }
+        IsCommand = Commands.ContainsKey(args[0]);
 
         // CHECKING FOR HELP
-        if (Utils.HasFlag(args, new("help","h")))
+        if (Utils.HasFlag(args, new("help", "h")))
         {
-            if (Commands.ContainsKey(args[0]))
+            if (IsCommand)
             {
                 // CHECK IF IS ADD
                 bool hasType = Utils.TryGetArgument(args, new("type", "t"), out string typeStr);
-                if (args[0]=="add" && hasType)
+                if (args[0] == "add" && hasType)
                 {
-                    ShowHelp(args[0],EventType.FromCLIString(typeStr));
+                    ShowHelp(args[0], EventType.FromCLIString(typeStr));
                 }
                 else ShowHelp(args[0]);
             }
-            else
-            {
-                ShowHelp();
-            }
+            else ShowHelp();
             return;
         }
 
@@ -77,8 +74,6 @@ public class Program
             }
         }
 
-
-
         // CHECK FOR PATH AVAILABILITY
         if (!ispathinput)
         {
@@ -87,41 +82,19 @@ public class Program
             return;
         }
 
-
         // CHECKING OTHER SUB COMMANDS
-        switch (args[0])
+        ExitCode = args[0] switch
         {
-            #region mine
-            case "mine":
-                Mine.Exec(args,path);
-                break;
-            #endregion
-            #region print
-            case "print":
-                Print.Exec(args, path);
-                break;
-            #endregion
-            #region add
-            case "add":
-                Add.Exec(args,path);
-                break;
-            #endregion
-            #region get
-            case "get":
-                Get.Exec(args, path);
-                break;
-            #endregion
-            default:
-                break;
-        }
+            "mine" => Mine.Exec(args, path),
+            "print" => Print.Exec(args, path),
+            "add" => Add.Exec(args, path),
+            "get" => Get.Exec(args, path),
+            _ => throw new Exception("Invalid command!")
+        };
 
-
-
-
-
-        Environment.Exit(0);
+        Environment.Exit(ExitCode);
     }
-    
+
     public static void ShowAddHelp(EventType type)
     {
         switch (type.Name)
@@ -130,7 +103,7 @@ public class Program
                 Utils.Print(@"
 Flags for Transaction event:
       --amount   => It's the amount of money that will be sent
-      --receiver => The address that will receive the money");
+  -r  --receiver => The address that will receive the money");
                 break;
             case nameof(EventType.NFTTransfer):
                 Utils.Print(@"
@@ -170,7 +143,7 @@ Flags for the Pool Vote event:
 
     public static void ShowHelp(string subcommand = "", EventType? type = null)
     {
-        if(subcommand == "add" && type != null)
+        if (subcommand == "add" && type != null)
         {
             ShowAddHelp(type);
             return;
@@ -194,8 +167,6 @@ Possible flags for 'Utils.Print' sub-command:
   -f  --file    => Path to the json file that the blockchain is stored
   -d  --dump    => Dumps the output to a file
   -x  --hex     => Utils.Prints out the chain in hexadecimal(JSON text bytes)
-      --binary  => Utils.Prints out the chain in binary(JSON text bytes)
-      --octal   => Utils.Prints out the chain in octal(JSON text bytes)
   -b  --base64  => Utils.Prints out the chain in base 64(JSON text bytes)");
                 break;
             case "mine":
@@ -221,7 +192,8 @@ Possible flags and options for 'get' sub-command:
             case "cache":
                 Utils.Print(@"
 Possible flags for 'cache' sub-command:
-  ");
+  -m  --meta    => Calculate and cache just NFTs and Pools metadata 
+  -b  --balance => Calculate and cache just the balance of all addresses");
                 break;
             case "create":
                 Utils.Print(@"
@@ -231,9 +203,10 @@ Possible flags for 'create' sub-command:
             default:
                 Utils.Print(@"
 Possible arguments and sub-commands:
+      add      => Add a event to the pending transactions
+      cache    => Calculates and caches and blockchain information
       create   => Creates a new blockchain in a file
       connect  => Connects the current pc to the network
-      add      => Add a event to the pending transactions
       mine     => Mine all pending transactions
       generate => Generate a number of key pairs (Users and Addresses)
       get      => Search for something inside the blockchain

@@ -1,33 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Unichain.Core;
+﻿using Unichain.Core;
 
 namespace Unichain.CLI.Commands
 {
     internal class Get
     {
-        internal static void Exec(string[] args, string path)
+        internal static int Exec(string[] args, string path)
         {
             var bc = Utils.ParseBlockchain(path);
-            bool isbalance = args.Contains("--balance");
-            bool isnft = args.Contains("--nft");
+            if (bc == null) return 4; // bad blockchain
+
+            bool isbalance = Utils.HasFlag(args, new("balance", ""));
+            bool isnft = Utils.HasFlag(args, new("nft", ""));
             bool hasaddress = Utils.TryGetArgument(args, new("address", "a"), out string addressStr);
             Address address = new(addressStr);
             if (hasaddress)
             {
                 if (isbalance)
                 {
-                    Utils.Print($"{bc.GetBalance(address)}");
-                    Environment.Exit(0);
+                    Utils.Print($"{bc?.GetBalance(address)}");
+                    return 0;
                 }
                 if (isnft)
                 {
-                    throw new NotImplementedException();
+                    return 6;
                 }
             }
+            return 0;
         }
     }
 }
