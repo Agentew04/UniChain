@@ -49,9 +49,6 @@ Console.WriteLine(blockchain.GetBalance(currentUser.Address));
 You can download the latest CLI executable version [here](https://github.com/Agentew04/Unichain/releases/latest).
 After you installed it, you can add the folder containing the `.exe` to your system PATH (if you don't know how read [this](https://docs.microsoft.com/en-us/previous-versions/office/developer/sharepoint-2010/ee537574(v=office.14)#to-add-a-path-to-the-path-environment-variable)).
 
-### Desktop App
-
-The app has not been developed yet
 Sample usage:
 ```
 ## Creating a new blockchain
@@ -64,6 +61,10 @@ unichain mine -h OR unichain --help  ==>  sub-command specific help
 unichain print --base64  ==> Prints out the entire blockchain in Base-64 format
 unichain print --dump  ==> Dumps all output text to a file
 ```
+
+### Desktop App
+
+Currently, the desktop is WIP.
 
 ## Support
 
