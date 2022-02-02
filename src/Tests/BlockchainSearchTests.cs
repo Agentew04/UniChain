@@ -147,7 +147,7 @@ namespace Unichain.Tests
         [Fact]
         public void Get_amount_of_votes_in_option()
         {
-            var (id, address) = PrepareVoteEnvironment();
+            var (id, _) = PrepareVoteEnvironment();
 
             var vote = _sut.GetVote(id, 1);
             var expected = 2;

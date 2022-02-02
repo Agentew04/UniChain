@@ -34,7 +34,7 @@ namespace Unichain.Core
             {
                 Key = privateKey
             };
-            Address address = PrivateKey.GetAddress();
+            Address = PrivateKey.GetAddress();
         }
 
 
