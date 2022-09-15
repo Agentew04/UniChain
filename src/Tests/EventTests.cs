@@ -41,10 +41,9 @@ namespace Unichain.Tests
         [Fact]
         public void Transaction_is_valid()
         {
-            User user1 = new();
-            Address address = new();
+            User user1 = new(), user2 = new();
 
-            Transaction transaction = new(user1, address, 10);
+            Transaction transaction = new(user1, user2.Address, 10);
             transaction.SignEvent(user1);
             _sut.MinePendingTransactions(user1.Address);
             Assert.True(_sut.IsValid());

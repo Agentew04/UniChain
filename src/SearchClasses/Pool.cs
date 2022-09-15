@@ -7,7 +7,7 @@ namespace Unichain
 {
     public class Pool
     {
-        public Address Owner { get; set; }
+        public string Owner { get; set; }
         public Guid PoolId { get; set; }
         // <summary>
         /// The name for this pool

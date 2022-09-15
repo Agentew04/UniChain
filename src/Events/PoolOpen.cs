@@ -11,7 +11,7 @@ namespace Unichain.Events
     {
         #region Variables
 
-        public Address Owner { get; set; }
+        public string Owner { get; set; }
         public Guid PoolId { get; set; }
         public PoolMetadata Metadata { get; set; }
 
@@ -36,7 +36,7 @@ namespace Unichain.Events
         {
             if (blockchain.GetPoolById(PoolId) != null) return false;
             if (Signature == null) return false;
-            if (Owner.IsNull() || Metadata == null) return false;
+            if (string.IsNullOrWhiteSpace(Owner) || Metadata == null) return false;
             if (!VerifySignature()) return false;
             return true;
         }
@@ -44,7 +44,7 @@ namespace Unichain.Events
         public override void SignEvent(User user)
         {
             //check is the owner making the event
-            if (user != this.Owner)
+            if (user.Address != Owner)
             {
                 throw new InvalidKeyException();
             }

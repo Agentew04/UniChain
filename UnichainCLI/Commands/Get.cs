@@ -11,8 +11,7 @@ namespace Unichain.CLI.Commands
 
             bool isbalance = Utils.HasFlag(args, new("balance", ""));
             bool isnft = Utils.HasFlag(args, new("nft", ""));
-            bool hasaddress = Utils.TryGetArgument(args, new("address", "a"), out string addressStr);
-            Address address = new(addressStr);
+            bool hasaddress = Utils.TryGetArgument(args, new("address", "a"), out string address);
             if (hasaddress)
             {
                 if (isbalance)

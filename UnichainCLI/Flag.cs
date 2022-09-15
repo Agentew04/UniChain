@@ -2,27 +2,14 @@
 {
     public struct Flag
     {
-        private string _Simplified;
 
-        public string Simplified
+        public string Simplified { get; init; }
+        public string Full { get; init; }
+
+        public Flag(string fullname, string simpleName)
         {
-            get { return _Simplified; }
-            set { _Simplified = "-" + value; }
-        }
-
-
-        private string _Name;
-
-        public string Name
-        {
-            get { return _Name; }
-            set { _Name = "--" + value; }
-        }
-
-        public Flag(string name, string simple)
-        {
-            _Simplified = "-" + simple;
-            _Name = "--" + name;
+            Simplified = "-" + simpleName;
+            Full = "--" + fullname;
         }
     }
 }

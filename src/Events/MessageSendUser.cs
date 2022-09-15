@@ -5,16 +5,17 @@ namespace Unichain.Events
 {
     public class MessageSendUser : BaseBlockChainEvent
     {
-        public Address SenderAddress { get; set; }
-        public Address ReceiverAddress { get; set; }
+        public string SenderAddress { get; set; }
+        public string ReceiverAddress { get; set; }
 
         public string Message { get; set; }
 
-        public MessageSendUser(User sender, Address receiver, string message) : base(EventType.MessageSendUser, sender)
+        public MessageSendUser(User sender, string receiver, string message) : base(EventType.MessageSendUser, sender)
         {
             SenderAddress = sender.Address;
             ReceiverAddress = receiver;
-            Message = receiver.Encrypt(message);
+            //Message = receiver.Encrypt(message);
+            Message = message; // encrypt later!
         }
 
         public override string CalculateHash()

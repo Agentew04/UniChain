@@ -18,7 +18,7 @@ namespace Unichain.Events
         /// <summary>
         /// The Address that burned this NFT
         /// </summary>
-        public Address BurnerAddress { get; set; }
+        public string BurnerAddress { get; set; }
 
         #endregion
 

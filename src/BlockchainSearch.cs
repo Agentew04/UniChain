@@ -131,7 +131,7 @@ namespace Unichain
         /// <param name="poolId">The id that its going to be searched</param>
         /// <param name="voter">The Address to be looked up for</param>
         /// <returns>The index of the option voted</returns>
-        public int GetVoterOption(Guid poolId, Address voter)
+        public int GetVoterOption(Guid poolId, string voter)
         {
             var votes = GetVotes(poolId);
             var poolvote = Find<PoolVote>(poolvote => poolvote.PoolId == poolId && poolvote.VoterAddress == voter).FirstOrDefault();
@@ -151,7 +151,7 @@ namespace Unichain
         /// <param name="nftId">The id to be searched</param>
         /// <returns>A tuple with the current owner and if it has been burned of not</returns>
         /// <exception cref="NFTNotFoundException">Thrown when a NFT is not found</exception>
-        public (Address, bool) GetCurrentNFTOwner(Guid nftId)
+        public (string, bool) GetCurrentNFTOwner(Guid nftId)
         {
             //get NFTMint
             var nftMint = Find<NFTMint>(x => x.NFTId == nftId).FirstOrDefault();
@@ -190,7 +190,7 @@ namespace Unichain
         /// <param name="nftId">The Id to be searched</param>
         /// <param name="owner">The Address to be searched</param>
         /// <returns>The result of the operation</returns>
-        public bool IsNFTOwner(Guid nftId, Address owner)
+        public bool IsNFTOwner(Guid nftId, string owner)
         {
             var (address, _) = GetCurrentNFTOwner(nftId);
             return address == owner;
@@ -202,7 +202,7 @@ namespace Unichain
         /// <param name="nftId">The id to be searched</param>
         /// <returns>An IEnumerable containing no duplicates</returns>
         /// <exception cref="NFTNotFoundException">Thrown when a NFT is not found</exception>
-        public IEnumerable<Address> GetNFTOwners(Guid nftId)
+        public IEnumerable<string> GetNFTOwners(Guid nftId)
         {
             //get NFTMint
             var nftMint = Find<NFTMint>(x => x.NFTId == nftId).FirstOrDefault();
@@ -217,7 +217,7 @@ namespace Unichain
             var nftTransfers = Find<NFTTransfer>(x => x.NFTId == nftId);
 
             var transferOwners = nftTransfers.Select(x => x.ToAddress).Distinct();
-            var allOwners = new List<Address>() { nftMint.Owner }.Concat(transferOwners).Distinct();
+            var allOwners = new List<string>() { nftMint.Owner }.Concat(transferOwners).Distinct();
             return allOwners;
         }
 
@@ -226,7 +226,7 @@ namespace Unichain
         /// </summary>
         /// <param name="owner">The id to be searched</param>
         /// <returns>An IEnumerable of NFT objects</returns>
-        public IEnumerable<NFT> GetNFTsOwned(Address owner)
+        public IEnumerable<NFT> GetNFTsOwned(string owner)
         {
             //get all NFTMints
             var nftMints = Find<NFTMint>(x => x.Owner == owner);
@@ -304,7 +304,7 @@ namespace Unichain
         /// </summary>
         /// <param name="address">The address to be checked</param>
         /// <returns></returns>
-        public double GetBalance(Address address)
+        public double GetBalance(string address)
         {
             var transactions = Find<Transaction>(x => x.FromAddress == address || x.ToAddress == address);
             List<double> amounts = new();
@@ -338,7 +338,7 @@ namespace Unichain
         /// <param name="address"></param>
         /// <param name="amount"></param>
         /// <returns></returns>        
-        public bool HasEnoughBalance(Address address, double amount)
+        public bool HasEnoughBalance(string address, double amount)
         {
             var balance = GetBalance(address);
             return balance >= amount;

@@ -20,7 +20,7 @@ namespace Unichain.Events
         /// <summary>
         /// The Address of the Owner of this Token
         /// </summary>
-        public Address Owner { get; set; }
+        public string Owner { get; set; }
 
         /// <summary>
         /// The custom metadata for this Token
@@ -38,11 +38,11 @@ namespace Unichain.Events
         /// <param name="metadata">The metadata of this token</param>
         public NFTMint(User user, NFTMetadata metadata) : base(EventType.NFTMint, user)
         {
-            this.ActionOwner = user;
-            this.Timestamp = DateTime.UtcNow.Ticks;
-            this.NFTMetadata = metadata;
-            this.Owner = user.Address;
-            this.NFTId = Guid.NewGuid();
+            ActionOwner = user;
+            Timestamp = DateTime.UtcNow.Ticks;
+            NFTMetadata = metadata;
+            Owner = user.Address;
+            NFTId = Guid.NewGuid();
         }
 
         [JsonConstructor]
@@ -59,7 +59,7 @@ namespace Unichain.Events
         {
             if (blockchain.IsNFTMinted(NFTId)) return false;
             if (Signature == null) return false;
-            if (Owner.IsNull() || NFTMetadata == null) return false;
+            if (string.IsNullOrWhiteSpace(Owner) || NFTMetadata == null) return false;
             if (NFTMetadata.Name == null || NFTMetadata.Description == null) return false;
             if (NFTMetadata.ImageUrl == null) return false;
             if (!VerifySignature()) return false;

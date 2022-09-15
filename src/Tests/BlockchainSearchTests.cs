@@ -35,7 +35,7 @@ namespace Unichain.Tests
             return poolOpen1;
         }
 
-        public (Guid, Address) PrepareVoteEnvironment()
+        public (Guid, string) PrepareVoteEnvironment()
         {
             User user1 = new();
             User address1 = new();

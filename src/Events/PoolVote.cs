@@ -15,7 +15,7 @@ namespace Unichain.Events
 
         public int VoteIndex { get; set; }
 
-        public Address VoterAddress { get; set; }
+        public string VoterAddress { get; set; }
 
         public bool HasFee { get; set; }
         public Transaction SubEvent { get; set; }
@@ -73,7 +73,7 @@ namespace Unichain.Events
             if (blockchain.GetPoolById(PoolId) == null) return false;
             if (Signature == null) return false;
             if (VoteIndex < 0) return false;
-            if (VoterAddress.IsNull()) return false;
+            if (string.IsNullOrWhiteSpace(VoterAddress)) return false;
             if (Guid.Empty.Equals(PoolId)) return false;
             if (!VerifySignature()) return false;
             if (HasFee)
@@ -86,7 +86,7 @@ namespace Unichain.Events
 
         public override void SignEvent(User user)
         {
-            if (user != this.VoterAddress) throw new InvalidKeyException();
+            if (user.Address != VoterAddress) throw new InvalidKeyException();
 
             var hashTransaction = CalculateHash();
             var signature = user.SignMessage(hashTransaction);

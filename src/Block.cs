@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Unichain.Core;
 
 namespace Unichain
@@ -61,8 +62,8 @@ namespace Unichain
         /// <returns></returns>
         public string CalculateHash()
         {
-            //calculate sha512 hash using nftid, timestamp and burneraddress
-            var bytes = System.Text.Encoding.UTF8.GetBytes($"{Timestamp}-{PreviousHash ?? ""}-{JsonConvert.SerializeObject(Events)}-{Nonce}");
+            //calculate sha512 hash using timestamp, previous hash, nonce and events(json)
+            var bytes = Encoding.UTF8.GetBytes($"{Timestamp}-{PreviousHash ?? ""}-{JsonConvert.SerializeObject(Events)}-{Nonce}");
             using var hash = SHA512.Create();
             var hashedInputBytes = hash.ComputeHash(bytes);
 

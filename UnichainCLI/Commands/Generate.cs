@@ -6,12 +6,9 @@ namespace Unichain.CLI.Commands
     {
         internal static void Exec(string[] args)
         {
-            var foundnum = Utils.TryGetArgument(args, new()
-            {
-                Name = "number",
-                Simplified = "n"
-            }, out double number);
-            var isdump = args.Contains("-d") || args.Contains("--dump");
+            var foundnum = Utils.TryGetArgument(args, new("number", "n"), out double number);
+            var isdump = Utils.HasFlag(args, new("dump", "d"));
+            
             string dumppath = $"{Environment.CurrentDirectory}\\dumpfile-{DateTime.Now.Ticks}.yml";
             using (var stream = File.AppendText(dumppath))
             {
@@ -25,7 +22,7 @@ namespace Unichain.CLI.Commands
                     for (int i = 0; i < number; i++)
                     {
                         User user = new();
-                        if (!isdump) Utils.Print($"User nº {i + 1} - \n    PrivateKey: {user.GetPrivateKey().Key}\n    PublicKey: {user.Address}");
+                        if (!isdump) Utils.Print($"User nº {i + 1} - \n    PrivateKey: {user.PrivateKey}\n    PublicKey: {user.PublicKey}\n    Address: {user.Address}");
                         users.Add((user, i));
                     }
                     if (isdump)
@@ -36,7 +33,7 @@ namespace Unichain.CLI.Commands
                             string textchunk = "";
                             foreach (var user in userchunk)
                             {
-                                textchunk += $"{user.index}:\n privkey: {user.user.GetPrivateKey().Key}\n publkey: {user.user.Address}\n";
+                                textchunk += $"{user.index}:\n privkey: {user.user.PrivateKey}\n publkey: {user.user.PublicKey}\n addr: {user.user.Address}\n";
                             }
                             stream.Write(textchunk);
                         }

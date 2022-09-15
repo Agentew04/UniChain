@@ -11,7 +11,7 @@ namespace Unichain.CLI.Commands
 
             var isaddrfound = Utils.TryGetArgument(args, new()
             {
-                Name = "address",
+                Full = "address",
                 Simplified = "a"
             }, out string mineraddress);
             if (!isaddrfound)
@@ -20,7 +20,7 @@ namespace Unichain.CLI.Commands
                 return 1; //bad command
             }
             Utils.Print($"Mining with this address: {mineraddress}");
-            bc.MinePendingTransactions(new Address(mineraddress));
+            bc.MinePendingTransactions(mineraddress);
             Utils.Print($"Mined sucessfully! Received {bc.Reward} tokens");
 
             //save chain

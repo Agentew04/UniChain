@@ -44,7 +44,7 @@ namespace Unichain.CLI.Commands
 
             try
             {
-                user = new(privkey);
+                user = new(new PrivateKey(Convert.FromHexString(privkey)));
                 @event = typeStr switch
                 {
                     "transaction" => CreateTransaction(args, user),
@@ -85,10 +85,9 @@ namespace Unichain.CLI.Commands
             if (!Utils.TryGetArgument(args, new("receiver", "r"), out string receiverAddress)) return null;
             if (!Utils.TryGetArgument(args, new("amount", ""), out string amountString)) return null;
 
-            Address receiver = new(receiverAddress);
             double amount = Convert.ToDouble(amountString);
 
-            Transaction tx = new(user, receiver, amount);
+            Transaction tx = new(user, receiverAddress, amount);
             tx.SignEvent(user);
 
             return tx;
@@ -110,10 +109,8 @@ namespace Unichain.CLI.Commands
             if (!Utils.TryGetArgument(args, new("id", "i"), out string idstr)) return null;
             if (!Utils.TryGetArgument(args, new("receiver", ""), out string receiverAddr)) return null;
             if (!Guid.TryParse(idstr, out Guid id)) return null;
-
-            Address receiver = new(receiverAddr);
-
-            NFTTransfer tx = new(user, receiver, id);
+            
+            NFTTransfer tx = new(user, receiverAddr, id);
             tx.SignEvent(user);
             return tx;
         }

@@ -99,10 +99,10 @@ namespace Unichain
         /// <param name="minerAddress">The address that will receive all the rewards</param>
         /// <exception cref="ArgumentNullException">Throuw when the miner Address is null</exception>
         /// <exception cref="InvalidTransactionException">Thrown when the block made is not valid</exception>
-        public void MinePendingTransactions(Address minerAddress)
+        public void MinePendingTransactions(string minerAddress)
         {
-            if (minerAddress.IsNull()) { throw new ArgumentNullException("The miner address is null!", new NullAddressException()); }
-            PendingTransactions.Insert(0, new Transaction(new User(true), minerAddress, this.Reward)
+            if (string.IsNullOrWhiteSpace(minerAddress)) { throw new ArgumentNullException("The miner address is null!", new NullAddressException()); }
+            PendingTransactions.Insert(0, new Transaction(new User(), minerAddress, this.Reward)
             {
                 IsNetwork = true
             });

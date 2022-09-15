@@ -14,13 +14,13 @@ namespace Unichain.Events
         /// <summary>
         /// The Address that the coins will withdrawed
         /// </summary>
-        public Address FromAddress { get; set; }
+        public string FromAddress { get; set; }
 
 
         /// <summary>
         /// The receiver of the coins
         /// </summary>
-        public Address ToAddress { get; set; }
+        public string ToAddress { get; set; }
 
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Unichain.Events
         /// <param name="to">The target addres to receive the money</param>
         /// <param name="amount">The amount of money to be transferred</param>
         /// <returns></returns>
-        public Transaction(User user, Address to, double amount) : base(EventType.Transaction, user)
+        public Transaction(User user, string to, double amount) : base(EventType.Transaction, user)
         {
             EventType = EventType.Transaction;
             ActionOwner = user;
@@ -51,7 +51,7 @@ namespace Unichain.Events
         }
 
         [JsonConstructor]
-        public Transaction(Address FromAddress, Address ToAddress, double Amount,
+        public Transaction(string FromAddress, string ToAddress, double Amount,
             EventType EventType, long Timestamp, string Signature, bool IsNetwork) : base(EventType.Transaction, null)
         {
             this.FromAddress = FromAddress;
@@ -69,7 +69,7 @@ namespace Unichain.Events
 
         public override void SignEvent(User user)
         {
-            if (user != this.FromAddress)
+            if (user.Address != this.FromAddress)
             {
                 throw new InvalidKeyException();
             }
@@ -81,12 +81,7 @@ namespace Unichain.Events
 
         public override bool IsValid(Blockchain blockchain)
         {
-            //check addresses and amount
-            if (FromAddress.IsNetWork && !ToAddress.IsNetWork)
-            {
-                return true;
-            }
-            if (FromAddress.IsNull() || ToAddress.IsNull() || Amount <= 0)
+            if (string.IsNullOrWhiteSpace(FromAddress) || string.IsNullOrWhiteSpace(ToAddress) || Amount <= 0)
             {
                 return false;
             }

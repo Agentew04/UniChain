@@ -15,7 +15,7 @@ namespace Unichain
         /// <summary>
         /// The Address of the Owner of this Token
         /// </summary>
-        public Address Owner { get; set; }
+        public string Owner { get; set; }
 
         /// <summary>
         /// The custom metadata for this Token

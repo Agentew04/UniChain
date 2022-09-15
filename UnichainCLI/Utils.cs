@@ -7,16 +7,9 @@ namespace Unichain.CLI
 
         public static bool HasFlag(string[] args, Flag flag)
         {
-            if (args.Length == 0)
-            {
+            if (args==null || args.Length == 0)
                 return false;
-            }
-            if (args == null)
-            {
-                return false;
-            }
-            var result = args.Contains(flag.Name) || args.Contains(flag.Simplified);
-            return result;
+            return args.Any(x => x == flag.Full || x == flag.Simplified);
         }
 
         public static void Print(string s) => Console.WriteLine(s);
@@ -26,10 +19,10 @@ namespace Unichain.CLI
             result = "";
             int flagindex = 0;
             if (args == null || args.Length == 0) return false;
-            if (!(args.Contains(flag.Simplified) || args.Contains(flag.Name))) return false;
+            if (!(args.Contains(flag.Simplified) || args.Contains(flag.Full))) return false;
             for (int i = 0; i < args.Length; i++)
             {
-                if (args[i] == flag.Simplified || args[i] == flag.Name)
+                if (args[i] == flag.Simplified || args[i] == flag.Full)
                 {
                     flagindex = i;
                     break;
@@ -52,10 +45,10 @@ namespace Unichain.CLI
             string resultstr;
             int flagindex = 0;
             if (args == null || args.Length == 0) return false;
-            if (!(args.Contains(flag.Simplified) || args.Contains(flag.Name))) return false;
+            if (!(args.Contains(flag.Simplified) || args.Contains(flag.Full))) return false;
             for (int i = 0; i < args.Length; i++)
             {
-                if (args[i] == flag.Simplified || args[i] == flag.Name)
+                if (args[i] == flag.Simplified || args[i] == flag.Full)
                 {
                     flagindex = i;
                     break;

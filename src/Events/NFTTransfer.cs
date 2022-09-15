@@ -1,5 +1,4 @@
-﻿using NBitcoin;
-using System;
+﻿using System;
 using System.Security.Cryptography;
 using System.Text;
 using Unichain.Core;
@@ -13,13 +12,13 @@ namespace Unichain.Events
         /// <summary>
         /// The Address that the coins will withdrawed
         /// </summary>
-        public Address FromAddress { get; set; }
+        public string FromAddress { get; set; }
 
 
         /// <summary>
         /// The receiver of the coins
         /// </summary>
-        public Address ToAddress { get; set; }
+        public string ToAddress { get; set; }
 
 
         /// <summary>
@@ -37,7 +36,7 @@ namespace Unichain.Events
         /// <param name="fromAddress">Same of the <see cref="PubKey"/></param>
         /// <param name="toAddress">The Address of the receiver</param>
         /// <param name="tokenId">The Id of the token being transferred</param>
-        public NFTTransfer(User user, Address toAddress, Guid tokenId) : base(EventType.NFTTransfer, user)
+        public NFTTransfer(User user, string toAddress, Guid tokenId) : base(EventType.NFTTransfer, user)
         {
             ActionOwner = user;
             FromAddress = user.Address;
@@ -53,7 +52,7 @@ namespace Unichain.Events
         public override void SignEvent(User user)
         {
             //check is the owner making the transaction
-            if (user != this.FromAddress)
+            if (user.Address != FromAddress)
             {
                 throw new Exception("Invalid key");
             }
@@ -76,8 +75,8 @@ namespace Unichain.Events
             if (Signature == null) return false;
             if (NFTId == Guid.Empty) return false;
             if (NFTId == new Guid()) return false;
-            if (FromAddress.IsNull()) return false;
-            if (ToAddress.IsNull()) return false;
+            if (string.IsNullOrWhiteSpace(FromAddress)) return false;
+            if (string.IsNullOrWhiteSpace(ToAddress)) return false;
             if (!VerifySignature()) return false;
 
             return true;
