@@ -1,4 +1,6 @@
 using System;
+using System.Data.Common;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -9,7 +11,7 @@ namespace Unichain.Core;
 /// </summary>
 public class PrivateKey : IDisposable
 {
-    private static readonly ECCurve curve = ECCurve.NamedCurves.nistP256;
+    public static ECCurve Curve { get; } = ECCurve.NamedCurves.nistP256;
     private readonly ECDsa ecdsa;
     
     /// <summary>
@@ -22,7 +24,7 @@ public class PrivateKey : IDisposable
     /// </summary>
     public PrivateKey()
     {
-        var ecdsa = ECDsa.Create(curve);
+        ecdsa = ECDsa.Create(Curve);
         Key = ecdsa.ExportECPrivateKey();
     }
     
@@ -31,7 +33,7 @@ public class PrivateKey : IDisposable
     /// </summary>
     /// <param name="key">The bytes of the key in the ECPrivateKey structure</param>
     public PrivateKey(byte[] key) {
-        ecdsa = ECDsa.Create(curve);
+        ecdsa = ECDsa.Create(Curve);
         ecdsa.ImportECPrivateKey(key, out _);
         Key = key;
     }
@@ -94,6 +96,17 @@ public class PrivateKey : IDisposable
     public bool Verify(byte[] data, byte[] signature) {
         return ecdsa.VerifyData(data, signature, HashAlgorithmName.SHA512);
     }
+    public static bool operator ==(PrivateKey p1, PrivateKey p2) => p1.Key.SequenceEqual(p2.Key);
+    public static bool operator !=(PrivateKey p1, PrivateKey p2) => !(p1 == p2);
 
     public override string ToString() => Convert.ToHexString(Key);
+
+    public override bool Equals(object obj) {
+        return obj is PrivateKey key &&
+               Key.SequenceEqual(key.Key);
+    }
+
+    public override int GetHashCode() => Key.GetHashCode();
+
+
 }

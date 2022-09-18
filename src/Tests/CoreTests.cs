@@ -1,36 +1,55 @@
 ﻿#if DEBUG
+using System.Linq;
+using System.Security.Cryptography;
 using Unichain.Core;
 using Xunit;
 
-namespace Unichain.Tests
+namespace Unichain.Tests;
+
+public class CoreTests
 {
-    public class CoreTests
+    public CoreTests()
     {
-        // TODO CREATE TESTS
-        public CoreTests()
-        {
 
-        }
+    }
 
-        [Fact]
-        public void Create_address_from_string()
-        {
-            User user = new();
-            
-            Assert.True(user.Address == user.PublicKey.DeriveAddress());
-        }
+    [Fact]
+    public void Create_PrivateKey_from_bytes() {
+        PrivateKey p1 = new();
+        PrivateKey p2 = new(p1.Key);
 
-        [Fact]
-        public void User_signing_and_verifying()
-        {
-            User user = new();
-            string message = "Hello, world!";
+        Assert.True( p1 == p2 );
+    }
 
-            var signedmessage = user.SignMessage(message);
-            var result = user.VerifySignature(message, signedmessage);
 
-            Assert.True(result);
-        }
+    [Fact]
+    public void User_address_should_match_generated()
+    {
+        User user = new();
+        string userAddress = user.Address;
+        string generatedAddress = user.PublicKey.DeriveAddress();
+        
+        Assert.True( userAddress == generatedAddress );
+    }
+
+    [Fact]
+    public void User_signature_match_message()
+    {
+        User user = new();
+        string message = "Hello, world!";
+
+        var signature = user.SignMessage(message);
+        Assert.True(user.VerifySignature(message, signature));
+    }
+
+    [Fact]
+    public void Public_from_private_match_bytes() {
+        User user = new();
+
+        var publicBytes = user.PrivateKey.DerivePublicKeyBytes();
+        var publicKey = user.PrivateKey.DerivePublicKey().Key;
+
+        Assert.True(publicBytes.SequenceEqual(publicKey));
     }
 }
 #endif
