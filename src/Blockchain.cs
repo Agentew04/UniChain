@@ -22,7 +22,7 @@ namespace Unichain
         /// </summary>
         public double Reward { get; set; } = 100;
         /// <summary>
-        /// A list with all pending <see cref="Transaction"/>, <see cref="TokenCreation"/> and
+        /// A list with all pending <see cref="ITransaction"/>, <see cref="TokenCreation"/> and
         /// <see cref="TokenTransaction"/>.
         /// </summary>
         private IList<BaseBlockChainEvent> PendingTransactions = new List<BaseBlockChainEvent>();
@@ -64,13 +64,13 @@ namespace Unichain
         public void AddEvent(BaseBlockChainEvent e)
         {
             //special checks
-            if (e.GetType() == typeof(Transaction))
+            if (e.GetType() == typeof(ITransaction))
             {
-                if (((Transaction)e).FromAddress == "network")
+                if (((ITransaction)e).FromAddress == "network")
                 {
                     throw new InvalidTransactionException("Cannot add a transaction from the network");
                 }
-                if (((Transaction)e).ToAddress == "network")
+                if (((ITransaction)e).ToAddress == "network")
                 {
                     throw new InvalidTransactionException("Cannot add a transaction to the network");
                 }
@@ -102,7 +102,7 @@ namespace Unichain
         public void MinePendingTransactions(string minerAddress)
         {
             if (string.IsNullOrWhiteSpace(minerAddress)) { throw new ArgumentNullException("The miner address is null!", new NullAddressException()); }
-            PendingTransactions.Insert(0, new Transaction(new User(), minerAddress, this.Reward)
+            PendingTransactions.Insert(0, new ITransaction(new User(), minerAddress, this.Reward)
             {
                 IsNetwork = true
             });

@@ -12,7 +12,7 @@ namespace Unichain.Core
         public string Address { get; init; }
         
         [Newtonsoft.Json.JsonIgnore]
-        public PrivateKey PrivateKey { get; init; }
+        public PrivateKey? PrivateKey { get; init; }
         public PublicKey PublicKey { get; init; }
         
         /// <summary>
@@ -49,18 +49,20 @@ namespace Unichain.Core
         /// <summary>
         /// Signs the given string with the current Private Key
         /// </summary>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        public string SignMessage(string message)
+        /// <param name="str">The string that will be signed</param>
+        /// <returns>The signature in base64</returns>
+        public string SignString(string str)
         {
-            return PrivateKey.Sign(message);
+            if(PrivateKey is null)
+                throw new InvalidOperationException("PrivateKey is null for user " + Address);
+            return PrivateKey.Sign(str);
         }
         /// <summary>
         /// Verifies if the message matches the given signature
         /// </summary>
-        /// <param name="message"></param>
-        /// <param name="signature"></param>
-        /// <returns></returns>
+        /// <param name="message">The original message</param>
+        /// <param name="signature">The base64 signature</param>
+        /// <returns>A <see cref="bool"/> with the result</returns>
         public bool VerifySignature(string message, string signature)
         {
             return PublicKey.Verify(message, signature);

@@ -43,7 +43,7 @@ namespace Unichain.Tests
         {
             User user1 = new(), user2 = new();
 
-            Transaction transaction = new(user1, user2.Address, 10);
+            ITransaction transaction = new(user1, user2.Address, 10);
             transaction.SignEvent(user1);
             _sut.MinePendingTransactions(user1.Address);
             Assert.True(_sut.IsValid());

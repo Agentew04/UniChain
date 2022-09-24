@@ -306,7 +306,7 @@ namespace Unichain
         /// <returns></returns>
         public double GetBalance(string address)
         {
-            var transactions = Find<Transaction>(x => x.FromAddress == address || x.ToAddress == address);
+            var transactions = Find<ITransaction>(x => x.FromAddress == address || x.ToAddress == address);
             List<double> amounts = new();
             if (transactions == null || !transactions.Any())
             {

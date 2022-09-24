@@ -38,7 +38,7 @@ public class CoreTests
         User user = new();
         string message = "Hello, world!";
 
-        var signature = user.SignMessage(message);
+        var signature = user.SignString(message);
         Assert.True(user.VerifySignature(message, signature));
     }
 

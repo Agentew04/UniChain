@@ -77,7 +77,7 @@ namespace Unichain.Tests
             User user1 = new();
             User user2 = new();
 
-            Transaction transaction = new(user1, user2.Address, 20);
+            ITransaction transaction = new(user1, user2.Address, 20);
             transaction.SignEvent(user1);
             _sut.MinePendingTransactions(user1.Address);
             _sut.AddEvent(transaction);
@@ -95,7 +95,7 @@ namespace Unichain.Tests
             User user2 = new();
 
             _sut.MinePendingTransactions(user1.Address);
-            Transaction transaction = new(user1, user2.Address, 20);
+            ITransaction transaction = new(user1, user2.Address, 20);
             transaction.SignEvent(user1);
             _sut.AddEvent(transaction);
             _sut.MinePendingTransactions(user1.Address);

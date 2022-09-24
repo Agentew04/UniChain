@@ -5,98 +5,80 @@ using Unichain.Core;
 
 namespace Unichain.Events
 {
-    public class NFTTransfer : BaseBlockChainEvent
+    public class NFTTransfer : ITransaction
     {
-        #region Variables
-        //in hash
-        /// <summary>
-        /// The Address that the coins will withdrawed
-        /// </summary>
-        public string FromAddress { get; set; }
+        #region default properties
 
+        public User Actor { get; set; }
+        public double Fee { get; set; }
+        public long Timestamp { get; set; } = DateTime.UtcNow.Ticks;
+        public string TypeId { get; set; } = "transaction.nft.transfer";
+        public string? Signature { get; set; }
 
-        /// <summary>
-        /// The receiver of the coins
-        /// </summary>
-        public string ToAddress { get; set; }
+        #endregion
 
+        #region custom properties
 
         /// <summary>
-        /// The <see cref="NFTId"/> of the Token being transferred
+        /// The unique Id of the NFT that is going to be transfered.
         /// </summary>
         public Guid NFTId { get; set; }
 
+        /// <summary>
+        /// The address that will be the new owner of the NFT.
+        /// </summary>
+        public string ToAddress { get; set; }
+
         #endregion
 
-        #region Constructors
+        #region constructor
 
-        /// <summary>
-        /// Creates a new Token Transaction. 
-        /// </summary>
-        /// <param name="fromAddress">Same of the <see cref="PubKey"/></param>
-        /// <param name="toAddress">The Address of the receiver</param>
-        /// <param name="tokenId">The Id of the token being transferred</param>
-        public NFTTransfer(User user, string toAddress, Guid tokenId) : base(EventType.NFTTransfer, user)
-        {
-            ActionOwner = user;
-            FromAddress = user.Address;
+        public NFTTransfer(User actor,
+            double fee,
+            string toAddress,
+            Guid nftId) {
+            Actor = actor;
+            Fee = fee;
             ToAddress = toAddress;
-            NFTId = tokenId;
-            Timestamp = DateTime.UtcNow.Ticks;
+            NFTId = nftId;
         }
 
         #endregion
 
-        #region Methods
+        #region methods
 
-        public override void SignEvent(User user)
-        {
-            //check is the owner making the transaction
-            if (user.Address != FromAddress)
-            {
-                throw new Exception("Invalid key");
-            }
-
-            var HashTransaction = CalculateHash();
-            var signature = user.SignMessage(HashTransaction);
-            Signature = signature;
+        public string CalculateHash() {
+            var bytes = Encoding.UTF8.GetBytes($"{Actor.Address}-{NFTId}-{Timestamp}-{ToAddress}");
+            using var sha256 = SHA256.Create();
+            var hash = sha256.ComputeHash(bytes);
+            return Convert.ToHexString(hash);
         }
 
+        public bool IsValid(Blockchain blockchain) {
+            bool exists = blockchain.IsNFTMinted(NFTId);
+            bool isOwner = blockchain.IsNFTOwner(NFTId, Actor.Address);
+            bool isBurned = blockchain.IsNFTBurned(NFTId);
+            double balance = blockchain.GetBalance(Actor.Address);
+            if (!exists || !isOwner || isBurned)
+                return false;
+            if(balance < Fee)
+                return false;
 
-        /// <summary>
-        /// Checks if the current transaction is valid
-        /// </summary>
-        /// <returns>A boolean representing the result</returns>
-        public override bool IsValid(Blockchain blockchain)
-        {
-            if (!blockchain.IsNFTMinted(NFTId)) return false;
-            if (blockchain.IsNFTBurned(NFTId)) return false;
-            if (!blockchain.IsNFTOwner(NFTId, FromAddress)) return false;
-            if (Signature == null) return false;
-            if (NFTId == Guid.Empty) return false;
-            if (NFTId == new Guid()) return false;
-            if (string.IsNullOrWhiteSpace(FromAddress)) return false;
-            if (string.IsNullOrWhiteSpace(ToAddress)) return false;
-            if (!VerifySignature()) return false;
-
-            return true;
+            if (Signature is null)
+                return false;
+            var hash = CalculateHash();
+            return Actor.VerifySignature(hash, Signature);
         }
 
-        public override string CalculateHash()
-        {
-            //calculate sha512 hash using nftid, timestamp and burneraddress
-            var bytes = System.Text.Encoding.UTF8.GetBytes($"{FromAddress}-{ToAddress}-{NFTId}-{Timestamp}");
-            using var hash = SHA512.Create();
-            var hashedInputBytes = hash.ComputeHash(bytes);
-
-            // Convert to text
-            // StringBuilder Capacity is 128, because 512 bits / 8 bits in byte * 2 symbols for byte 
-            var hashedInputStringBuilder = new StringBuilder(128);
-            foreach (var b in hashedInputBytes)
-                hashedInputStringBuilder.Append(b.ToString("X2"));
-            return hashedInputStringBuilder.ToString();
+        public void SignTransaction(PrivateKey? key = null) {
+            string hash = CalculateHash();
+            if (key is null)
+                Signature = Actor.SignString(hash);
+            else
+                Signature = key.Sign(hash);
         }
 
         #endregion
+        
     }
 }

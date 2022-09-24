@@ -80,14 +80,14 @@ namespace Unichain.CLI.Commands
             }
         }
 
-        private static Transaction? CreateTransaction(string[] args, User user)
+        private static ITransaction? CreateTransaction(string[] args, User user)
         {
             if (!Utils.TryGetArgument(args, new("receiver", "r"), out string receiverAddress)) return null;
             if (!Utils.TryGetArgument(args, new("amount", ""), out string amountString)) return null;
 
             double amount = Convert.ToDouble(amountString);
 
-            Transaction tx = new(user, receiverAddress, amount);
+            ITransaction tx = new(user, receiverAddress, amount);
             tx.SignEvent(user);
 
             return tx;

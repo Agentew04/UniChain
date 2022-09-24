@@ -1,10 +1,12 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Unichain.Core;
+using Unichain.Events;
 
 namespace Unichain
 {
@@ -15,9 +17,9 @@ namespace Unichain
         public string PreviousHash { get; set; }
         public string Hash { get; set; }
         public int Nonce { get; set; } = 0;
-        public IList<BaseBlockChainEvent> Events { get; set; }
+        public IList<ITransaction> Events { get; set; }
 
-        public Block(string previousHash, IList<BaseBlockChainEvent> events)
+        public Block(string previousHash, IList<ITransaction> events)
         {
             Index = 0;
             Timestamp = DateTime.UtcNow.Ticks;
@@ -41,18 +43,8 @@ namespace Unichain
         /// <returns>A booleand representing the result</returns>
         public bool HasValidTransactions(Blockchain blockchain)
         {
-            foreach (var x in Events)
-            {
-                if (x.IsNetwork)
-                {
-                    continue;
-                }
-                if (!x.IsValid(blockchain))
-                {
-                    return false;
-                }
-            }
-            return true;
+            bool isValid = Events.Any(x => !x.IsValid(blockchain));
+            return isValid;
         }
 
 
@@ -67,12 +59,7 @@ namespace Unichain
             using var hash = SHA512.Create();
             var hashedInputBytes = hash.ComputeHash(bytes);
 
-            // Convert to text
-            // StringBuilder Capacity is 128, because 512 bits / 8 bits in byte * 2 symbols for byte 
-            var hashedInputStringBuilder = new StringBuilder(128);
-            foreach (var b in hashedInputBytes)
-                hashedInputStringBuilder.Append(b.ToString("X2"));
-            return hashedInputStringBuilder.ToString();
+            return Convert.ToHexString(hashedInputBytes);
         }
 
 
@@ -83,7 +70,18 @@ namespace Unichain
         public void MineBlock(int difficulty)
         {
             var leadingZeros = new string('0', difficulty);
-            while (string.IsNullOrWhiteSpace(Hash) || Hash[..difficulty] != leadingZeros)
+            
+            bool checkHash() {
+                string binarystring = string.Join("",
+                  Hash.Select(
+                    c => Convert.ToString(Convert.ToInt32(c.ToString(), 16), 2).PadLeft(4, '0')
+                  )
+                );
+
+                return binarystring[..difficulty] == leadingZeros;
+            }
+            
+            while (checkHash())
             {
                 Nonce++;
                 Hash = CalculateHash();

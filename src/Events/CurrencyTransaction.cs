@@ -1,22 +1,20 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using Unichain.Core;
-using Unichain.Exceptions;
 
-namespace Unichain.Events
-{
-    public class NFTMint : ITransaction
-    {
+namespace Unichain.Events {
+    public class CurrencyTransaction : ITransaction {
+
         #region default properties
         
         public User Actor { get; set; }
         public double Fee { get; set; }
         public long Timestamp { get; set; } = DateTime.UtcNow.Ticks;
-        public string TypeId { get; set; } = "transaction.nft.mint";
+        public string TypeId { get; set; } = "transaction.currency";
         public string? Signature { get; set; }
 
         #endregion
@@ -24,25 +22,34 @@ namespace Unichain.Events
         #region custom properties
 
         /// <summary>
-        /// The unique Id for this Token
+        /// The address that will receive the funds
         /// </summary>
-        public Guid NFTId { get; set; } = Guid.NewGuid();
+        public string ToAddress { get; set; }
 
         /// <summary>
-        /// The custom metadata for this NFT
+        /// The quantity of currency that will be transferred, need to be bigger than the user's balance
         /// </summary>
-        public Dictionary<string, object> Metadata { get; set; }
+        public double Amount { get; set; }
+
+        /// <summary>
+        /// A optional message to be included in the transaction
+        /// </summary>
+        public string Message { get; set; }
 
         #endregion
 
         #region constructor
 
-        public NFTMint(User actor,
+        public CurrencyTransaction(User actor,
             double fee,
-            Dictionary<string, object> metadata) {
+            string receiverAddress,
+            double amount, 
+            string message = ""){
             Actor = actor;
             Fee = fee;
-            Metadata = metadata;
+            ToAddress = receiverAddress;
+            Amount = amount;
+            Message = message;
         }
 
         #endregion
@@ -50,23 +57,24 @@ namespace Unichain.Events
         #region Methods
 
         public string CalculateHash() {
-            var bytes = Encoding.UTF8.GetBytes($"{Actor.Address}-{NFTId}-{Timestamp}-{JsonConvert.SerializeObject(Metadata, Formatting.None)}");
-            using var sha256 = SHA256.Create();
-            var hash = sha256.ComputeHash(bytes);
+            var bytes = Encoding.UTF8.GetBytes($"{Actor.Address}-{Message}-{Amount}-{Timestamp}");
+            using var sha512 = SHA256.Create();
+            byte[] hash = sha512.ComputeHash(bytes);
             return Convert.ToHexString(hash);
         }
 
         public bool IsValid(Blockchain blockchain) {
-            bool exists = blockchain.IsNFTMinted(NFTId);
             double balance = blockchain.GetBalance(Actor.Address);
-            if (exists)
+            if(balance < Amount)
                 return false;
-            if (balance < Fee)
+            
+            if(balance < Fee + Amount) 
                 return false;
-
+            
             if (Signature is null)
                 return false;
-            var hash = CalculateHash();
+            
+            string hash = CalculateHash();
             return Actor.VerifySignature(hash, Signature);
         }
 
