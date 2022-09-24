@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Unichain.Events
 {
+    [Obsolete("Use a Dictionary<string, object> instead")]
     public class NFTMetadata
     {
         /// <summary>

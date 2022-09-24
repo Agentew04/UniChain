@@ -15,28 +15,20 @@ namespace Unichain
         public int Index { get; set; }
         public long Timestamp { get; set; }
         public string PreviousHash { get; set; }
-        public string Hash { get; set; }
+        public string Hash { get; set; } = "";
         public int Nonce { get; set; } = 0;
         public IList<ITransaction> Events { get; set; }
+        public string Miner { get; set; }
+        public double? CollectedFees { get; set; }
 
-        public Block(string previousHash, IList<ITransaction> events)
-        {
+        public Block(string previousHash, IList<ITransaction> events, string minerAddress) {
             Index = 0;
             Timestamp = DateTime.UtcNow.Ticks;
             PreviousHash = previousHash;
             Events = events;
-            Hash = CalculateHash();
+            Miner = minerAddress;
         }
-
-        /// <summary>
-        /// Creates an empty instance of the <see cref="Block"/> class
-        /// </summary>
-        public Block()
-        {
-
-        }
-
-
+        
         /// <summary>
         /// Check if all the <see cref="Transaction"/>, <seealso cref="TokenCreation"/> are valid
         /// </summary>
@@ -55,7 +47,7 @@ namespace Unichain
         public string CalculateHash()
         {
             //calculate sha512 hash using timestamp, previous hash, nonce and events(json)
-            var bytes = Encoding.UTF8.GetBytes($"{Timestamp}-{PreviousHash ?? ""}-{JsonConvert.SerializeObject(Events)}-{Nonce}");
+            var bytes = Encoding.UTF8.GetBytes($"{Timestamp}-{PreviousHash ?? ""}-{JsonConvert.SerializeObject(Events)}-{Nonce}-{Miner}-{CollectedFees}");
             using var hash = SHA512.Create();
             var hashedInputBytes = hash.ComputeHash(bytes);
 

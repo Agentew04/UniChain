@@ -11,47 +11,49 @@ namespace Unichain
     public partial class Blockchain
     {
 
-        public IEnumerable<T> Find<T>(Expression<Func<T, bool>> predicate) where T : BaseBlockChainEvent
-        {
-            IEnumerable<T> result = Enumerable.Empty<T>();
+        public IEnumerable<T> Find<T>(Expression<Func<T, bool>> predicate) where T : ITransaction {
             //find the objects that match T inside each block in this.Chain
-            foreach (var block in this.Chain)
-            {
-                if (block == null || block.Events == null)
-                {
-                    continue;
-                }
-                var events = from @event in block.Events
-                             where @event != null
-                             where @event.GetType() == typeof(T)
-                             where predicate.Compile().Invoke((T)@event)
-                             select (T)@event;
-                result = result.Concat(events);
-            }
+            var result = Chain.Where(block => block is not null && block.Events is not null && block.Events.Any())
+                .SelectMany(block => block.Events)
+                .Where(e => e is not null)
+                .Where(e => e is T)
+                .Where(e => predicate.Compile().Invoke((T)e) )
+                .Select(e => (T)e);
+            //foreach (var block in this.Chain)
+            //{
+            //    if (block == null || block.Events == null)
+            //    {
+            //        continue;
+            //    }
+            //    var events = from e in block.Events
+            //                 where e != null
+            //                 where e.GetType() == typeof(T)
+            //                 where predicate.Compile().Invoke((T)e)
+            //                 select (T)e;
+            //    result = result.Concat(events);
+            //}
             return result;
         }
-        public IEnumerable<T> FindAll<T>() where T : BaseBlockChainEvent
-        {
+
+        public IEnumerable<ITransaction> Find(Expression<Func<ITransaction, bool>> predicate) {
             //find the objects that match T inside each block in this.Chain
-            foreach (var block in this.Chain)
-            {
-                if (block == null)
-                {
-                    continue;
-                }
-                if (block.Events == null)
-                {
-                    continue;
-                }
-                foreach (var obj in block.Events)
-                {
-                    if (obj is T t)
-                    {
-                        yield return t;
-                    }
-                }
-            }
+            var result = Chain.Where(block => block is not null && block.Events is not null && block.Events.Any())
+                .SelectMany(block => block.Events)
+                .Where(e => e is not null)
+                .Where(e => predicate.Compile().Invoke(e));
+            return result;
         }
+
+            public IEnumerable<T> FindAll<T>() where T : ITransaction {
+            //find the objects that match T inside each block in this.Chain
+            var events = Chain.Where(block => block is not null && block.Events is not null && block.Events.Any())
+                .SelectMany(block => block.Events)
+                .Where(e => e is not null)
+                .Where(e => e is T)
+                .Select(e => (T)e);
+            return events;
+        }
+
         #region pools
 
         /// <summary>
@@ -144,46 +146,7 @@ namespace Unichain
         #endregion
 
         #region nft
-
-        /// <summary>
-        /// Gets the current owner of the NFT
-        /// </summary>
-        /// <param name="nftId">The id to be searched</param>
-        /// <returns>A tuple with the current owner and if it has been burned of not</returns>
-        /// <exception cref="NFTNotFoundException">Thrown when a NFT is not found</exception>
-        public (string, bool) GetCurrentNFTOwner(Guid nftId)
-        {
-            //get NFTMint
-            var nftMint = Find<NFTMint>(x => x.NFTId == nftId).FirstOrDefault();
-
-            //has not been minted
-            if (nftMint == null)
-            {
-                throw new NFTNotFoundException();
-            }
-
-            //get last NFTTransfer
-            var nftTransfer = Find<NFTTransfer>(x => x.NFTId == nftId).OrderByDescending(x => x.Timestamp).FirstOrDefault();
-
-            //check for NFTBurn
-            var nftBurn = Find<NFTBurn>(x => x.NFTId == nftId).FirstOrDefault();
-
-            //has been burned
-            if (nftBurn != null)
-            {
-                return (nftBurn.BurnerAddress, true);
-            }
-
-            //has been transferred
-            if (nftTransfer != null)
-            {
-                return (nftTransfer.ToAddress, false);
-            }
-
-            //has not been transferred
-            return (nftMint.Owner, false);
-        }
-
+        
         /// <summary>
         /// Checks if the NFT is owned by the Address
         /// </summary>
@@ -192,108 +155,63 @@ namespace Unichain
         /// <returns>The result of the operation</returns>
         public bool IsNFTOwner(Guid nftId, string owner)
         {
-            var (address, _) = GetCurrentNFTOwner(nftId);
+            var address = GetNFTOwner(nftId);
             return address == owner;
         }
 
         /// <summary>
-        /// Gets all actual and previous owners of this NFT
+        /// Gets current owner of this nft
         /// </summary>
         /// <param name="nftId">The id to be searched</param>
-        /// <returns>An IEnumerable containing no duplicates</returns>
+        /// <returns>The address of the current owner</returns>
         /// <exception cref="NFTNotFoundException">Thrown when a NFT is not found</exception>
-        public IEnumerable<string> GetNFTOwners(Guid nftId)
+        public string GetNFTOwner(Guid nftId)
         {
             //get NFTMint
             var nftMint = Find<NFTMint>(x => x.NFTId == nftId).FirstOrDefault();
 
             //has not been minted
-            if (nftMint == null)
-            {
+            if (nftMint is null)
                 throw new NFTNotFoundException();
-            }
 
-            //get all NFTTransfers
-            var nftTransfers = Find<NFTTransfer>(x => x.NFTId == nftId);
+            //get last NFTTransfer
+            var lastTransfer = Find<NFTTransfer>(x => x.NFTId == nftId).LastOrDefault();
 
-            var transferOwners = nftTransfers.Select(x => x.ToAddress).Distinct();
-            var allOwners = new List<string>() { nftMint.Owner }.Concat(transferOwners).Distinct();
-            return allOwners;
+            if (lastTransfer is null)
+                return nftMint.Actor.Address;
+            return lastTransfer.ToAddress;
         }
 
         /// <summary>
-        /// Gets all NFTs Owned by an Address
-        /// </summary>
-        /// <param name="owner">The id to be searched</param>
-        /// <returns>An IEnumerable of NFT objects</returns>
-        public IEnumerable<NFT> GetNFTsOwned(string owner)
-        {
-            //get all NFTMints
-            var nftMints = Find<NFTMint>(x => x.Owner == owner);
-            foreach (var nftMint in nftMints)
-            {
-                //get last transfer
-                var nftTransfer = Find<NFTTransfer>(x => x.NFTId == nftMint.NFTId).OrderByDescending(x => x.Timestamp).FirstOrDefault();
-                //check if is owned by the Address
-                if (nftTransfer != null)
-                {
-                    if (nftTransfer.ToAddress == owner)
-                    {
-                        yield return new NFT(nftMint, null);
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets an NFT by its ID
+        /// Gets the metadata associated with an NFT unique id.
         /// </summary>
         /// <param name="nftId">The id to be searched</param>
         /// <returns>An NFT object</returns>
         /// <exception cref="NFTNotFoundException">Thrown when a NFT is not found</exception>
-        public NFT GetNFT(Guid nftId)
+        public Dictionary<string, object> GetNFTMetadata(Guid nftId)
         {
             //get NFTMint
             var nftMint = Find<NFTMint>(x => x.NFTId == nftId).FirstOrDefault();
-
-            //has not been minted
-            if (nftMint == null)
-            {
+            
+            if (nftMint is null)
                 throw new NFTNotFoundException();
-            }
-
-            //get all NFTTransfers
-            var nftTransfers = Find<NFTTransfer>(x => x.NFTId == nftId).ToList();
-
-            var nft = new NFT(nftMint, nftTransfers);
-            return nft;
+            
+            return nftMint.Metadata;
         }
 
         /// <summary>
-        /// Checks if this NFT has been minted or
+        /// Checks if this NFT has already been minted
         /// </summary>
-        /// <param name="nftId"></param>
+        /// <param name="nftId">The unique id of the NFT</param>
         /// <returns></returns>
-        public bool IsNFTMinted(Guid nftId)
-        {
-            var nftMint = Find<NFTMint>(x => x.NFTId == nftId).FirstOrDefault();
-            return nftMint != null;
-        }
+        public bool IsNFTMinted(Guid nftId) => Find<NFTMint>(x => x.NFTId == nftId).Any();
 
         /// <summary>
         /// Checks if this NFT has been burned
         /// </summary>
-        /// <param name="nftId"></param>
+        /// <param name="nftId">The unique id of the NFT</param>
         /// <returns></returns>
-        public bool IsNFTBurned(Guid nftId)
-        {
-            var nftBurn = Find<NFTBurn>(x => x.NFTId == nftId).FirstOrDefault();
-            return nftBurn != null;
-        }
+        public bool IsNFTBurned(Guid nftId) => Find<NFTBurn>(x => x.NFTId == nftId).Any();
 
         #endregion
 
@@ -303,45 +221,16 @@ namespace Unichain
         /// Gets the balance of an address
         /// </summary>
         /// <param name="address">The address to be checked</param>
-        /// <returns></returns>
+        /// <returns>The amount of money this user has</returns>
         public double GetBalance(string address)
         {
-            var transactions = Find<ITransaction>(x => x.FromAddress == address || x.ToAddress == address);
-            List<double> amounts = new();
-            if (transactions == null || !transactions.Any())
-            {
-                return 0;
-            }
-            foreach (var transaction in transactions)
-            {
-                //check if null
-                if (transaction == null)
-                {
-                    continue;
-                }
-                if (transaction.FromAddress == address)
-                {
-                    amounts.Add(-transaction.Amount);
-                }
-                else
-                {
-                    amounts.Add(transaction.Amount);
-                }
-            }
-            return amounts.Sum();
-        }
+            var totalFees = Find(x => x.Actor.Address == address).Sum(x => x.Fee);
+            var currencyReceived = Find<CurrencyTransaction>(x => x.ToAddress == address).Sum(x => x.Amount);
+            var currencySent = Find<CurrencyTransaction>(x => x.Actor.Address == address).Sum(x => x.Amount);
+            var currencyMined = Chain.Where(b => b.Miner == address).Sum(b => Reward + b.CollectedFees);
 
-
-        /// <summary>
-        /// Checks if the Address has more ou the same amount of money
-        /// </summary>
-        /// <param name="address"></param>
-        /// <param name="amount"></param>
-        /// <returns></returns>        
-        public bool HasEnoughBalance(string address, double amount)
-        {
-            var balance = GetBalance(address);
-            return balance >= amount;
+            var finalBalance = (currencyReceived + currencyMined ?? 0) - (currencySent + totalFees);
+            return finalBalance;
         }
 
         #endregion

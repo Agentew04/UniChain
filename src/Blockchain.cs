@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Unichain.Core;
 using Unichain.Events;
 using Unichain.Exceptions;
@@ -25,15 +26,14 @@ namespace Unichain
         /// A list with all pending <see cref="ITransaction"/>, <see cref="TokenCreation"/> and
         /// <see cref="TokenTransaction"/>.
         /// </summary>
-        private IList<BaseBlockChainEvent> PendingTransactions = new List<BaseBlockChainEvent>();
-
-
+        private IList<ITransaction> PendingTransactions = new List<ITransaction>();
 
         public Blockchain()
         {
-            Chain.Add(new Block(null, null));
+            Chain.Add(new Block("", new List<ITransaction>()));
         }
 
+        // todo analyze this
         [JsonConstructor]
         public Blockchain(int i)
         {
@@ -61,20 +61,8 @@ namespace Unichain
         /// Adds a new event to the pending transactions list
         /// </summary>
         /// <exception cref="InvalidTransactionException">Thrown when the transaction is invalid</exception>
-        public void AddEvent(BaseBlockChainEvent e)
+        public void AddEvent(ITransaction e)
         {
-            //special checks
-            if (e.GetType() == typeof(ITransaction))
-            {
-                if (((ITransaction)e).FromAddress == "network")
-                {
-                    throw new InvalidTransactionException("Cannot add a transaction from the network");
-                }
-                if (((ITransaction)e).ToAddress == "network")
-                {
-                    throw new InvalidTransactionException("Cannot add a transaction to the network");
-                }
-            }
             //add to the pending transactions
             if (e.IsValid(this))
             {
@@ -82,12 +70,9 @@ namespace Unichain
             }
             else throw new InvalidTransactionException("Invalid transaction!");
         }
-        public void AddEvents(params BaseBlockChainEvent[] events)
-        {
-            foreach (var e in events)
-            {
+        public void AddEvent(IEnumerable<ITransaction> events) { 
+            foreach(var e in events) 
                 AddEvent(e);
-            }
         }
 
         #endregion
@@ -101,16 +86,13 @@ namespace Unichain
         /// <exception cref="InvalidTransactionException">Thrown when the block made is not valid</exception>
         public void MinePendingTransactions(string minerAddress)
         {
-            if (string.IsNullOrWhiteSpace(minerAddress)) { throw new ArgumentNullException("The miner address is null!", new NullAddressException()); }
-            PendingTransactions.Insert(0, new ITransaction(new User(), minerAddress, this.Reward)
-            {
-                IsNetwork = true
-            });
-            Block block = new(GetLatestBlock().Hash, PendingTransactions);
+            if (string.IsNullOrWhiteSpace(minerAddress)) 
+                throw new ArgumentNullException("The miner address is null!", new NullAddressException());
+            
+            
+            Block block = new(GetLatestBlock().Hash, PendingTransactions, minerAddress);
             if (!block.HasValidTransactions(this))
-            {
                 throw new InvalidTransactionException("One of the transactions is not valid!");
-            }
 
             Block latestBlock = GetLatestBlock();
             block.Index = latestBlock.Index + 1;
@@ -118,7 +100,7 @@ namespace Unichain
             block.MineBlock(this.Difficulty);
             Chain.Add(block);
 
-            PendingTransactions = new List<BaseBlockChainEvent>();
+            PendingTransactions = new List<ITransaction>();
         }
 
         /// <summary>

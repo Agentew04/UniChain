@@ -9,8 +9,13 @@ using Unichain.Exceptions;
 
 namespace Unichain.Events;
 
+// json knownSubType and partial is needed for outsiders add their own transactions to this list
 [JsonConverter(typeof(JsonSubtypes), nameof(TypeId))]
-public interface ITransaction
+[JsonSubtypes.KnownSubType(typeof(CurrencyTransaction), "transaction.currency")]
+[JsonSubtypes.KnownSubType(typeof(NFTMint), "transaction.nft.mint")]
+[JsonSubtypes.KnownSubType(typeof(NFTTransfer), "transaction.nft.transfer")]
+[JsonSubtypes.KnownSubType(typeof(NFTBurn), "transaction.nft.burn")]
+public partial interface ITransaction
 {
     #region Variables
 
@@ -50,7 +55,7 @@ public interface ITransaction
     /// Signs the current transaction hash and stores the result in <see cref="Signature"/>
     /// </summary>
     /// <param name="key">If this is null, uses <see cref="Actor"/> to sign, else use the object passed.</param>
-    public void SignTransaction(PrivateKey key = null);
+    public void SignTransaction(PrivateKey? key = null);
 
     /// <summary>
     /// Performs checks in the blockchain, checks signature validity and checks if the user has

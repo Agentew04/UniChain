@@ -1,6 +1,7 @@
 ﻿#if DEBUG
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Unichain.Core;
 using Unichain.Events;
 using Xunit;
@@ -9,11 +10,15 @@ namespace Unichain.Tests
 {
     public class BlockchainSearchTests
     {
+        /// <summary>
+        /// System under test
+        /// </summary>
         private readonly Blockchain _sut;
 
         public BlockchainSearchTests()
         {
             _sut = new();
+            
         }
 
         public PoolOpen PreparePoolEnvironment()
@@ -71,20 +76,47 @@ namespace Unichain.Tests
         }
 
         [Fact]
-        public void Get_address_balance()
+        public void Check_fees_and_balance_after_transaction()
         {
-            //create transactions
             User user1 = new();
             User user2 = new();
+            User miner = new();
 
-            ITransaction transaction = new(user1, user2.Address, 20);
-            transaction.SignEvent(user1);
+            // adds 100 to user1 balance
             _sut.MinePendingTransactions(user1.Address);
+            
+            ITransaction transaction = new CurrencyTransaction(user1, 5, user2.Address, 20);
+            transaction.SignTransaction();
+            
             _sut.AddEvent(transaction);
+            _sut.MinePendingTransactions(miner.Address);
+
+            Assert.Equal(_sut.Reward - 20 - 5, _sut.GetBalance(user1.Address));
+            Assert.Equal(20, _sut.GetBalance(user2.Address));
+            Assert.Equal(_sut.Reward, _sut.GetBalance(miner.Address));
+        }
+
+        [Fact]
+        public void Message_of_currency_transaction_match() {
+            User user1 = new();
+            User user2 = new();
+            User miner = new();
+
+            // adds 100 to user1 balance
             _sut.MinePendingTransactions(user1.Address);
 
-            //check current balance
-            Assert.Equal(20, _sut.GetBalance(user2.Address));
+            var initialMessage = "Hello, World!";
+            ITransaction transaction = new CurrencyTransaction(user1, 5, user2.Address, 20, initialMessage);
+            transaction.SignTransaction();
+
+            _sut.AddEvent(transaction);
+            _sut.MinePendingTransactions(miner.Address);
+
+            var foundMessage = _sut.Find<CurrencyTransaction>(x => x.Timestamp == transaction.Timestamp)
+                .FirstOrDefault()?
+                .Message;
+            Assert.NotNull(foundMessage);
+            Assert.Equal(initialMessage, foundMessage);
         }
 
         [Fact]
@@ -95,14 +127,12 @@ namespace Unichain.Tests
             User user2 = new();
 
             _sut.MinePendingTransactions(user1.Address);
-            ITransaction transaction = new(user1, user2.Address, 20);
-            transaction.SignEvent(user1);
+            ITransaction transaction = new CurrencyTransaction(user1, 0, user2.Address, 20);
+            transaction.SignTransaction();
             _sut.AddEvent(transaction);
             _sut.MinePendingTransactions(user1.Address);
 
-            var result = _sut.HasEnoughBalance(user2.Address, 15);
-
-            Assert.True(result);
+            Assert.True(_sut.GetBalance(user2.Address) >= 15);
         }
 
         [Fact]

@@ -64,6 +64,9 @@ namespace Unichain.Events {
         }
 
         public bool IsValid(Blockchain blockchain) {
+            if (Amount <= 0)
+                return false;
+
             double balance = blockchain.GetBalance(Actor.Address);
             if(balance < Amount)
                 return false;
