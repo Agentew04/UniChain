@@ -21,7 +21,7 @@ namespace Unichain.Tests
             
         }
 
-        public PoolOpen PreparePoolEnvironment()
+        public PoolCreate PreparePoolEnvironment()
         {
             User user1 = new();
 
@@ -31,10 +31,10 @@ namespace Unichain.Tests
                 Description = "A simple pool",
                 Name = "Default pool 1",
             };
-            PoolOpen poolOpen1 = new(user1, poolMetadata1);
+            PoolCreate poolOpen1 = new(user1, poolMetadata1);
             poolOpen1.SignEvent(user1);
 
-            _sut.AddEvents(poolOpen1);
+            _sut.AddEvent(poolOpen1);
             _sut.MinePendingTransactions(user1.Address);
 
             return poolOpen1;
@@ -55,7 +55,7 @@ namespace Unichain.Tests
                 Description = "A simple pool",
                 Name = "Default pool 1",
             };
-            PoolOpen poolOpen1 = new(user1, poolMetadata1);
+            PoolCreate poolOpen1 = new(user1, poolMetadata1);
             poolOpen1.SignEvent(user1);
 
             PoolVote poolVote1 = new(address1, poolOpen1.PoolId, 0, _sut);
@@ -67,9 +67,9 @@ namespace Unichain.Tests
             poolVote3.SignEvent(address3);
             poolVote4.SignEvent(address4);
 
-            _sut.AddEvents(poolOpen1);
+            _sut.AddEvent(poolOpen1);
             _sut.MinePendingTransactions(user1.Address);
-            _sut.AddEvents(poolVote1, poolVote2, poolVote3, poolVote4);
+            _sut.AddEvent(new List<ITransaction>() { poolVote1, poolVote2, poolVote3, poolVote4 });
             _sut.MinePendingTransactions(user1.Address);
 
             return (poolOpen1.PoolId, address2.Address);
@@ -141,7 +141,7 @@ namespace Unichain.Tests
             var pool = PreparePoolEnvironment();
 
             var foundpools = _sut.GetPools();
-            IEnumerable<PoolOpen> correctpools = new PoolOpen[] { pool };
+            IEnumerable<PoolCreate> correctpools = new PoolCreate[] { pool };
 
             Assert.Equal(correctpools, foundpools);
         }

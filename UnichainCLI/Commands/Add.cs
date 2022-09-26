@@ -125,12 +125,12 @@ namespace Unichain.CLI.Commands
             return tx;
         }
 
-        private static PoolOpen? CreatePoolOpen(string[] args, User user)
+        private static PoolCreate? CreatePoolOpen(string[] args, User user)
         {
             if (!Utils.TryGetArgument(args, new("meta", "m"), out string metaPath)) return null;
             if (!TryGetMeta<PoolMetadata>(metaPath, out var meta)) return null;
 
-            PoolOpen tx = new(user, meta);
+            PoolCreate tx = new(user, meta);
             tx.SignEvent(user);
             return tx;
         }

@@ -101,8 +101,8 @@ public class PrivateKey : IDisposable
 
     public override string ToString() => Convert.ToHexString(Key);
 
-    public override bool Equals(object obj) {
-        return obj is PrivateKey key &&
+    public override bool Equals(object? obj) {
+        return obj is not null && obj is PrivateKey key &&
                Key.SequenceEqual(key.Key);
     }
 

@@ -25,7 +25,7 @@ namespace Unichain.Tests
                 Options = new string[] { "option1", "option2", "option3" },
                 Fee = 15
             };
-            PoolOpen po = new(user, pm);
+            PoolCreate po = new(user, pm);
             po.SignEvent(user);
             _sut.AddEvent(po);
             _sut.MinePendingTransactions(user.Address);
@@ -43,8 +43,8 @@ namespace Unichain.Tests
         {
             User user1 = new(), user2 = new();
 
-            ITransaction transaction = new(user1, user2.Address, 10);
-            transaction.SignEvent(user1);
+            ITransaction transaction = new CurrencyTransaction(user1, 0, user2.Address, 10);
+            transaction.SignTransaction();
             _sut.MinePendingTransactions(user1.Address);
             Assert.True(_sut.IsValid());
         }
