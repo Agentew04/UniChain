@@ -1,5 +1,4 @@
 using System;
-using System.Data.Common;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -96,6 +95,41 @@ public class PrivateKey : IDisposable
     public bool Verify(byte[] data, byte[] signature) {
         return ecdsa.VerifyData(data, signature, HashAlgorithmName.SHA512);
     }
+
+    // a partir daqui é putaria
+    public byte[] DeriveSharedSecret(PublicKey pubKey) {
+        using var ecdh = ECDiffieHellman.Create();
+        ecdh.ImportECPrivateKey(Key, out _); // read private key
+
+        var ECDHpubKey = ECDiffieHellmanCngPublicKey.FromByteArray(pubKey.Key, CngKeyBlobFormat.EccPublicBlob);
+        var shared = ecdh.DeriveKeyMaterial(ECDHpubKey); // derive shared secret
+        return shared;
+    }
+
+    public static byte[] EncryptSymmetricBytes(byte[] sharedSecret, byte[] data, byte[]? iv = null) {
+        using var aes = Aes.Create();
+        aes.Mode = CipherMode.CBC;
+        aes.Padding = PaddingMode.PKCS7;
+        aes.KeySize = 256;
+        aes.Key = sharedSecret; 
+
+        iv ??= new byte[32];
+        byte[] cypher = aes.EncryptCbc(data, iv);
+        return cypher;
+    }
+
+    public static byte[] DecryptSymmetricBytes(byte[] sharedSecret, byte[] data, byte[]? iv = null) {
+        using var aes = Aes.Create();
+        aes.Mode = CipherMode.CBC;
+        aes.Padding = PaddingMode.PKCS7;
+        aes.KeySize = 256;
+        aes.Key = sharedSecret;
+
+        iv ??= new byte[32];
+        byte[] cypher = aes.DecryptCbc(data, iv);
+        return cypher;
+    }
+
     public static bool operator ==(PrivateKey p1, PrivateKey p2) => p1.Key.SequenceEqual(p2.Key);
     public static bool operator !=(PrivateKey p1, PrivateKey p2) => !(p1 == p2);
 

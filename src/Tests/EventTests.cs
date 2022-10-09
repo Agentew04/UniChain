@@ -14,29 +14,29 @@ namespace Unichain.Tests
             _sut = new();
         }
 
-        [Fact]
-        public void Pool_vote_with_fee_is_valid()
-        {
-            User user = new();
-            PoolMetadata pm = new()
-            {
-                Name = "Test pool",
-                Description = "A test pool for testing purposes",
-                Options = new string[] { "option1", "option2", "option3" },
-                Fee = 15
-            };
-            PoolCreate po = new(user, pm);
-            po.SignEvent(user);
-            _sut.AddEvent(po);
-            _sut.MinePendingTransactions(user.Address);
+        //[Fact]
+        //public void Pool_vote_with_fee_is_valid()
+        //{
+        //    User user = new();
+        //    PoolMetadata pm = new()
+        //    {
+        //        Name = "Test pool",
+        //        Description = "A test pool for testing purposes",
+        //        Options = new string[] { "option1", "option2", "option3" },
+        //        Fee = 15
+        //    };
+        //    PoolCreate po = new(user, pm);
+        //    po.SignEvent(user);
+        //    _sut.AddEvent(po);
+        //    _sut.MinePendingTransactions(user.Address);
 
-            PoolVote pv = new(user, po.PoolId, 0, _sut);
-            pv.SignEvent(user);
-            _sut.AddEvent(pv);
-            _sut.MinePendingTransactions(user.Address);
+        //    PoolVote pv = new(user, po.PoolId, 0, _sut);
+        //    pv.SignEvent(user);
+        //    _sut.AddEvent(pv);
+        //    _sut.MinePendingTransactions(user.Address);
 
-            Assert.True(_sut.IsValid() && pv.IsValid(_sut));
-        }
+        //    Assert.True(_sut.IsValid() && pv.IsValid(_sut));
+        //}
 
         [Fact]
         public void Transaction_is_valid()

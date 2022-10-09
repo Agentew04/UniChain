@@ -58,8 +58,8 @@ namespace Unichain.Events {
 
         public string CalculateHash() {
             var bytes = Encoding.UTF8.GetBytes($"{Actor.Address}-{Message}-{Amount}-{Timestamp}");
-            using var sha512 = SHA256.Create();
-            byte[] hash = sha512.ComputeHash(bytes);
+            using var sha256 = SHA256.Create();
+            byte[] hash = sha256.ComputeHash(bytes);
             return Convert.ToHexString(hash);
         }
 

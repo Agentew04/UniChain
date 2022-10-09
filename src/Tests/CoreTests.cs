@@ -1,4 +1,5 @@
 ﻿#if DEBUG
+using System;
 using System.Linq;
 using System.Security.Cryptography;
 using Unichain.Core;
@@ -45,6 +46,9 @@ public class CoreTests
     [Fact]
     public void Public_from_private_match_bytes() {
         User user = new();
+
+        if(user.PrivateKey is null)
+            throw new Exception("Private key is null");
 
         var publicBytes = user.PrivateKey.DerivePublicKeyBytes();
         var publicKey = user.PrivateKey.DerivePublicKey().Key;
