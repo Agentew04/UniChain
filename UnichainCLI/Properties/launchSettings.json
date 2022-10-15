@@ -6,11 +6,17 @@
     },
     "Create Chain": {
       "commandName": "Project",
-      "commandLineArgs": "create -f ./unichain.chain"
+      "commandLineArgs": "create -f ./unichain.chain",
+      "remoteDebugEnabled": false,
+      "hotReloadEnabled": true
     },
     "Print Chain": {
       "commandName": "Project",
       "commandLineArgs": "print -f ./unichain.chain"
+    },
+    "Generate": {
+      "commandName": "Project",
+      "commandLineArgs": "generate -n 10 -d"
     }
   }
 }

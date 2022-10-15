@@ -24,7 +24,7 @@ namespace Unichain.Parsing
         /// <returns>The Stream containing all data</returns>
         public MemoryStream SerializeBlockchain(Blockchain blockchain, StreamEncryptor.Auth? auth)
         {
-            bool isencrypted = auth is null || auth.Key is null || auth.IV is null;
+            bool isencrypted = !(auth is null || auth.Key is null || auth.IV is null);
             MemoryStream memoryStream = new();
             streams.Add(memoryStream);
             ZipFile zipfile = new();
@@ -32,14 +32,11 @@ namespace Unichain.Parsing
             AddBlocks(zipfile, blockchain.Chain);
             AddBlockchainInfo(zipfile, blockchain);
             zipfile.Save(memoryStream);
+            memoryStream.Seek(0, SeekOrigin.Begin);
             if (isencrypted)
-            {
                 return StreamEncryptor.EncryptStream(memoryStream, auth!);
-            }
             else
-            {
                 return memoryStream;
-            }
 
         }
 

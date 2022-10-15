@@ -15,6 +15,9 @@ namespace Unichain.Events;
 [JsonSubtypes.KnownSubType(typeof(NFTMint), "transaction.nft.mint")]
 [JsonSubtypes.KnownSubType(typeof(NFTTransfer), "transaction.nft.transfer")]
 [JsonSubtypes.KnownSubType(typeof(NFTBurn), "transaction.nft.burn")]
+[JsonSubtypes.KnownSubType(typeof(PoolCreate), "transaction.pool.create")]
+[JsonSubtypes.KnownSubType(typeof(PoolVote), "transaction.pool.vote")]
+[JsonSubtypes.KnownSubType(typeof(MessageSendUser), "transaction.msg.send")]
 public partial interface ITransaction
 {
     #region Variables

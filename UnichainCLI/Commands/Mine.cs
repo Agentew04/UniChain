@@ -9,18 +9,18 @@ namespace Unichain.CLI.Commands
             var bc = Utils.ParseBlockchain(path);
             if (bc == null) return 4;
 
-            var isaddrfound = Utils.TryGetArgument(args, new()
-            {
-                Full = "address",
-                Simplified = "a"
-            }, out string mineraddress);
-            if (!isaddrfound)
-            {
-                Utils.Print("Please provide a address to receive the miner reward!");
-                return 1; //bad command
-            }
-            Utils.Print($"Mining with this address: {mineraddress}");
-            bc.MinePendingTransactions(mineraddress);
+            //var isaddrfound = Utils.TryGetArgument(args, new()
+            //{
+            //    Full = "address",
+            //    Simplified = "a"
+            //}, out string mineraddress);
+            //if (!isaddrfound)
+            //{
+            //    Utils.Print("Please provide a address to receive the miner reward!");
+            //    return 1; //bad command
+            //}
+            //Utils.Print($"Mining with this address: {mineraddress}");
+            //bc.MinePendingTransactions(mineraddress);
             Utils.Print($"Mined sucessfully! Received {bc.Reward} tokens");
 
             //save chain

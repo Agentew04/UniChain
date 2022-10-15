@@ -1,70 +1,47 @@
-﻿using Unichain.Parsing;
+﻿using Newtonsoft.Json.Linq;
+using System.Reflection;
+using Unichain.Core;
+using Unichain.Parsing;
 
 namespace Unichain.CLI
 {
     public static class Utils
     {
+        public static string GetVersion() {
+            var ver = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+            if(ver is null)
+                throw new Exception("Could not get version");
+            return ver;
+        }
 
-        public static bool HasFlag(string[] args, Flag flag)
-        {
-            if (args==null || args.Length == 0)
-                return false;
-            return args.Any(x => x == flag.Full || x == flag.Simplified);
+        public static List<T> Clone<T>(this List<T> obj) {
+            var clone = new List<T>();
+            foreach (var item in obj)
+                clone.Add(item);
+            return clone;
+        }
+
+        public static string SanitizePath(string filePath, string defaultName, string ext) {
+            FileAttributes? attr;
+            if(Directory.Exists(filePath) || File.Exists(filePath))
+                attr = File.GetAttributes(filePath);
+            else
+                attr = null;
+
+            // is directory
+            if (attr is not null && (attr?.HasFlag(FileAttributes.Directory) ?? false)) {
+                filePath = Path.Combine(filePath, $"\\{defaultName}{ext}");
+            }
+
+            if (Path.GetExtension(filePath) != ext) {
+                filePath = Path.ChangeExtension(filePath, ext);
+            }
+
+            return filePath;
         }
 
         public static void Print(string s) => Console.WriteLine(s);
 
-        public static bool TryGetArgument(string[] args, Flag flag, out string result)
-        {
-            result = "";
-            int flagindex = 0;
-            if (args == null || args.Length == 0) return false;
-            if (!(args.Contains(flag.Simplified) || args.Contains(flag.Full))) return false;
-            for (int i = 0; i < args.Length; i++)
-            {
-                if (args[i] == flag.Simplified || args[i] == flag.Full)
-                {
-                    flagindex = i;
-                    break;
-                }
-            }
-            try
-            {
-                result = args[flagindex + 1];
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-            return true;
-        }
-
-        public static bool TryGetArgument(string[] args, Flag flag, out double result)
-        {
-            result = default;
-            string resultstr;
-            int flagindex = 0;
-            if (args == null || args.Length == 0) return false;
-            if (!(args.Contains(flag.Simplified) || args.Contains(flag.Full))) return false;
-            for (int i = 0; i < args.Length; i++)
-            {
-                if (args[i] == flag.Simplified || args[i] == flag.Full)
-                {
-                    flagindex = i;
-                    break;
-                }
-            }
-            try
-            {
-                resultstr = args[flagindex + 1];
-                result = double.Parse(resultstr);
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-            return true;
-        }
 
         public static bool TryGetChainPath(string[] args, out string filepath)
         {
