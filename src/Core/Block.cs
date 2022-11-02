@@ -36,6 +36,8 @@ public class Block
     /// <returns>A booleand representing the result</returns>
     public bool HasValidTransactions(Blockchain blockchain)
     {
+        if (Events.Count == 0 && Miner != "")
+            return true;
         bool isValid = Events.Any(x => !x.IsValid(blockchain));
         return isValid;
     }
@@ -75,11 +77,10 @@ public class Block
             return binarystring[..difficulty] == leadingZeros;
         }
 
-        while (checkHash())
-        {
+        do {
             Nonce++;
             Hash = CalculateHash();
-        }
+        } while (!checkHash());
     }
 
     public override string ToString()

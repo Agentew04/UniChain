@@ -89,8 +89,8 @@ public class PublicKey {
         if (match.Success) {
             var groups = match.Groups;
             
-            var addressBytes = Convert.FromHexString(groups[0].Value);
-            var readSum = groups.Count > 1 ? Convert.FromHexString(groups[1].Value) : null;
+            var addressBytes = Convert.FromHexString(groups[1].Value);
+            var readSum = groups.Count > 1 ? Convert.FromHexString(groups[2].Value) : null;
             if (readSum is null)
                 return true;
 

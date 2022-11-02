@@ -21,7 +21,7 @@ internal class GetCommand : ICommand {
         { new("documents", "doc") }
     };
 
-    private List<string> ParseAddress(string addressValues) {
+    private static List<string> ParseAddress(string addressValues) {
         var addresses = addressValues.Split(',').Select(x => x.Trim());
 
         // empty

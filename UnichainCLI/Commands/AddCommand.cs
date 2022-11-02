@@ -25,6 +25,8 @@ internal class AddCommand : ICommand {
         if (!File.Exists(filePath))
             return ReturnCode.BlockChainNotFound;
 
+        // todo implement this
+
         return ReturnCode.Success;
     }
 

@@ -17,8 +17,7 @@ namespace Unichain.Tests
 
         public BlockchainSearchTests()
         {
-            _sut = new();
-            
+            _sut = new(2, 10);    
         }
 
         //public PoolCreate PreparePoolEnvironment()

@@ -101,8 +101,8 @@ public class PrivateKey : IDisposable
         using var ecdh = ECDiffieHellman.Create();
         ecdh.ImportECPrivateKey(Key, out _); // read private key
 
-        var ECDHpubKey = ECDiffieHellmanCngPublicKey.FromByteArray(pubKey.Key, CngKeyBlobFormat.EccPublicBlob);
-        var shared = ecdh.DeriveKeyMaterial(ECDHpubKey); // derive shared secret
+        ECDiffieHellmanPublicKey ECDHpublicKey = ecdh.PublicKey;
+        var shared = ecdh.DeriveKeyMaterial(ECDHpublicKey); // derive shared secret
         return shared;
     }
 

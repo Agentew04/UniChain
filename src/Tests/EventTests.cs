@@ -11,7 +11,7 @@ namespace Unichain.Tests
 
         public EventTests()
         {
-            _sut = new();
+            _sut = new(2, 10);
         }
 
         //[Fact]

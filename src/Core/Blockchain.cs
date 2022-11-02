@@ -32,9 +32,11 @@ public partial class Blockchain
     /// </summary>
     private IList<ITransaction> PendingTransactions = new List<ITransaction>();
 
-    public Blockchain(int difficulty, int reward)
+    public Blockchain(int difficulty, double reward)
     {
-        Chain.Add(new Block("", new List<ITransaction>(), ""));
+        Block origin = new("", new List<ITransaction>(), "");
+        origin.MineBlock(difficulty);
+        Chain.Add(origin);
         Difficulty = difficulty;
         Reward = reward;
     }
@@ -87,9 +89,8 @@ public partial class Blockchain
     /// <exception cref="InvalidTransactionException">Thrown when the block made is not valid</exception>
     public void MinePendingTransactions(string minerAddress)
     {
-        if (string.IsNullOrWhiteSpace(minerAddress)) 
-            throw new ArgumentNullException("The miner address is null!", new NullAddressException());
-        
+        if (!PublicKey.IsAddressValid(minerAddress))
+            throw new ArgumentException("Invalid miner address!");
         
         Block block = new(GetLatestBlock().Hash, PendingTransactions, minerAddress);
         if (!block.HasValidTransactions(this))
@@ -127,5 +128,9 @@ public partial class Blockchain
             }
         }
         return true;
+    }
+
+    public override string ToString() {
+        return JsonConvert.SerializeObject(this);
     }
 }

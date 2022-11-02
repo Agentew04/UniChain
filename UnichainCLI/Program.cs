@@ -26,7 +26,9 @@ public class Program
         Provider.RegisterCommand<AddCommand>()
             .RegisterCommand<CreateCommand>()
             .RegisterCommand<GenerateCommand>()
-            .RegisterCommand<GetCommand>();
+            .RegisterCommand<GetCommand>()
+            .RegisterCommand<PrintCommand>()
+            .RegisterCommand<MineCommand>();
 
         int exitCode = (int)Provider.Invoke(args);
 
@@ -102,10 +104,7 @@ public class Program
 //  -b  --base64  => Utils.Prints out the chain in base 64(JSON text bytes)");
 //                break;
 //            case "mine":
-//                Utils.Print(@"
-//Possible flags for 'mine' sub-command:
-//  -a  --address => Sets the address that will receive the coins
-//  -f  --file    => Path to the json file that the blockchain is stored");
+//                Utils.Print();
 //                break;
 //            case "generate":
 //                Utils.Print();

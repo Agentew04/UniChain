@@ -7,13 +7,7 @@ using Xunit;
 
 namespace Unichain.Tests;
 
-public class CoreTests
-{
-    public CoreTests()
-    {
-
-    }
-
+public class CoreTests {
     [Fact]
     public void Create_PrivateKey_from_bytes() {
         PrivateKey p1 = new();

@@ -10,13 +10,17 @@ internal class CreateCommand : ICommand {
 
     public List<Flag> OptionalFlags { get; set; } = new() {
         { new Flag("file", "f", true, true) },
-        { new Flag("yes", "y") }
+        { new Flag("yes", "y") },
+        { new Flag("reward", "r", true) },
+        { new Flag("difficulty", "d", true) }
     };
    
     
     public ReturnCode Invoke(IEnumerable<Flag> flags) {
         string filePath = flags.Where(x => x.Full == "file").FirstOrDefault()?.Value ?? "";
         bool hasYesFlag = flags.Any(x => x.Full == "yes");
+        string rewardStr = flags.Where(x => x.Full == "reward").FirstOrDefault()?.Value ?? "10";
+        string difficultyStr = flags.Where(x => x.Full == "difficulty").FirstOrDefault()?.Value ?? "2";
 
         // check file path
         if (filePath == "") {
@@ -42,9 +46,20 @@ internal class CreateCommand : ICommand {
             return ReturnCode.InvalidArgumentValue;
         }
 
+
         // here path is a file and doesn't exist, has .chain ext
 
-        var chain = new Blockchain(2, 10);
+        double reward = double.Parse(rewardStr);
+        if (reward < 0) {
+            Console.WriteLine("Reward must be a positive number!");
+            return ReturnCode.InvalidArgumentValue;
+        }
+        int difficulty = int.Parse(rewardStr);
+        if (difficulty < 1) {
+            Console.WriteLine("Difficulty must be a positive integer!");
+            return ReturnCode.InvalidArgumentValue;
+        }
+        var chain = new Blockchain(difficulty, reward);
         using BlockchainParser parser = new();
         using var ms = parser.SerializeBlockchain(chain);
         using var fs = File.OpenWrite(filePath);

@@ -21,6 +21,13 @@ namespace Unichain.CLI
             return clone;
         }
 
+        /// <summary>
+        /// Sanitizes a path, adding the default extension if it's missing.
+        /// </summary>
+        /// <param name="filePath">The path to sanitize</param>
+        /// <param name="defaultName">The default filename. Is appended if it's a directory</param>
+        /// <param name="ext">The extension with dot, will be changed to if it's different</param>
+        /// <returns>The sanitized path</returns>
         public static string SanitizePath(string filePath, string defaultName, string ext) {
             FileAttributes? attr;
             if(Directory.Exists(filePath) || File.Exists(filePath))
