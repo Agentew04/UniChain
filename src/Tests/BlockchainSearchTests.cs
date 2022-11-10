@@ -17,7 +17,7 @@ namespace Unichain.Tests
 
         public BlockchainSearchTests()
         {
-            _sut = new(2, 10);    
+            _sut = new(2, 100);    
         }
 
         //public PoolCreate PreparePoolEnvironment()
@@ -121,17 +121,18 @@ namespace Unichain.Tests
         [Fact]
         public void Address_has_enough_balance()
         {
-            //create transactions
-            User user1 = new();
-            User user2 = new();
+            User user1 = new(), user2 = new(), miner = new();
 
-            _sut.MinePendingTransactions(user1.Address);
-            ITransaction transaction = new CurrencyTransaction(user1, 0, user2.Address, 20);
+            double amount = 10;
+            _sut.MinePendingTransactions(user1.Address); // user1 += 100
+            ITransaction transaction = new CurrencyTransaction(user1, 0, user2.Address, amount); //user2 = amount,
+                                                                                                 //user1-= amount
             transaction.SignTransaction();
             _sut.AddEvent(transaction);
-            _sut.MinePendingTransactions(user1.Address);
-
-            Assert.True(_sut.GetBalance(user2.Address) >= 15);
+            _sut.MinePendingTransactions(miner.Address);
+            
+            Assert.Equal(_sut.Reward - amount, _sut.GetBalance(user1.Address), 0.0001);
+            Assert.Equal(amount, _sut.GetBalance(user2.Address), 0.0001);
         }
 
         //[Fact]

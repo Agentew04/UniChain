@@ -222,7 +222,7 @@ public partial class Blockchain{
         var currencySent = Find<CurrencyTransaction>(x => x.Actor.Address == address).Sum(x => x.Amount);
         var currencyMined = Chain.Where(b => b.Miner == address).Sum(b => Reward + b.CollectedFees);
 
-        var finalBalance = (currencyReceived + currencyMined ?? 0) - (currencySent + totalFees);
+        var finalBalance = (currencyReceived + currencyMined) - (currencySent + totalFees);
         return finalBalance;
     }
 

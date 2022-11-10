@@ -43,10 +43,15 @@ namespace Unichain.Tests
         {
             User user1 = new(), user2 = new();
 
-            ITransaction transaction = new CurrencyTransaction(user1, 0, user2.Address, 10);
+            // get some coins(otherwise transaction is invalid)
+            _sut.MinePendingTransactions(user1.Address);
+
+            ITransaction transaction = new CurrencyTransaction(user1, 0, user2.Address, 5);
             transaction.SignTransaction();
             _sut.MinePendingTransactions(user1.Address);
+            Assert.True(transaction.IsValid(_sut));
             Assert.True(_sut.IsValid());
+            Assert.True(_sut.Chain[^1].HasValidTransactions(_sut));
         }
     }
 }

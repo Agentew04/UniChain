@@ -23,6 +23,8 @@ namespace Unichain.Events
         
         public bool IsEncrypted { get; set; }
 
+        public byte[]? IV { get; set; }
+
         public PublicKey ToUser { get; set; }
 
         #endregion
@@ -49,11 +51,13 @@ namespace Unichain.Events
             if (privateKey is null)
                 throw new Exception("Neither a private key was provided nor the actor has one.");
 
-            var shared = privateKey.DeriveSharedSecret(ToUser);
-            var plainText = Encoding.UTF8.GetBytes(Message);
-            var cypherText = PrivateKey.EncryptSymmetricBytes(shared, plainText);
-            Message = Convert.ToBase64String(cypherText);
+            using var aes = Aes.Create();
+            IV = aes.IV;
             IsEncrypted = true;
+            var shared = privateKey.KeyExchange(ToUser);
+            var plainText = Encoding.UTF8.GetBytes(Message);
+            var cypherText = PrivateKey.EncryptBytes(shared, plainText, IV);
+            Message = Convert.ToBase64String(cypherText);
         }
 
         #endregion

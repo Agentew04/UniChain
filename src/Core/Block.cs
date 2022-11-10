@@ -18,7 +18,7 @@ public class Block
     public int Nonce { get; set; } = 0;
     public IList<ITransaction> Events { get; set; } = new List<ITransaction>();
     public string Miner { get; set; } = "";
-    public double? CollectedFees { get; set; }
+    public double CollectedFees { get; set; } = 0.0;
 
     public Block(string previousHash, IList<ITransaction> events, string minerAddress)
     {
@@ -36,9 +36,9 @@ public class Block
     /// <returns>A booleand representing the result</returns>
     public bool HasValidTransactions(Blockchain blockchain)
     {
-        if (Events.Count == 0 && Miner != "")
-            return true;
-        bool isValid = Events.Any(x => !x.IsValid(blockchain));
+        if (string.IsNullOrWhiteSpace(Miner))
+            return false;
+        bool isValid = Events.All(x => x.IsValid(blockchain));
         return isValid;
     }
 

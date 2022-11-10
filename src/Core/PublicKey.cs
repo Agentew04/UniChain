@@ -18,6 +18,11 @@ public class PublicKey {
     public byte[] Key { get; init; }
 
     /// <summary>
+    /// An array of bytes containing the public key, formatted for Bouncy Castle API.
+    /// </summary>
+    public byte[] BC_Key { get; init; }
+
+    /// <summary>
     /// The accuracy used for checksum addresses. Should be adapted as user count grows.
     /// Should not interfere with blockchain at all, just for safety.
     /// </summary>
@@ -27,8 +32,9 @@ public class PublicKey {
     /// Initializes a PublicKey from an existing key
     /// </summary>
     /// <param name="bytes"></param>
-    public PublicKey(byte[] bytes) {
+    public PublicKey(byte[] bytes, byte[] bc_bytes) {
         Key = bytes;
+        BC_Key = bc_bytes;
     }
     
     /// <summary>
@@ -36,7 +42,7 @@ public class PublicKey {
     /// </summary>
     /// <param name="privateKey">The private key used to derive the public key</param>
     public PublicKey(PrivateKey privateKey) {
-        Key = privateKey.DerivePublicKeyBytes();
+        (Key, BC_Key) = privateKey.DerivePublicKeyBytes();
     }
 
     /// <summary>
@@ -126,4 +132,5 @@ public class PublicKey {
     }
 
     public override string ToString() => Convert.ToHexString(Key);
+    
 }
