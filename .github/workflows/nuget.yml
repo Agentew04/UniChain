@@ -19,10 +19,12 @@ jobs:
         dotnet-version: 6.0.x
     - name: Restore dependencies
       run: dotnet restore ./src/Unichain.csproj
-    - name: Build
+    - name: Build Debug
       run: dotnet build --no-restore ./src/Unichain.csproj
     - name: Test
       run: dotnet test --no-build --verbosity normal ./src/Unichain.csproj
+    - name: Build Release
+      run: dotnet build --no-restore -c Release ./src/Unichain.csproj
     - name: Pack
       run: dotnet pack -c Release ./src/Unichain.csproj -o ./bin/
     - name: Upload Artifacts
