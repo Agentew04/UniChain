@@ -80,13 +80,15 @@ public class PublicKey {
         
         using var sha = SHA256.Create();
         var addrhash = sha.ComputeHash(address.Take(20).ToArray());
-        return addrhash.Take(accuracy/2).ToArray();
+        return addrhash.Take(accuracy/2).ToArray(); // 8 acur => 4 bytes => 8 chars
     }
 
     /// <summary>
     /// Checks if an address is valid and if it has and checksum, checks it.
     /// </summary>
     /// <param name="address">The address to be verified, with or without checksum</param>
+    /// <exception cref="FormatException">Thrown if the string is malformatted, for example:
+    /// odd number of digits on checksum</exception>
     /// <returns>A <see cref="bool"/> with the result.</returns>
     public static bool IsAddressValid(string address) {
         // Regex to check valid address.  
@@ -94,15 +96,17 @@ public class PublicKey {
         Match match = regex.Match(address);
         if (match.Success) {
             var groups = match.Groups;
-            
+            // groups[0] its the match itself
             var addressBytes = Convert.FromHexString(groups[1].Value);
-            var readSum = groups.Count > 1 ? Convert.FromHexString(groups[2].Value) : null;
+            var readSum = groups.Count >= 3 && groups[2].Length > 0
+                ? Convert.FromHexString(groups[2].Value) : null;
             if (readSum is null)
                 return true;
 
-            var calculatedSum = CalculateChecksum(addressBytes, PublicKey.accuracy);
+            var calculatedSum = CalculateChecksum(addressBytes, readSum.Length * 2);
             if (readSum.SequenceEqual(calculatedSum))
                 return true;
+            
         }
         return false;
     }

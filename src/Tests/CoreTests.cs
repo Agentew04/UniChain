@@ -54,17 +54,31 @@ public class CoreTests {
     }
 
     [Fact]
-    public void Broken_checksum_should_be_false() {
+    public void Modified_checksum_should_be_false() {
         User user = new();
-        string brokenAddress = user.Address.Remove((user.Address.Length - 1) - 1, 2);
+        string brokenAddress = user.Address.Remove((user.Address.Length - 1) - 1, 2); // remove last 2
         brokenAddress += "00";
         Assert.False(PublicKey.IsAddressValid(brokenAddress));
     }
 
     [Fact]
-    public void Broken_address_should_be_false() {
-        string address = "0x0000000000000000000000000000000000000000000000000000000000000000";
+    public void Odd_checksum_should_throw() {
+        string address = "0x0000000000000000000000000000000000000000000"; // 3 verification chars
+
+        var result = Assert.Throws<FormatException>(() => PublicKey.IsAddressValid(address));
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public void Wrong_checksum_should_be_false() {
+        string address = "0x000000000000000000000000000000000000000000000000"; // 8 verification chars
         Assert.False(PublicKey.IsAddressValid(address));
+    }
+
+    [Fact]
+    public void Address_without_checksum_should_be_valid() {
+        string address = "0x0000000000000000000000000000000000000000"; // 40 '0' chars after 0x
+        Assert.True(PublicKey.IsAddressValid(address));
     }
 
     [Fact]
