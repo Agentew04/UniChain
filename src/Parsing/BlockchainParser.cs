@@ -1,11 +1,14 @@
 ﻿using Ionic.Zip;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using Unichain.Core;
+using Unichain.Events;
 
 namespace Unichain.Parsing
 {
@@ -19,9 +22,9 @@ namespace Unichain.Parsing
         /// <param name="blockchain">The blockchain that will be serialized</param>
         /// <param name="auth">A object containing the Key and IV</param>
         /// <returns>The Stream containing all data</returns>
-        public MemoryStream SerializeBlockchain(Blockchain blockchain, StreamEncryptor.Auth auth)
+        public MemoryStream SerializeBlockchain(Blockchain blockchain, StreamEncryptor.Auth? auth)
         {
-            bool isencrypted = !(auth == null || auth.Key == null || auth.Key == Array.Empty<byte>());
+            bool isencrypted = !(auth is null || auth.Key is null || auth.IV is null);
             MemoryStream memoryStream = new();
             streams.Add(memoryStream);
             ZipFile zipfile = new();
@@ -29,14 +32,11 @@ namespace Unichain.Parsing
             AddBlocks(zipfile, blockchain.Chain);
             AddBlockchainInfo(zipfile, blockchain);
             zipfile.Save(memoryStream);
+            memoryStream.Seek(0, SeekOrigin.Begin);
             if (isencrypted)
-            {
-                return StreamEncryptor.EncryptStream(memoryStream, auth);
-            }
+                return StreamEncryptor.EncryptStream(memoryStream, auth!);
             else
-            {
                 return memoryStream;
-            }
 
         }
 
@@ -56,7 +56,7 @@ namespace Unichain.Parsing
             streams.Add(stream);
             streams.Add(zipFile);
             var (diff, reward) = GetBlockchainInfo(zipFile);
-            var blockchain = new Blockchain(1)
+            var blockchain = new Blockchain()
             {
                 Chain = GetBlocks(zipFile).ToList(),
                 Difficulty = diff,
@@ -183,7 +183,10 @@ namespace Unichain.Parsing
             zipStream.Seek(0, SeekOrigin.Begin);
             // it's not recognizing as zipfile
             using ZipFile zipFile = ZipFile.Read(zipStream);
-            using var binStream = zipFile.Where(x => x.FileName.Contains("info.bin")).FirstOrDefault().OpenReader();
+            using var binStream = zipFile.Where(x => x.FileName.Contains("info.bin")).FirstOrDefault()?.OpenReader();
+            // todo add custom exception
+            if(binStream is null)
+                throw new Exception("Invalid block file!");
             using BinaryReader binaryReader = new(binStream);
             var index = binaryReader.ReadInt32();
             var timestamp = binaryReader.ReadInt64();
@@ -191,13 +194,18 @@ namespace Unichain.Parsing
             var previousHash = binaryReader.ReadString();
             var hash = binaryReader.ReadString();
 
-            using var eventsStream = zipFile.Where(x => x.FileName.Contains("events.json")).FirstOrDefault().OpenReader();
+            using var eventsStream = zipFile.Where(x => x.FileName.Contains("events.json")).FirstOrDefault()?.OpenReader();
+            if(eventsStream is null)
+                throw new Exception("events.json not found");
             using StreamReader streamReader = new(eventsStream);
-            var eventdatalist = JsonConvert.DeserializeObject<List<string>>(streamReader.ReadToEnd());
-            List<BaseBlockChainEvent> events = new();
-            foreach (var eventdata in eventdatalist)
+            var transactions = JsonConvert.DeserializeObject<List<string>>(streamReader.ReadToEnd()) ?? new();
+            List<ITransaction> events = new();
+            foreach (var transaction in transactions)
             {
-                events.Add(JsonConvert.DeserializeObject<BaseBlockChainEvent>(eventdata));
+                var deserialized = JsonConvert.DeserializeObject<ITransaction>(transaction);
+                if (deserialized is not null)
+                    events.Add(deserialized);
+                
                 // because of the compression, plaintext is the best way to go
             }
             return new Block()
@@ -212,13 +220,13 @@ namespace Unichain.Parsing
         }
 
         /// <summary>
-        /// Encodes the JSON bytes in Base 64 and put it in a string
+        /// Encodes the transaction in JSON and put it in a string
         /// </summary>
         /// <param name="e">The event to be converted</param>
         /// <returns>A base64 string</returns>
-        private static string GetJsonDataFromEvent(BaseBlockChainEvent e)
+        private static string GetJsonDataFromEvent(ITransaction e)
         {
-            var json = e.ToString();
+            var json = JsonConvert.SerializeObject(e);
             return json;
             // plain text is better than encoded because of the compression
             // or idk, i tested and this was better than the others

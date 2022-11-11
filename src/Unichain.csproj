@@ -5,14 +5,37 @@
     <RootNamespace>Unichain</RootNamespace>
     <OutputType>Library</OutputType>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>Unichain</Title>
+    <Authors>Agentew04</Authors>
+    <Copyright>Mozilla Public License 2.0</Copyright>
+    <PackageProjectUrl>https://github.com/Agentew04/UniChain</PackageProjectUrl>
+    <Description>A lightweight blockchain solution that supports currency, NFTs, documents, messages and more.</Description>
+    <PackageIcon>unichain-nuget.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/Agentew04/UniChain</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>blockchain; unichain; nft; bitcoin; cryptocurrency; elliptic curve;</PackageTags>
+    <PackAsTool>False</PackAsTool>
+    <PackageId>Unichain</PackageId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Ardalis.SmartEnum" Version="2.0.1" />
-    <PackageReference Include="Ardalis.SmartEnum.JsonNet" Version="1.0.31" />
+    <None Include="..\assets\unichain-nuget.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="DotNetZip" Version="1.16.0" />
     <PackageReference Include="JsonSubTypes" Version="1.8.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.0" Condition=" '$(Configuration)'=='Debug' " />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
     <PackageReference Include="SHA3.Net" Version="2.0.0" />
     <PackageReference Include="SimpleBase" Version="3.1.0" />
     <PackageReference Include="xunit" Version="2.4.2" Condition=" '$(Configuration)'=='Debug' " />

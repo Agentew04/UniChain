@@ -28,7 +28,7 @@ namespace Unichain.Events
         /// this pool. Default value is 0(no fee)
         /// </summary>
         /// <value></value>
-        public int Fee { get; set; } = 0;
+        public double Fee { get; set; } = 0;
 
         /// <summary>
         /// Represents the minimum amount of currency 

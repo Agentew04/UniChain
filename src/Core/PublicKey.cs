@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using SHA3.Net;
 
 namespace Unichain.Core;
@@ -17,11 +18,23 @@ public class PublicKey {
     public byte[] Key { get; init; }
 
     /// <summary>
+    /// An array of bytes containing the public key, formatted for Bouncy Castle API.
+    /// </summary>
+    public byte[] BC_Key { get; init; }
+
+    /// <summary>
+    /// The accuracy used for checksum addresses. Should be adapted as user count grows.
+    /// Should not interfere with blockchain at all, just for safety.
+    /// </summary>
+    private const int accuracy = 4;
+
+    /// <summary>
     /// Initializes a PublicKey from an existing key
     /// </summary>
     /// <param name="bytes"></param>
-    public PublicKey(byte[] bytes) {
+    public PublicKey(byte[] bytes, byte[] bc_bytes) {
         Key = bytes;
+        BC_Key = bc_bytes;
     }
     
     /// <summary>
@@ -29,18 +42,69 @@ public class PublicKey {
     /// </summary>
     /// <param name="privateKey">The private key used to derive the public key</param>
     public PublicKey(PrivateKey privateKey) {
-        Key = privateKey.DerivePublicKeyBytes();
+        (Key, BC_Key) = privateKey.DerivePublicKeyBytes();
     }
 
     /// <summary>
-    /// Derives a address from this public key.
+    /// Derives a address from this public key. 
+    /// Is 42 characters long without checksum and 50 with (including '0x' prefix).
     /// </summary>
     /// <returns>A string containing the address created</returns>
-    public string DeriveAddress() {
-        using var sha = Sha3.Sha3256();
-        var hash = sha.ComputeHash(Key);
-        var lastbytes = hash.TakeLast(20).ToArray();
-        return $"0x{Convert.ToHexString(lastbytes)}";
+    public string DeriveAddress(bool includeChecksum = true) {
+        using var sha3 = Sha3.Sha3256();
+        var hash = sha3.ComputeHash(Key);
+        var addrBytes = hash.TakeLast(20).ToArray();
+        if(!includeChecksum)
+            return $"0x{Convert.ToHexString(addrBytes)}";
+        
+        var checksum = CalculateChecksum(addrBytes, PublicKey.accuracy);
+        var address = addrBytes.Concat(checksum).ToArray();
+        return $"0x{Convert.ToHexString(address)}";
+    }
+
+    /// <summary>
+    /// Calculates the checksum for a given address.
+    /// </summary>
+    /// <param name="address">The address bytes('0x' not included!)</param>
+    /// <param name="accuracy">The amount of chars in the checksum</param>
+    /// <returns>A <see cref="byte[]"/> containing only the checksum bytes</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if the accuracy is not in bounds: [2,8] and must be even.</exception>
+    public static byte[] CalculateChecksum(byte[] address, int accuracy ) {
+        if (accuracy < 2 || accuracy > 8 || accuracy % 2 != 0)
+            throw new ArgumentOutOfRangeException(nameof(accuracy),"Checksum accuracy must be between [2,8] and be even");
+        
+        // 8 accuracy = 8 chars = 4 bytes
+        // 6 accuracy = 6 chars = 3 bytes
+        // 4 accuracy = 4 chars = 2 bytes
+        // 2 accuracy = 2 chars = 1 byte
+        
+        using var sha = SHA256.Create();
+        var addrhash = sha.ComputeHash(address.Take(20).ToArray());
+        return addrhash.Take(accuracy/2).ToArray();
+    }
+
+    /// <summary>
+    /// Checks if an address is valid and if it has and checksum, checks it.
+    /// </summary>
+    /// <param name="address">The address to be verified, with or without checksum</param>
+    /// <returns>A <see cref="bool"/> with the result.</returns>
+    public static bool IsAddressValid(string address) {
+        // Regex to check valid address.  
+        Regex regex = new("^0x([0-9a-fA-F]{40})([0-9a-fA-F]{0,8})$");
+        Match match = regex.Match(address);
+        if (match.Success) {
+            var groups = match.Groups;
+            
+            var addressBytes = Convert.FromHexString(groups[1].Value);
+            var readSum = groups.Count > 1 ? Convert.FromHexString(groups[2].Value) : null;
+            if (readSum is null)
+                return true;
+
+            var calculatedSum = CalculateChecksum(addressBytes, PublicKey.accuracy);
+            if (readSum.SequenceEqual(calculatedSum))
+                return true;
+        }
+        return false;
     }
 
     /// <summary>
@@ -68,4 +132,5 @@ public class PublicKey {
     }
 
     public override string ToString() => Convert.ToHexString(Key);
+    
 }

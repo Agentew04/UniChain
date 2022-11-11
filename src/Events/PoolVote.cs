@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Unichain.Core;
@@ -6,91 +7,72 @@ using Unichain.Exceptions;
 
 namespace Unichain.Events
 {
-    public class PoolVote : BaseBlockChainEvent, ISubEventable<Transaction>
+    public class PoolVote : ITransaction
     {
+        #region default variables
 
-        #region Variables
+        public User Actor { get; set; }
+        public double Fee { get; set; }
+        public long Timestamp { get; set; } = DateTime.UtcNow.Ticks;
+        public string TypeId { get; set; } = "transaction.pool.vote";
+        public string? Signature { get; set; }
+
+        #endregion
+
+        #region custom variables
 
         public Guid PoolId { get; set; }
 
-        public int VoteIndex { get; set; }
-
-        public string VoterAddress { get; set; }
-
-        public bool HasFee { get; set; }
-        public Transaction SubEvent { get; set; }
+        public int OptionSelected { get; set; }
 
         #endregion
 
-        #region Constructor
+        #region constructor
 
-        public PoolVote(User user, Guid poolId, int voteIndex, Blockchain blockchain) : base(EventType.PoolVote, user)
-        {
-            EventType = EventType.PoolVote;
-            ActionOwner = user;
-            VoterAddress = user.Address;
+        public PoolVote(User actor,
+            double fee,
+            Guid poolId,
+            int optionSelected) {
+            Actor = actor;
+            Fee = fee;
             PoolId = poolId;
-            VoteIndex = voteIndex;
-            Timestamp = DateTime.UtcNow.Ticks;
-            PoolOpen poolOpen = blockchain.GetPoolById(PoolId);
-            if (poolOpen != null && poolOpen.Metadata.Fee > 0)
-            {
-                HasFee = true;
-                Transaction tx = new(user, poolOpen.Owner, poolOpen.Metadata.Fee);
-                tx.SignEvent(user);
-                SubEvent = tx;
-            }
-            else
-            {
-                SubEvent = null;
-                HasFee = false;
-            }
+            OptionSelected = optionSelected;
         }
 
         #endregion
 
-        #region Methods
+        #region methods
 
-        public override string CalculateHash()
-        {
-            //calculate sha512 hash using nftid, timestamp and burneraddress
-            var bytes = Encoding.UTF8.GetBytes($"{PoolId}-{VoteIndex}-{VoterAddress}-{SubEvent}");
-            using var hash = SHA512.Create();
-            var hashedInputBytes = hash.ComputeHash(bytes);
-
-            // Convert to text
-            // StringBuilder Capacity is 128, because 512 bits / 8 bits in byte * 2 symbols for byte 
-            var hashedInputStringBuilder = new StringBuilder(128);
-            foreach (var b in hashedInputBytes)
-                hashedInputStringBuilder.Append(b.ToString("X2"));
-            return hashedInputStringBuilder.ToString();
+        public string CalculateHash() {
+            var bytes = Encoding.UTF8.GetBytes($"{Actor.Address}-{PoolId}-{OptionSelected}-{Timestamp}");
+            using var sha256 = SHA256.Create();
+            var hash = sha256.ComputeHash(bytes);
+            return Convert.ToBase64String(hash);
         }
 
-        public override bool IsValid(Blockchain blockchain)
-        {
-            // Check if the pool exists
+        public bool IsValid(Blockchain blockchain) {
+            double balance = blockchain.GetBalance(Actor.Address);
+            PoolCreate? pCreate = blockchain.Find<PoolCreate>(x => x.PoolId == PoolId).FirstOrDefault();
+            if (balance < Fee)
+                return false;
+            if (pCreate is null)
+                return false;
+            if (OptionSelected < 0 || OptionSelected >= pCreate?.Options.Count())
+                return false;
 
-            if (blockchain.GetPoolById(PoolId) == null) return false;
-            if (Signature == null) return false;
-            if (VoteIndex < 0) return false;
-            if (string.IsNullOrWhiteSpace(VoterAddress)) return false;
-            if (Guid.Empty.Equals(PoolId)) return false;
-            if (!VerifySignature()) return false;
-            if (HasFee)
-            {
-                if (SubEvent == null) return false;
-                if (!SubEvent.IsValid(blockchain)) return false;
-            }
-            return true;
+            if (Signature is null)
+                return false;
+
+            string hash = CalculateHash();
+            return Actor.VerifySignature(hash, Signature);
         }
 
-        public override void SignEvent(User user)
-        {
-            if (user.Address != VoterAddress) throw new InvalidKeyException();
-
-            var hashTransaction = CalculateHash();
-            var signature = user.SignMessage(hashTransaction);
-            Signature = signature;
+        public void SignTransaction(PrivateKey? key = null) {
+            string hash = CalculateHash();
+            if (key is null)
+                Signature = Actor.SignString(hash);
+            else
+                Signature = key.Sign(hash);
         }
 
         #endregion

@@ -16,8 +16,8 @@ namespace Unichain.Parsing
         public static MemoryStream EncryptStream(Stream inStream, Auth auth)
         {
             using Aes aes = Aes.Create();
-            aes.Key = auth.Key ?? aes.Key;
-            aes.IV = auth.IV ?? aes.IV;
+            aes.Key = auth?.Key ?? aes.Key;
+            aes.IV = auth?.IV ?? aes.IV;
             aes.KeySize = 2048;
             aes.BlockSize = 2048;
             aes.Padding = PaddingMode.PKCS7;

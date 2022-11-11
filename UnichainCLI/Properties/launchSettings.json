@@ -2,15 +2,21 @@
   "profiles": {
     "MineChain": {
       "commandName": "Project",
-      "commandLineArgs": "mine -f ./unichain.chain -a 0283940cdff0cdc280fe28314817b3263744daece10c848b6059a385f484851e21"
+      "commandLineArgs": "mine -f ./unichain.chain -a 0x1C2B34EE1295C27320648F01D15659F330CDA2B07CCC"
     },
     "Create Chain": {
       "commandName": "Project",
-      "commandLineArgs": "create -f ./unichain.chain"
+      "commandLineArgs": "create -f ./unichain.chain -r 15 -d 8",
+      "remoteDebugEnabled": false,
+      "hotReloadEnabled": true
     },
     "Print Chain": {
       "commandName": "Project",
-      "commandLineArgs": "print -f ./unichain.chain"
+      "commandLineArgs": "print -f ./unichain.chain -i"
+    },
+    "Generate": {
+      "commandName": "Project",
+      "commandLineArgs": "generate -n 3"
     }
   }
 }
