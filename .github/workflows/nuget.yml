@@ -26,7 +26,7 @@ jobs:
     - name: Build Release
       run: dotnet build --no-restore -c Release ./src/Unichain.csproj
     - name: Pack
-      run: dotnet pack -c Release ./src/Unichain.csproj -o ./bin/
+      run: dotnet pack -c Release ./src/Unichain.csproj -o ./bin/ -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
     - name: Upload Artifacts
       uses: actions/upload-artifact@v3.1.1
       with:
@@ -35,4 +35,9 @@ jobs:
           ./bin/Unichain.*.nupkg
           !./bin/Unichain.CLI.*.nupkg
         retention-days: 0 # default
-      
+    - name: Publish NuGet
+      uses: edumserrano/nuget-push@v1.1.0
+      with:
+        api-key: ${{ secrets.NUGET_API }}
+        working-directory: ./bin/
+        
