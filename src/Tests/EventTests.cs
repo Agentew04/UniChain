@@ -48,6 +48,7 @@ namespace Unichain.Tests
 
             ITransaction transaction = new CurrencyTransaction(user1, 0, user2.Address, 5);
             transaction.SignTransaction();
+            _sut.AddEvent(transaction);
             _sut.MinePendingTransactions(user1.Address);
             Assert.True(transaction.IsValid(_sut));
             Assert.True(_sut.IsValid());
