@@ -29,19 +29,22 @@ use it as following (C#)
 using UniChain.Events;
 using UniChain.Core;
 
-Blockchain blockchain = new(); // initializes a new blockchain
+int difficulty = 5;
+float reward = 100;
+Blockchain blockchain = new(difficulty, reward); 
 User currentUser = new(); // will generate a random pair of keys
-Address someAddress = new(); //generate a random public key(address)
+string receiver = new User().Address;
 
-Transaction tx = new(currentUser, someAddress, 10); // from, to and amount
-tx.SignEvent(currentUser); // signs the event using the correct private key
+double fee = 5.2f;
+ITransaction tx = new CurrencyTransaction(currentUser, fee, receiver, 15); // from, fee, to and amount
+tx.SignTransaction(); // signs the transaction
 
 blockchain.AddEvent(tx); // adds a event to the PendingEvents list
-blockchain.MinePendingTransactions((Address)currentUser); // this address will receive the miner bonus
-// !!the default miner reward is 100!!
+blockchain.MinePendingTransactions(currentUser.Address); // currentUser will receive the reward
 
 Console.WriteLine(blockchain.GetBalance(currentUser.Address));
-// prints out: 90
+// balance = reward - (fee + 15)
+// prints out: 79.8
 ```
 
 ### Command Line Interface (CLI)
@@ -55,7 +58,7 @@ Sample usage:
 unichain create -f ./unichain.json  ==> You can leave the '-f' flag to autogenerate the file!
 
 
-unichain -h OR unichain --help OR unicain help  ==>  general help
+unichain -h OR unichain --help OR unichain help  ==>  general help
 unichain mine -h OR unichain --help  ==>  sub-command specific help
 
 unichain print --base64  ==> Prints out the entire blockchain in Base-64 format
