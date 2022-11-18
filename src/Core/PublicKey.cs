@@ -36,6 +36,14 @@ public class PublicKey {
         Key = bytes;
         BC_Key = bc_bytes;
     }
+
+    /// <summary>
+    /// Generates a random private key and derives the public key from it
+    /// </summary>
+    public PublicKey() {
+        PrivateKey privateKey = new();
+        (Key, BC_Key) = privateKey.DerivePublicKeyBytes();
+    }
     
     /// <summary>
     /// Initializes a new public key from a private key
@@ -92,19 +100,18 @@ public class PublicKey {
         // Regex to check valid address.  
         Regex regex = new("^0x([0-9a-fA-F]{40})([0-9a-fA-F]{0,8})$");
         Match match = regex.Match(address);
-        if (match.Success) {
-            var groups = match.Groups;
+        if (!match.Success) return false;
+        
+        GroupCollection groups = match.Groups;
             
-            var addressBytes = Convert.FromHexString(groups[1].Value);
-            var readSum = groups.Count > 1 ? Convert.FromHexString(groups[2].Value) : null;
-            if (readSum is null)
-                return true;
+        byte[] addressBytes = Convert.FromHexString(groups[1].Value);
+        byte[]? readSum = groups.Count > 1 ? Convert.FromHexString(groups[2].Value) : null;
+        
+        if (readSum is null)
+            return true;
 
-            var calculatedSum = CalculateChecksum(addressBytes, PublicKey.accuracy);
-            if (readSum.SequenceEqual(calculatedSum))
-                return true;
-        }
-        return false;
+        byte[] calculatedSum = CalculateChecksum(addressBytes, PublicKey.accuracy);
+        return readSum.SequenceEqual(calculatedSum);
     }
 
     /// <summary>

@@ -14,6 +14,25 @@ namespace Unichain.Tests
             _sut = new(2, 10);
         }
 
+        [Fact]
+        public void Collected_fees_add_up() {
+            User user = new();
+            string receiver = new PublicKey().DeriveAddress();
+            
+            // receive some money
+            _sut.MinePendingTransactions(user.Address);
+
+            ITransaction tx1 = new CurrencyTransaction(user, 1.0, receiver, 0.1);
+            ITransaction tx2 = new CurrencyTransaction(user, 5.0, receiver, 0.1);
+            tx1.SignTransaction();
+            tx2.SignTransaction();
+            
+            _sut.AddEvent(new []{ tx1, tx2 });
+            _sut.MinePendingTransactions(user.Address);
+
+            Assert.Equal(6.0, _sut.Chain[^1].CollectedFees);
+        }
+
         //[Fact]
         //public void Pool_vote_with_fee_is_valid()
         //{

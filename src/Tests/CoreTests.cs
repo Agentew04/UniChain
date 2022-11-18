@@ -54,6 +54,37 @@ public class CoreTests {
     }
 
     [Fact]
+    public void Public_key_to_string() {
+        const int publicSize = 158 * 2;
+        const int privateSize = 223 * 2;
+        var allowedChars = new[] {
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+            'A', 'B', 'C', 'D', 'E', 'F'
+        };
+            
+        User user = new();
+        string pub = user.PublicKey.ToString().ToUpper();
+        string priv = user.PrivateKey?.ToString().ToUpper() ?? "";
+        
+        Assert.Equal(publicSize, pub.Length);
+        Assert.Equal(privateSize, priv.Length);
+        
+        Assert.True(pub.All(x => allowedChars.Contains(x)));
+        Assert.True(priv.All(x => allowedChars.Contains(x)));
+        
+    }
+
+    [Fact]
+    public void Public_key_from_private_should_match() {
+        PrivateKey privateKey = new();
+
+        PublicKey publicKeyConstructor = new(privateKey);
+        PublicKey publicKeyDerived = privateKey.DerivePublicKey();
+
+        Assert.True(publicKeyConstructor.Key.SequenceEqual(publicKeyDerived.Key));
+    }
+    
+    [Fact]
     public void Broken_checksum_should_be_false() {
         User user = new();
         string brokenAddress = user.Address.Remove((user.Address.Length - 1) - 1, 2);

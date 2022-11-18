@@ -92,7 +92,7 @@ namespace Unichain.Events
             // todo insuficient balance exception?
             if (balance < Fee)
                 return false;
-            if (Options.Any() || PoolId == Guid.Empty || string.IsNullOrWhiteSpace(Name))
+            if (!Options.Any() || PoolId == Guid.Empty || string.IsNullOrWhiteSpace(Name))
                 return false;
 
             if (Signature is null)

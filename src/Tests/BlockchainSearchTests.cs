@@ -20,60 +20,6 @@ namespace Unichain.Tests
             _sut = new(2, 100);    
         }
 
-        //public PoolCreate PreparePoolEnvironment()
-        //{
-        //    User user1 = new();
-
-        //    PoolMetadata poolMetadata1 = new()
-        //    {
-        //        Options = new string[] { "option 1", "option 2", "option 3" },
-        //        Description = "A simple pool",
-        //        Name = "Default pool 1",
-        //    };
-        //    PoolCreate poolOpen1 = new(user1, poolMetadata1);
-        //    poolOpen1.SignEvent(user1);
-
-        //    _sut.AddEvent(poolOpen1);
-        //    _sut.MinePendingTransactions(user1.Address);
-
-        //    return poolOpen1;
-        //}
-
-        //public (Guid, string) PrepareVoteEnvironment()
-        //{
-        //    User user1 = new();
-        //    User address1 = new();
-        //    User address2 = new();
-        //    User address3 = new();
-        //    User address4 = new();
-
-
-        //    PoolMetadata poolMetadata1 = new()
-        //    {
-        //        Options = new string[] { "option 1", "option 2", "option 3" },
-        //        Description = "A simple pool",
-        //        Name = "Default pool 1",
-        //    };
-        //    PoolCreate poolOpen1 = new(user1, poolMetadata1);
-        //    poolOpen1.SignEvent(user1);
-
-        //    PoolVote poolVote1 = new(address1, poolOpen1.PoolId, 0, _sut);
-        //    PoolVote poolVote2 = new(address2, poolOpen1.PoolId, 1, _sut);
-        //    PoolVote poolVote3 = new(address3, poolOpen1.PoolId, 1, _sut);
-        //    PoolVote poolVote4 = new(address4, poolOpen1.PoolId, 2, _sut);
-        //    poolVote1.SignEvent(address1);
-        //    poolVote2.SignEvent(address2);
-        //    poolVote3.SignEvent(address3);
-        //    poolVote4.SignEvent(address4);
-
-        //    _sut.AddEvent(poolOpen1);
-        //    _sut.MinePendingTransactions(user1.Address);
-        //    _sut.AddEvent(new List<ITransaction>() { poolVote1, poolVote2, poolVote3, poolVote4 });
-        //    _sut.MinePendingTransactions(user1.Address);
-
-        //    return (poolOpen1.PoolId, address2.Address);
-        //}
-
         [Fact]
         public void Check_fees_and_balance_after_transaction()
         {
@@ -134,35 +80,61 @@ namespace Unichain.Tests
             Assert.Equal(_sut.Reward - amount, _sut.GetBalance(user1.Address), 0.0001);
             Assert.Equal(amount, _sut.GetBalance(user2.Address), 0.0001);
         }
+        
 
-        //[Fact]
-        //public void Get_all_pools()
-        //{
-        //    var pool = PreparePoolEnvironment();
+        [Fact]
+        public void Get_pool_by_id() {
+            User user1 = new(), user2 = new();
 
-        //    var foundpools = _sut.GetPools();
-        //    IEnumerable<PoolCreate> correctpools = new PoolCreate[] { pool };
+            PoolCreate pool = new(user1, 0.0, "testPool", new[] {
+                "option1",
+                "option2",
+                "option3"
+            });
+            pool.SignTransaction();
+            _sut.AddEvent(pool);
+            _sut.MinePendingTransactions(user2.Address);
+            
+            PoolCreate? foundPool = _sut.GetPoolById(pool.PoolId);
+            if(foundPool is null)
+                Assert.Fail($"{nameof(foundPool)} should not be null!");
+            
+            Assert.Equal(pool.CalculateHash(), foundPool?.CalculateHash());
+        }
+        
+        [Fact]
+        public void Pool_votes_should_count()
+        {
+            User creator = new(), 
+                voter1 = new(),
+                voter2 = new(),
+                voter3 = new();
 
-        //    Assert.Equal(correctpools, foundpools);
-        //}
+            PoolCreate pool = new(creator, 0.0, "testPool", new[] {
+                "option1",
+                "option2",
+                "option3"
+            });
+            pool.SignTransaction();
+            
+            PoolVote vote1 = new(voter1, 0.0, pool.PoolId, 0);
+            PoolVote vote2 = new(voter2, 0.0, pool.PoolId, 1);
+            PoolVote vote3 = new(voter3, 0.0, pool.PoolId, 2);
+            vote1.SignTransaction();
+            vote2.SignTransaction();
+            vote3.SignTransaction();
 
-        //[Fact]
-        //public void Get_pool_by_its_id()
-        //{
-        //    var pool = PreparePoolEnvironment();
-
-        //    var foundpool = _sut.GetPoolById(pool.PoolId);
-        //    Assert.Equal(pool, foundpool);
-        //}
-
-        //[Fact]
-        //public void Get_sum_of_votes_in_pool()
-        //{
-        //    var (id, _) = PrepareVoteEnvironment();
-
-        //    var votes = _sut.GetTotalVotes(id);
-        //    Assert.Equal(4, votes);
-        //}
+            _sut.AddEvent(pool);
+            _sut.MinePendingTransactions(creator.Address);
+            
+            _sut.AddEvent(new []{ vote1, vote2, vote3 } );
+            _sut.MinePendingTransactions(creator.Address);
+            
+            List<int> votes = _sut.GetVotes(pool.PoolId);
+            
+            Assert.Equal(3, votes.Sum());
+            Assert.True(votes.All(x => x == 1));
+        }
 
         //[Fact]
         //public void Get_all_votes_in_pool()
