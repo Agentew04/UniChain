@@ -32,6 +32,11 @@ public class Request {
     /// </summary>
     public string Payload { get; set; }
 
+    /// <summary>
+    /// Shortcut to get the payload data if it is a text
+    /// </summary>
+    public string TextPayload => Encoding.UTF8.GetString(Convert.FromBase64String(Payload));
+
     public Request(RequestMethod method, Uri uri, string payload, EndPoint remoteEndpoint) { 
         Method = method;
         Uri = uri;

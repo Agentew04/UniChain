@@ -14,14 +14,14 @@ public class Response {
     /// <summary>
     /// The status code of the response
     /// </summary>
-    public int StatusCode { get; set; }
+    public StatusCode StatusCode { get; set; }
 
     /// <summary>
     /// The Base64 encoded payload of the response
     /// </summary>
     public string Payload { get; set; }
 
-    public Response(int statusCode, string payload) {
+    public Response(StatusCode statusCode, string payload) {
         StatusCode = statusCode;
         Payload = payload;
     }

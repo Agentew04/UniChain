@@ -17,7 +17,7 @@ public abstract class TcpNode {
     /// <summary>
     /// The port that this node is listening on
     /// </summary>
-    private readonly int port;
+    protected readonly int port;
 
     /// <summary>
     /// A list with all the peers that this node is connected/knows about
@@ -59,7 +59,7 @@ public abstract class TcpNode {
     /// <returns></returns>
     public async Task Start(Address? bootnode) {
         if(bootnode is not null) {
-            await GetPeers(bootnode);
+            await FetchPeers(bootnode);
         }
         logger.Log($"Starting node with {peers.Count} peers...");
 
@@ -74,7 +74,7 @@ public abstract class TcpNode {
             Request req = ReadRequest(incoming);
 
             // Process the request
-            Response resp = Process(req);
+            Response resp = await Process(req);
 
             // Send the response
             SendResponse(resp, incoming);
@@ -171,7 +171,7 @@ public abstract class TcpNode {
     /// </summary>
     /// <param name="request">The Request that was sent</param>
     /// <returns>The response object</returns>
-    protected abstract Response Process(Request request);
+    protected abstract Task<Response> Process(Request request);
 
     /// <summary>
     /// Sends a response to a <see cref="TcpClient"/>
@@ -182,13 +182,13 @@ public abstract class TcpNode {
         NetworkStream outStream = client.GetStream();
         BinaryWriter writer = new(outStream);
 
-        writer.Write(response.StatusCode);
+        writer.Write((int)response.StatusCode);
         byte[] payloadBytes = Convert.FromBase64String(response.Payload);
         writer.Write((uint)payloadBytes.Length);
         writer.Write(payloadBytes);
 
         SHA256 sha256 = SHA256.Create();
-        byte[] hash = sha256.ComputeHash(Encoding.UTF8.GetBytes($"{response.StatusCode}{(uint)payloadBytes.Length}{response.Payload}"));
+        byte[] hash = sha256.ComputeHash(Encoding.UTF8.GetBytes($"{(int)response.StatusCode}{(uint)payloadBytes.Length}{response.Payload}"));
         writer.Write(hash);
     }
 
@@ -201,7 +201,7 @@ public abstract class TcpNode {
         NetworkStream inStream = client.GetStream();
         BinaryReader reader = new(inStream);
 
-        int statusCode = reader.ReadInt32();
+        StatusCode statusCode = (StatusCode)reader.ReadInt32();
         uint payloadLength = reader.ReadUInt32();
         byte[] payloadBytes = reader.ReadBytes((int)payloadLength);
         string payload = Convert.ToBase64String(payloadBytes);
@@ -229,15 +229,15 @@ public abstract class TcpNode {
     /// </summary>
     /// <param name="bootnode">The address of the bootnode</param>
     /// <returns></returns>
-    private async Task GetPeers(Address bootnode) {
+    private async Task FetchPeers(Address bootnode) {
         TcpClient tcpClient = new(bootnode.IP, bootnode.Port);
 
         // get the list of knowns peers from the bootnode
-        SendRequest(new Request(RequestMethod.GET, new Uri("/peers"), ""), tcpClient);
+        SendRequest(new Request(RequestMethod.GET, new Uri("/peers"), "", tcpClient.Client.RemoteEndPoint!), tcpClient);
 
         Response resp = ReadResponse(tcpClient);
 
-        if (resp.StatusCode != 200) {
+        if (resp.StatusCode != StatusCode.OK) {
             logger.LogError($"Failed to connect to the bootnode! Response: ${resp.StatusCode}");
             return;
         }
@@ -254,11 +254,11 @@ public abstract class TcpNode {
         // now we send our address to the bootnode
         var json = JsonSerializer.Serialize(new Address("localhost", port));
         logger.Log($"Sending our address to the bootnode...");
-        SendRequest(new Request(RequestMethod.POST, new Uri("/peers/join"), json), tcpClient);
+        SendRequest(new Request(RequestMethod.POST, new Uri("/peers/join"), json, tcpClient.Client.RemoteEndPoint!), tcpClient);
 
         resp = ReadResponse(tcpClient);
 
-        if (resp.StatusCode != 200) {
+        if (resp.StatusCode != StatusCode.OK) {
             logger.LogWarning($"Failed to send our address to the bootnode! Response: {resp.StatusCode}");
         }
 
