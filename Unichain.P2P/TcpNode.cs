@@ -80,6 +80,7 @@ public abstract class TcpNode {
             SendResponse(resp, incoming);
 
             // Close the connection
+            logger.Log($"Closed connection with {((IPEndPoint)incoming.Client.RemoteEndPoint!).Address}");
             incoming.Close();
         }
     }
@@ -102,8 +103,8 @@ public abstract class TcpNode {
     /// <param name="client">The client that sent the request</param>
     /// <returns>The request object</returns>
     protected Request ReadRequest(TcpClient client) {
-        using NetworkStream inStream = client.GetStream();
-        using BinaryReader reader = new(inStream);
+        NetworkStream inStream = client.GetStream();
+        using BinaryReader reader = new(inStream, Encoding.UTF8, true);
 
         int methodInt = reader.ReadInt32();
         RequestMethod method;
@@ -113,16 +114,10 @@ public abstract class TcpNode {
             method = RequestMethod.INVALID;
             logger.LogWarning($"Received invalid request method {methodInt}!");
         }
+        int clientPort = reader.ReadInt32();
 
-        string uriString = reader.ReadString();
-        Uri uri;
-        try {
-            uri = new(uriString);
-        } catch(UriFormatException) {
-            uri = new Uri("/");
-            logger.LogWarning($"Received invalid uri {uriString}!");
-        }
-
+        string route = reader.ReadString();
+        
         uint payloadLength = reader.ReadUInt32();
         byte[] payloadBytes = reader.ReadBytes((int)payloadLength);
         string payload = Convert.ToBase64String(payloadBytes);
@@ -131,19 +126,20 @@ public abstract class TcpNode {
         string originalHash = Convert.ToHexString(originalHashBytes);
 
         SHA256 sha256 = SHA256.Create();
-        byte[] hash = sha256.ComputeHash(Encoding.UTF8.GetBytes($"{methodInt}{uriString}{payloadLength}{payload}"));
+        byte[] hash = sha256.ComputeHash(Encoding.UTF8.GetBytes($"{methodInt}{clientPort}{route}{payloadLength}{payload}"));
         string hashString = Convert.ToHexString(hash);
 
         if (hashString != originalHash) {
             logger.LogWarning($"Received invalid request! Hashes don't match! Original: {originalHash} Received: {hashString}");
         }
 
-        EndPoint? endpoint = client.Client.RemoteEndPoint;
-        if(client.Client.RemoteEndPoint is null) {
+        IPEndPoint endpoint = (IPEndPoint)client.Client.RemoteEndPoint!;
+        endpoint.Port = clientPort;
+        if (client.Client.RemoteEndPoint is null) {
             logger.LogError($"Received request from unknown endpoint!");
             throw new NullReferenceException(nameof(client.Client.RemoteEndPoint));
         }
-        return new Request(method, uri, payload, endpoint!);
+        return new Request(method, route, payload, endpoint);
     }
 
     /// <summary>
@@ -152,17 +148,17 @@ public abstract class TcpNode {
     /// <param name="request"></param>
     /// <param name="client"></param>
     protected void SendRequest(Request request, TcpClient client) {
-        using NetworkStream outStream = client.GetStream();
-        using BinaryWriter writer = new(outStream);
+        NetworkStream outStream = client.GetStream();
+        using BinaryWriter writer = new(outStream, Encoding.UTF8, true);
 
         writer.Write((int)request.Method);
-        writer.Write(request.Uri.ToString());
+        writer.Write(port);
+        writer.Write(request.Route);
         byte[] payloadBytes = Convert.FromBase64String(request.Payload);
         writer.Write((uint)payloadBytes.Length);
         writer.Write(payloadBytes);
 
-        SHA256 sha256 = SHA256.Create();
-        byte[] hash = sha256.ComputeHash(Encoding.UTF8.GetBytes($"{(int)request.Method}{request.Uri}{(uint)payloadBytes.Length}{request.Payload}"));
+        byte[] hash = SHA256.HashData((Encoding.UTF8.GetBytes($"{(int)request.Method}{port}{(string)request.Route}{(uint)payloadBytes.Length}{request.Payload}")));
         writer.Write(hash);
     }
 
@@ -180,7 +176,7 @@ public abstract class TcpNode {
     /// <param name="client">The client that made the request and will receive the response</param>
     protected void SendResponse(Response response, TcpClient client) {
         NetworkStream outStream = client.GetStream();
-        BinaryWriter writer = new(outStream);
+        using BinaryWriter writer = new(outStream, Encoding.UTF8, true);
 
         writer.Write((int)response.StatusCode);
         byte[] payloadBytes = Convert.FromBase64String(response.Payload);
@@ -199,9 +195,16 @@ public abstract class TcpNode {
     /// <returns></returns>
     protected Response ReadResponse(TcpClient client) {
         NetworkStream inStream = client.GetStream();
-        BinaryReader reader = new(inStream);
+        using BinaryReader reader = new(inStream, Encoding.UTF8, true);
 
-        StatusCode statusCode = (StatusCode)reader.ReadInt32();
+        StatusCode statusCode;
+        try {
+            statusCode = (StatusCode)reader.ReadInt32();
+        } catch(InvalidCastException) {
+            statusCode = StatusCode.Invalid;
+            logger.LogWarning($"Received invalid status code!");
+        }
+        
         uint payloadLength = reader.ReadUInt32();
         byte[] payloadBytes = reader.ReadBytes((int)payloadLength);
         string payload = Convert.ToBase64String(payloadBytes);
@@ -210,7 +213,7 @@ public abstract class TcpNode {
         string originalHash = Convert.ToHexString(originalHashBytes);
 
         SHA256 sha256 = SHA256.Create();
-        byte[] hash = sha256.ComputeHash(Encoding.UTF8.GetBytes($"{statusCode}{payloadLength}{payload}"));
+        byte[] hash = sha256.ComputeHash(Encoding.UTF8.GetBytes($"{(int)statusCode}{(uint)payloadLength}{payload}"));
         string hashString = Convert.ToHexString(hash);
 
         if (hashString != originalHash) {
@@ -230,39 +233,40 @@ public abstract class TcpNode {
     /// <param name="bootnode">The address of the bootnode</param>
     /// <returns></returns>
     private async Task FetchPeers(Address bootnode) {
-        TcpClient tcpClient = new(bootnode.IP, bootnode.Port);
-
         // get the list of knowns peers from the bootnode
-        SendRequest(new Request(RequestMethod.GET, new Uri("/peers"), "", tcpClient.Client.RemoteEndPoint!), tcpClient);
+        using (TcpClient tcpClient = new(bootnode.IP, bootnode.Port)) {
+            SendRequest(new Request(RequestMethod.GET, Route.Peers, "", (IPEndPoint)tcpClient.Client.RemoteEndPoint!), tcpClient);
+            Response resp = ReadResponse(tcpClient);
 
-        Response resp = ReadResponse(tcpClient);
+            if (resp.StatusCode != StatusCode.OK) {
+                logger.LogError($"Failed to connect to the bootnode! Response: ${resp.StatusCode}");
+                return;
+            }
 
-        if (resp.StatusCode != StatusCode.OK) {
-            logger.LogError($"Failed to connect to the bootnode! Response: ${resp.StatusCode}");
-            return;
+            Stream jsonStream = new MemoryStream(Convert.FromBase64String(resp.Payload));
+            var addresses = await JsonSerializer.DeserializeAsync<List<Address>>(jsonStream);
+            if (addresses is null) {
+                logger.LogError($"Failed to deserialize peers!");
+                return;
+            }
+            logger.Log($"Got {addresses.Count} peers from bootnode");
+            peers = addresses;
         }
-
-        Stream jsonStream = new MemoryStream(Convert.FromBase64String(resp.Payload));
-        var addresses = await JsonSerializer.DeserializeAsync<List<Address>>(jsonStream);
-        if (addresses is null) {
-            logger.LogError($"Failed to deserialize peers!");
-            return;
-        }
-        logger.Log($"Got {addresses.Count} peers from bootnode");
-        peers = addresses;
 
         // now we send our address to the bootnode
-        var json = JsonSerializer.Serialize(new Address("localhost", port));
-        logger.Log($"Sending our address to the bootnode...");
-        SendRequest(new Request(RequestMethod.POST, new Uri("/peers/join"), json, tcpClient.Client.RemoteEndPoint!), tcpClient);
+        using (TcpClient tcpClient = new(bootnode.IP, bootnode.Port)) {
+            string payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new Address("localhost", port))));
+            logger.Log($"Sending our address to the bootnode...");
+            SendRequest(new Request(RequestMethod.POST, Route.Peers_Join, payload, (IPEndPoint)tcpClient.Client.RemoteEndPoint!), tcpClient);
 
-        resp = ReadResponse(tcpClient);
+            Response resp = ReadResponse(tcpClient);
 
-        if (resp.StatusCode != StatusCode.OK) {
-            logger.LogWarning($"Failed to send our address to the bootnode! Response: {resp.StatusCode}");
+            if (resp.StatusCode != StatusCode.OK) {
+                logger.LogWarning($"Failed to send our address to the bootnode! Response: {resp.StatusCode}");
+            }
+
+            tcpClient.Close();
         }
-
-        tcpClient.Close();
     }
 
     #endregion

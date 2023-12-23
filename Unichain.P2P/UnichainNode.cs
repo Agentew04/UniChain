@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Security.Cryptography;
@@ -41,7 +42,7 @@ internal class UnichainNode : TcpNode {
         Parallel.ForEach(peers, peer => {
             TcpClient tcpClient = new(peer.IP, peer.Port);
             logger.Log($"Broadcasting to peer {peer}...");
-            SendRequest(new Request(RequestMethod.POST, new Uri("/broadcast"), payload, tcpClient.Client.RemoteEndPoint!), tcpClient);
+            SendRequest(new Request(RequestMethod.POST, Route.Broadcast, payload, (IPEndPoint)tcpClient.Client.RemoteEndPoint!), tcpClient);
             Response resp = ReadResponse(tcpClient);
             if (resp.StatusCode != StatusCode.OK) {
                 logger.LogWarning($"Failed to propagate to peer {peer}! Response: {resp.StatusCode}");
@@ -56,16 +57,15 @@ internal class UnichainNode : TcpNode {
 
     protected override Task<Response> Process(Request request) {
         RequestMethod method = request.Method;
-        Uri uri = request.Uri;
-        string path = uri.AbsolutePath;
+        Route path = request.Route;
         Response response;
-        logger.Log($"Received {method} request on {uri} from {request.RemoteEndPoint}");
+        logger.Log($"Received {method} request on {path} from {request.Sender}");
 
-        if (path == "/peers" && method == RequestMethod.GET) {
+        if (path == Route.Peers && method == RequestMethod.GET) {
             response = GetPeers();
-        } else if (path == "/peers/join" && method == RequestMethod.POST) {
+        } else if (path == Route.Peers_Join && method == RequestMethod.POST) {
             response = RegisterNewPeer(request);
-        } else if (path == "/broadcast" && method == RequestMethod.POST) {
+        } else if (path == Route.Broadcast && method == RequestMethod.POST) {
             response = BroadcastMessage(request);
         } else {
             response = new Response(StatusCode.NotFound, "");

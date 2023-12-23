@@ -20,12 +20,12 @@ public class Request {
     /// <summary>
     /// The remote address of the sender
     /// </summary>
-    public EndPoint RemoteEndPoint { get; set; }
+    public IPEndPoint Sender { get; set; }
 
     /// <summary>
     /// The URI of the request
     /// </summary>
-    public Uri Uri { get; set; }
+    public Route Route { get; set; }
 
     /// <summary>
     /// The Base64 encoded payload of the request
@@ -37,10 +37,10 @@ public class Request {
     /// </summary>
     public string TextPayload => Encoding.UTF8.GetString(Convert.FromBase64String(Payload));
 
-    public Request(RequestMethod method, Uri uri, string payload, EndPoint remoteEndpoint) { 
+    public Request(RequestMethod method, Route route, string payload, IPEndPoint sender) { 
         Method = method;
-        Uri = uri;
+        Route = route;
         Payload = payload;
-        RemoteEndPoint = remoteEndpoint;
+        Sender = sender;
     }
 }
