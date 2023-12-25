@@ -15,32 +15,43 @@ public class Request {
     /// <summary>
     /// The method of the request
     /// </summary>
-    public RequestMethod Method { get; set; }
+    public required RequestMethod Method { get; set; }
 
     /// <summary>
-    /// The remote address of the sender
+    /// The address of the sender
     /// </summary>
-    public IPEndPoint Sender { get; set; }
+    public Address Sender { get; set; }
 
+    /// <summary>
+    /// Defines if this request is a broadcast. It should be propagated across the network and
+    /// a response should not matter.
+    /// </summary>
+    public bool IsBroadcast { get; set; }
+    
     /// <summary>
     /// The URI of the request
     /// </summary>
-    public Route Route { get; set; }
+    public required Route Route { get; set; }
 
     /// <summary>
     /// The Base64 encoded payload of the request
     /// </summary>
-    public string Payload { get; set; }
+    public string Payload { get; set; } = "";
 
     /// <summary>
     /// Shortcut to get the payload data if it is a text
     /// </summary>
     public string TextPayload => Encoding.UTF8.GetString(Convert.FromBase64String(Payload));
 
+    [Obsolete("Use the parameterless constructor.")]
     public Request(RequestMethod method, Route route, string payload, IPEndPoint sender) { 
         Method = method;
         Route = route;
         Payload = payload;
-        Sender = sender;
+        Sender = new Address(sender.Address.ToString(), sender.Port);
+    }
+
+    public Request() {
+
     }
 }

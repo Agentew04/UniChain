@@ -2,18 +2,19 @@
 using System.Text;
 using Unichain.P2P;
 
-Console.Write("Port: ");
-int port = int.Parse(Console.ReadLine() ?? "");
+List<UnichainNode> nodes = new();
 
-var node = new UnichainNode(port);
-
-Console.Write("Bootnode (ip:port): ");
-string bootnode = Console.ReadLine() ?? "";
-if (bootnode != "null") {
-    var split = bootnode.Split(':');
-    var ip = split[0];
-    port = int.Parse(split[1]);
-    await node.Start(new Address(ip, port));
-} else {
-    await node.Start(null);
+int bootnodePort = 1234;
+const int nodeCount = 1;
+var bootnode = new UnichainNode(bootnodePort);
+for(int i= 1; i <= nodeCount; i++) {
+    var node = new UnichainNode(bootnodePort + i);
+    nodes.Add(node);
 }
+
+await bootnode.Start(null);
+
+Parallel.ForEach(nodes, async node => {
+    await node.Start(new Address("localhost", bootnodePort));
+});
+await bootnode.Stop();

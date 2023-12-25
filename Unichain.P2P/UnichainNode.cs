@@ -19,43 +19,19 @@ internal class UnichainNode : TcpNode {
     /// <summary>
     /// Logger to log messages to the console
     /// </summary>
-    private readonly Logger logger = new(nameof(UnichainNode));
-
-    /// <summary>
-    /// A list to record recently sent broadcast messages
-    /// </summary>
-    private readonly FixedList<string> lastPropagations = new(10);
+    private readonly Logger logger;
 
     public UnichainNode(int port) : base(port) {
+        logger = new Logger(nameof(UnichainNode) + " " + Port);
     }
 
     #region Public Methods
-
-    public void Broadcast(string payload) {
-        string hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)));
-        if (lastPropagations.Contains(hash)) {
-            logger.Log($"I have already propagated {hash}!");
-            return;
-        }
-        lastPropagations.Add(hash);
-
-        Parallel.ForEach(peers, peer => {
-            TcpClient tcpClient = new(peer.IP, peer.Port);
-            logger.Log($"Broadcasting to peer {peer}...");
-            SendRequest(new Request(RequestMethod.POST, Route.Broadcast, payload, (IPEndPoint)tcpClient.Client.RemoteEndPoint!), tcpClient);
-            Response resp = ReadResponse(tcpClient);
-            if (resp.StatusCode != StatusCode.OK) {
-                logger.LogWarning($"Failed to propagate to peer {peer}! Response: {resp.StatusCode}");
-            }
-            tcpClient.Close();
-        });
-    }
 
     #endregion
 
     #region Protected Methods
 
-    protected override Task<Response> Process(Request request) {
+    protected override Response Process(Request request) {
         RequestMethod method = request.Method;
         Route path = request.Route;
         Response response;
@@ -65,12 +41,10 @@ internal class UnichainNode : TcpNode {
             response = GetPeers();
         } else if (path == Route.Peers_Join && method == RequestMethod.POST) {
             response = RegisterNewPeer(request);
-        } else if (path == Route.Broadcast && method == RequestMethod.POST) {
-            response = BroadcastMessage(request);
         } else {
             response = new Response(StatusCode.NotFound, "");
         }
-        return Task.FromResult(response);
+        return response;
     }
 
     #endregion
@@ -93,14 +67,14 @@ internal class UnichainNode : TcpNode {
         if (!peers.Contains(newAddress)) {
             peers.Add(newAddress);
         }
-        // TODO: send the new peer the list of known peers
-        return new Response(StatusCode.OK, "");
-    }
 
-    private Response BroadcastMessage(Request request) {
-        var message = request.TextPayload;
-        logger.Log($"Received message {message}. Broadcasting...");
-        Broadcast(message);
+        // TODO: send the new peer the list of known peers
+        Parallel.ForEach(peers, peer => {
+            using TcpClient client = new(peer.Ip, peer.Port);
+
+            SendRequest(request, client);
+        });
+
         return new Response(StatusCode.OK, "");
     }
 
