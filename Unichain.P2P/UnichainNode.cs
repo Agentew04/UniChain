@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Unichain.P2P.Packets;
 
 namespace Unichain.P2P;
 
@@ -42,7 +43,9 @@ internal class UnichainNode : TcpNode {
         } else if (path == Route.Peers_Join && method == RequestMethod.POST) {
             response = RegisterNewPeer(request);
         } else {
-            response = new Response(StatusCode.NotFound, "");
+            response = new ResponseBuilder()
+                .WithStatusCode(StatusCode.NotFound)
+                .Build();
         }
         return response;
     }
@@ -57,7 +60,15 @@ internal class UnichainNode : TcpNode {
         peersSent.Add(new Address("localhost", port));
         var json = JsonSerializer.Serialize(peersSent);
         var bytes = Encoding.UTF8.GetBytes(json);
-        return new Response(StatusCode.OK, Convert.ToBase64String(bytes));
+        ResponseBuilder builder = new();
+        Response response = builder
+            .WithStatusCode(StatusCode.OK)
+            .WithContent(new ContentBuilder()
+                .WithHeader("contentType","json")
+                .WithPayload(bytes)
+                .Build())
+            .Build();
+        return response;
     }
 
     private Response RegisterNewPeer(Request request) {

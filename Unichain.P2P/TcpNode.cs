@@ -11,8 +11,9 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Unichain.P2P.Packets;
 
-namespace Unichain.P2P; 
+namespace Unichain.P2P;
 public abstract class TcpNode {
 
     #region Variables
@@ -117,6 +118,8 @@ public abstract class TcpNode {
     /// <param name="client">The client that sent the request</param>
     /// <returns>The request object</returns>
     protected Request ReadRequest(TcpClient client) {
+        // TODO: extract stream only and forward to local function on struct
+
         NetworkStream inStream = client.GetStream();
         using BinaryReader reader = new(inStream, Encoding.UTF8, true);
 
