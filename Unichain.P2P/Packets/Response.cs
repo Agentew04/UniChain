@@ -62,4 +62,17 @@ public struct Response {
             Content = content
         };
     }
+
+    #region Preset Responses
+
+    /// <summary>
+    /// An <see cref="StatusCode.OK"/> response with no content
+    /// </summary>
+    public static readonly Response ok = new() {
+        ProtocolVersion = 1,
+        StatusCode = StatusCode.OK,
+        Content = Content.empty
+    };
+
+    #endregion
 }

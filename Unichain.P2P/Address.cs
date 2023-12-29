@@ -1,52 +1,88 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
-namespace Unichain.P2P {
-    public class Address {
+namespace Unichain.P2P; 
 
-        /// <summary>
-        /// The unique identifier of the node
-        /// </summary>
-        [JsonPropertyName("nodeId")]
-        public Guid NodeId { get; set; }
+/// <summary>
+/// A class that represents an address of a node and how to reach it
+/// </summary>
+public class Address {
 
-        /// <summary>
-        /// The IP address used to reach this node.
-        /// Preferably the IpV6 address if available.
-        /// </summary>
-        [JsonPropertyName("ip")]
-        public string Ip { get; }
+    /// <summary>
+    /// The unique identifier of the node
+    /// </summary>
+    [JsonPropertyName("nodeId")]
+    public Guid NodeId { get; set; }
 
-        /// <summary>
-        /// The port that this node will be listening on
-        /// </summary>
-        [JsonPropertyName("port")]
-        public int Port { get; }
+    /// <summary>
+    /// The public ip address of this node. Others nodes normally use
+    /// this one
+    /// </summary>
+    [JsonPropertyName("publicIp")]
+    public IPAddress PublicIp { get; set; }
 
-        /// <summary>
-        /// The .NET object representation of the IP address
-        /// </summary>
-        [JsonIgnore]
-        public IPAddress IPAddress => IPAddress.Parse(Ip);
+    /// <summary>
+    /// The private ip of this node. Used if two nodes are in the
+    /// same network. Just check if the Public ip is the same on both
+    /// </summary>
+    [JsonPropertyName("privateIp")]
+    public IPAddress PrivateIp { get; set; }
 
-        /// <summary>
-        /// A combination of endpoint and IP address
-        /// </summary>
-        [JsonIgnore]
-        public IPEndPoint EndPoint => new(IPAddress, Port);
+    /// <summary>
+    /// The port that this node will be listening on
+    /// </summary>
+    [JsonPropertyName("port")]
+    public int Port { get; }
 
-        public Address(string ip, int port) {
-            Ip = ip;
-            Port = port;
+    /// <summary>
+    /// Writes this address to a stream
+    /// </summary>
+    /// <param name="s">The stream to write to</param>
+    /// <exception cref="NotSupportedException"></exception>
+    public void Write(Stream s) {
+        if (!s.CanWrite) {
+            throw new NotSupportedException("Cannot write to this stream");
         }
 
-        [DebuggerStepThrough]
-        public override string ToString() => $"{Ip}:{Port}";
+        using BinaryWriter writer = new(s, Encoding.UTF8, true);
+
+        writer.Write(NodeId);
+        writer.Write(PublicIp.ToString());
+        writer.Write(PrivateIp.ToString());
+        writer.Write(Port);
+    }
+
+    /// <summary>
+    /// Reads an address from a stream.
+    /// </summary>
+    /// <param name="s">The stream that has the data</param>
+    /// <returns>The address read</returns>
+    public static Address Read(Stream s) {
+        using BinaryReader reader = new(s, Encoding.UTF8, true);
+
+        Guid nodeId = reader.ReadGuid();
+        IPAddress publicIp = IPAddress.Parse(reader.ReadString());
+        IPAddress privateIp = IPAddress.Parse(reader.ReadString());
+        int port = reader.ReadInt32();
+
+        return new Address(nodeId, publicIp, privateIp, port);
+    }
+
+    /// <summary>
+    /// Creates a new address with the given parameters
+    /// </summary>
+    /// <param name="nodeId"></param>
+    /// <param name="publicIp"></param>
+    /// <param name="privateIp"></param>
+    /// <param name="port"></param>
+    public Address(Guid nodeId, IPAddress publicIp, IPAddress privateIp, int port) {
+        NodeId = nodeId;
+        PublicIp = publicIp;
+        PrivateIp = privateIp;
+        Port = port;
     }
 }

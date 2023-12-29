@@ -1,21 +1,22 @@
-﻿using System.Text;
+﻿using System.Security.Cryptography;
+using System.Text;
 
 namespace Unichain.P2P.Packets; 
 
 /// <summary>
 /// Represents a collection of headers and a payload
 /// </summary>
-public struct Content {
+public readonly struct Content {
 
     /// <summary>
     /// The headers of this content.
     /// </summary>
-    public Dictionary<string,string> Headers { get; set; }
+    public Dictionary<string,string> Headers { get; init; }
 
     /// <summary>
     /// The binary payload of this content.
     /// </summary>
-    public byte[] Payload { get; set; }
+    public byte[] Payload { get; init; }
 
     /// <summary>
     /// Writes the current content to the stream
@@ -65,4 +66,29 @@ public struct Content {
             Payload = payload
         };
     }
+
+    /// <summary>
+    /// Returns a hash that includes all headers and payload
+    /// </summary>
+    /// <returns></returns>
+    public byte[] GetHash() {
+        StringBuilder sb = new();
+        foreach (var header in Headers) {
+            sb.Append(header.Key);
+            sb.Append(header.Value);
+            sb.AppendLine();
+        }
+        byte[] headersBytes = Encoding.UTF8.GetBytes(sb.ToString());
+        byte[] hash = SHA256.HashData([.. headersBytes, .. Payload]);
+        return hash;
+    }
+
+    #region Predifined Contents
+
+    public static readonly Content empty = new() {
+        Headers = [],
+        Payload = []
+    };
+
+    #endregion
 }

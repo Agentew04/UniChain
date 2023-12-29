@@ -2,7 +2,7 @@
 using System.Text;
 using Unichain.P2P;
 
-List<UnichainNode> nodes = new();
+List<UnichainNode> nodes = [];
 
 int bootnodePort = 1234;
 const int nodeCount = 1;
@@ -12,9 +12,9 @@ for(int i= 1; i <= nodeCount; i++) {
     nodes.Add(node);
 }
 
-await bootnode.Start(null);
+bootnode.Start(null);
 
-Parallel.ForEach(nodes, async node => {
-    await node.Start(new Address("localhost", bootnodePort));
+Parallel.ForEach(nodes, node => {
+    node.Start(bootnode.Address);
 });
 await bootnode.Stop();

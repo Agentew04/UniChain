@@ -1,6 +1,6 @@
 ﻿namespace Unichain.P2P;
 
-public enum RequestMethod {
+public enum RequestMethod : byte {
     INVALID,
     GET,
     POST

@@ -21,6 +21,5 @@ namespace Unichain.P2P {
             }
             writer.Write(bytes);
         }
-
     }
 }

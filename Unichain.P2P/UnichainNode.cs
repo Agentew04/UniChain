@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Net.Sockets;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Unichain.P2P.Packets;
 
 namespace Unichain.P2P;
@@ -22,8 +16,9 @@ internal class UnichainNode : TcpNode {
     /// </summary>
     private readonly Logger logger;
 
+    [SuppressMessage("Style", "IDE0290:Usar construtor primário", Justification = "Its ugly")]
     public UnichainNode(int port) : base(port) {
-        logger = new Logger(nameof(UnichainNode) + " " + Port);
+        logger = new Logger(nameof(UnichainNode) + " " + port);
     }
 
     #region Public Methods
@@ -55,16 +50,18 @@ internal class UnichainNode : TcpNode {
     #region Private Methods
 
     private Response GetPeers() {
-        List<Address> peersSent = new();
-        peersSent.AddRange(peers);
-        peersSent.Add(new Address("localhost", port));
-        var json = JsonSerializer.Serialize(peersSent);
+        List<Address> sentPeers = new(peers) {
+            address
+        };
+
+        var json = JsonSerializer.Serialize(sentPeers);
         var bytes = Encoding.UTF8.GetBytes(json);
         ResponseBuilder builder = new();
         Response response = builder
             .WithStatusCode(StatusCode.OK)
             .WithContent(new ContentBuilder()
                 .WithHeader("contentType","json")
+                .WithHeader("encoding", Encoding.UTF8.HeaderName)
                 .WithPayload(bytes)
                 .Build())
             .Build();
@@ -72,21 +69,27 @@ internal class UnichainNode : TcpNode {
     }
 
     private Response RegisterNewPeer(Request request) {
-        string json = request.TextPayload;
+        byte[] payload;
+        try {
+            payload = request.Contents.First(x => x.Headers["contentType"] == "json").Payload;
+        }catch (InvalidOperationException) {
+            return new ResponseBuilder()
+                .WithStatusCode(StatusCode.BadRequest)
+                .WithContent(new ContentBuilder()
+                    .WithHeader("error", "Missing json payload")
+                    .Build())
+                .Build();
+        }
+
+        Encoding encoding = Encoding.GetEncoding(request.Contents.First(x => x.Headers["encoding"] != null).Headers["encoding"]);
+        string json = encoding.GetString(payload);
         Address newAddress = JsonSerializer.Deserialize<Address>(json)!;
         logger.Log($"Received new peer {newAddress}.");
-        if (!peers.Contains(newAddress)) {
+        if (!peers.Contains(newAddress) && peers.Count < 100) {
             peers.Add(newAddress);
         }
 
-        // TODO: send the new peer the list of known peers
-        Parallel.ForEach(peers, peer => {
-            using TcpClient client = new(peer.Ip, peer.Port);
-
-            SendRequest(request, client);
-        });
-
-        return new Response(StatusCode.OK, "");
+        return Response.ok;
     }
 
     #endregion
