@@ -2,6 +2,7 @@
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
+using Unichain.P2P.Nodes;
 using Unichain.P2P.Packets;
 
 namespace Unichain.P2P;
