@@ -83,7 +83,7 @@ public abstract class Node
     /// <summary>
     /// Asks the node to stop acception connections and sending messages
     /// </summary>
-    public void Stop()
+    public virtual void Stop()
     {
         cancellationTokenSource.Cancel();
         try
@@ -106,14 +106,18 @@ public abstract class Node
     /// <param name="bootnode">The address of the bootnode</param>
     private void FetchPeers(Address bootnode)
     {
+        logger.Log($"Fetching peers from {bootnode}...");
         // get the list of knowns peers from the bootnode
         Request req = new RequestBuilder()
             .WithMethod(RequestMethod.GET)
             .WithRoute(Route.Peers)
             .WithSender(address)
             .Build();
+        logger.Log($"Sent request to {bootnode}...");
         SendRequest(req, bootnode);
+        logger.Log($"Waiting for response from {bootnode}...");
         Response resp = ReadResponse(bootnode);
+        logger.Log($"Received response from {bootnode}...");
 
         if (resp.StatusCode != StatusCode.OK)
         {

@@ -4,7 +4,7 @@
 /// A class to craft new requests.
 /// </summary>
 public class RequestBuilder {
-    private byte protocolVersion;
+    private ProtocolVersion protocolVersion;
     private RequestMethod method;
     private Route? route;
     private Address? sender;
@@ -23,7 +23,7 @@ public class RequestBuilder {
     /// Defines the protocol version that the request will use
     /// </summary>
     /// <param name="protocolVersion">The protocol version</param>
-    public RequestBuilder WithProtocolVersion(byte protocolVersion) {
+    public RequestBuilder WithProtocolVersion(ProtocolVersion protocolVersion) {
         this.protocolVersion = protocolVersion;
         return this;
     }

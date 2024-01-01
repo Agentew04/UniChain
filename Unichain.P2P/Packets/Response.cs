@@ -11,7 +11,7 @@ public struct Response {
     /// The protocol version that this node is using. Used to the sender
     /// troubleshoot issues if he has an different version of the protocol.
     /// </summary>
-    public int ProtocolVersion { get; set; }
+    public ProtocolVersion ProtocolVersion { get; set; }
 
     /// <summary>
     /// The status code of the response
@@ -35,8 +35,8 @@ public struct Response {
 
         using BinaryWriter bw = new(s, Encoding.UTF8, true);
 
-        bw.Write(ProtocolVersion);
-        bw.Write((int)StatusCode);
+        bw.Write((byte)ProtocolVersion);
+        bw.Write((ushort)StatusCode);
         Content.Write(s);
     }
 
@@ -53,8 +53,8 @@ public struct Response {
 
         using BinaryReader br = new(s, Encoding.UTF8, true);
 
-        int protocolVersion = br.ReadInt32();
-        StatusCode statusCode = (StatusCode)br.ReadInt32();
+        ProtocolVersion protocolVersion = (ProtocolVersion)br.ReadByte();
+        StatusCode statusCode = (StatusCode)br.ReadUInt16();
         Content content = Content.Read(s);
         return new Response {
             ProtocolVersion = protocolVersion,
@@ -69,7 +69,7 @@ public struct Response {
     /// An <see cref="StatusCode.OK"/> response with no content
     /// </summary>
     public static readonly Response ok = new() {
-        ProtocolVersion = 1,
+        ProtocolVersion = ProtocolVersion.V1,
         StatusCode = StatusCode.OK,
         Content = Content.empty
     };

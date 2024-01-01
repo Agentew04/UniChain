@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Unichain.P2P.Packets; 
@@ -8,10 +9,12 @@ namespace Unichain.P2P.Packets;
 /// </summary>
 public readonly struct Content {
 
+    private static readonly Logger logger = new(nameof(Content));
+
     /// <summary>
     /// The headers of this content.
     /// </summary>
-    public Dictionary<string,string> Headers { get; init; }
+    public Dictionary<string, string> Headers { get; init; }
 
     /// <summary>
     /// The binary payload of this content.

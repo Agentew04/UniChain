@@ -11,8 +11,8 @@ public class ContentBuilder {
     /// Instantiates a new builder for <see cref="Content"/> objects with default information.
     /// </summary>
     public ContentBuilder() {
-        headers = new();
-        payload = Array.Empty<byte>();
+        headers = [];
+        payload = [];
     }
 
     /// <summary>

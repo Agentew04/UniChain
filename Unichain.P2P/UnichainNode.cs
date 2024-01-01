@@ -10,7 +10,7 @@ namespace Unichain.P2P;
 /// <summary>
 /// A specialized class of <see cref="TcpNode"/> that implements the Unichain protocol
 /// </summary>
-internal class UnichainNode : TcpNode {
+internal class UnichainNode : UdpNode {
 
     /// <summary>
     /// Logger to log messages to the console

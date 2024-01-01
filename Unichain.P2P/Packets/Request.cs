@@ -11,7 +11,7 @@ public readonly struct Request
     /// <summary>
     /// The protocol version that the sender is using. 
     /// </summary>
-    public byte ProtocolVersion { get; init; }
+    public ProtocolVersion ProtocolVersion { get; init; }
 
     /// <summary>
     /// The method of the request
@@ -54,10 +54,10 @@ public readonly struct Request
 
         using BinaryWriter writer = new(s, Encoding.UTF8, true);
 
-        writer.Write(ProtocolVersion); // 1 byte
+        writer.Write((byte)ProtocolVersion); // 1 byte
         writer.Write((byte)Method); // 1 byte
         writer.Write(IsBroadcast); // 1 byte
-        writer.Write(0b00000000); // 1 byte (reserved)
+        writer.Write((byte)0x0); // 1 byte (reserved)
         writer.Write(Route);
         Sender.Write(s);
         writer.Write((ushort)Contents.Count); // 2 bytes
@@ -80,7 +80,7 @@ public readonly struct Request
 
         using BinaryReader reader = new(s, Encoding.UTF8, true);
 
-        byte protocolVersion = reader.ReadByte();
+        ProtocolVersion protocolVersion = (ProtocolVersion)reader.ReadByte();
         RequestMethod method = (RequestMethod)reader.ReadByte();
         bool isBroadcast = reader.ReadBoolean();
         reader.ReadByte(); // reserved

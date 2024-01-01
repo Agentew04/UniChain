@@ -46,14 +46,6 @@ public class QuicNode : Node {
 
     }
 
-    public override void Start(Address? bootnode) {
-        quicListener = await QuicListener.ListenAsync(new QuicListenerOptions() {
-            ListenEndPoint = new IPEndPoint(IPAddress.Any, address.Port)
-        }, cancellationTokenSource.Token);
-        base.Start(bootnode);
-    }
-
-
     protected override Response Process(Request request) {
         throw new NotImplementedException();
     }
@@ -80,28 +72,29 @@ public class QuicNode : Node {
         logger.Log($"Listening...");
 
         // the listen loop
+        throw new NotImplementedException();
         while (!cancellationTokenSource.IsCancellationRequested) {
-            
 
 
-            NetworkStream inStream = incoming.GetStream();
+
+            //NetworkStream inStream = 
 
             // Read the request
-            Request request = Request.Read(inStream);
+            //Request request = Request.Read(inStream);
 
             // Process the request
-            Response response = Process(request);
+            //Response response = Process(request);
 
             // Send the response or broadcast
-            if (!request.IsBroadcast) {
-                response.Write(inStream);
-            } else {
-                Broadcast(request);
-            }
+            //if (!request.IsBroadcast) {
+            //    response.Write(inStream);
+            //} else {
+            //    Broadcast(request);
+            //}
 
-            // Close the connection
-            logger.Log($"Closed connection with {((IPEndPoint)incoming.Client.RemoteEndPoint!).Address}");
-            incoming.Close();
+            //// Close the connection
+            //logger.Log($"Closed connection with {((IPEndPoint)incoming.Client.RemoteEndPoint!).Address}");
+            //incoming.Close();
         }
 
     }
