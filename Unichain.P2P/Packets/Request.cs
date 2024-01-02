@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using NLog;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Unichain.P2P.Packets;
@@ -40,7 +41,7 @@ public readonly struct Request
     /// </summary>
     public List<Content> Contents { get; init; }
 
-    private static readonly Logger logger = new(nameof(Request));
+    private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
     /// <summary>
     /// Writes the current request to a stream
@@ -103,7 +104,7 @@ public readonly struct Request
         };
 
         if (!request.GetHash().SequenceEqual(hash)) {
-            logger.LogWarning("Hashes from Request does not match");
+            logger.Warn("Hashes from Request does not match");
         }
 
         return request;
@@ -118,6 +119,14 @@ public readonly struct Request
         Span<byte> hash = new byte[SHA256.HashSizeInBytes];
         SHA256.HashData(strBytes, hash);
         return hash;
+    }
+
+    /// <summary>
+    /// Creates a new instance of the builder for this structure
+    /// </summary>
+    /// <returns></returns>
+    public static RequestBuilder Create() {
+        return new();
     }
 
     /// <summary>

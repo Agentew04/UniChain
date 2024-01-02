@@ -63,6 +63,14 @@ public struct Response {
         };
     }
 
+    /// <summary>
+    /// Creates a new instance of the builder for this structure
+    /// </summary>
+    /// <returns></returns>
+    public static ResponseBuilder Create() {
+        return new();
+    }
+
     #region Preset Responses
 
     /// <summary>
@@ -71,6 +79,15 @@ public struct Response {
     public static readonly Response ok = new() {
         ProtocolVersion = ProtocolVersion.V1,
         StatusCode = StatusCode.OK,
+        Content = Content.empty
+    };
+
+    /// <summary>
+    /// An <see cref="StatusCode.NotFound"/> response with no content
+    /// </summary>
+    public static readonly Response notFound = new() {
+        ProtocolVersion = ProtocolVersion.V1,
+        StatusCode = StatusCode.NotFound,
         Content = Content.empty
     };
 

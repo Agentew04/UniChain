@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using NLog;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
@@ -18,7 +19,7 @@ public abstract class TcpNode : Node
     /// <summary>
     /// Logger to log messages to the console
     /// </summary>
-    private readonly Logger logger;
+    private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
     #endregion
 
@@ -29,7 +30,6 @@ public abstract class TcpNode : Node
     protected TcpNode(int port) : base(port)
     {
         tcpListener = new(new IPEndPoint(IPAddress.Any, port));
-        logger = new Logger(nameof(TcpNode) + " " + port.ToString());
     }
 
 
@@ -51,7 +51,7 @@ public abstract class TcpNode : Node
     protected override void ThreadMain()
     {
         tcpListener.Start();
-        logger.Log($"Listening...");
+        logger.Info($"Listening...");
 
         // the listen loop
         while (!cancellationTokenSource.IsCancellationRequested)
@@ -76,7 +76,7 @@ public abstract class TcpNode : Node
             }
 
             // Close the connection
-            logger.Log($"Closed connection with {((IPEndPoint)incoming.Client.RemoteEndPoint!).Address}");
+            logger.Info($"Closed connection with {((IPEndPoint)incoming.Client.RemoteEndPoint!).Address}");
             incoming.Close();
         }
     }

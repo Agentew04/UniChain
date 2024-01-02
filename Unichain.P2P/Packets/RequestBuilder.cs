@@ -16,7 +16,7 @@ public class RequestBuilder {
     /// </summary>
     public RequestBuilder()
     {
-        contents = new();
+        contents = [];
     }
 
     /// <summary>

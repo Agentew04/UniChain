@@ -23,6 +23,7 @@ public class Address {
     /// this one
     /// </summary>
     [JsonPropertyName("publicIp")]
+    [JsonConverter(typeof(IPAddressConverter))]
     public IPAddress PublicIp { get; set; }
 
     /// <summary>
@@ -30,6 +31,7 @@ public class Address {
     /// same network. Just check if the Public ip is the same on both
     /// </summary>
     [JsonPropertyName("privateIp")]
+    [JsonConverter(typeof(IPAddressConverter))]
     public IPAddress PrivateIp { get; set; }
 
     /// <summary>
@@ -60,8 +62,13 @@ public class Address {
     /// Reads an address from a stream.
     /// </summary>
     /// <param name="s">The stream that has the data</param>
+    /// <exception cref="NotSupportedException"></exception>
     /// <returns>The address read</returns>
     public static Address Read(Stream s) {
+        if(!s.CanRead) {
+            throw new NotSupportedException("Cannot read from this stream");
+        }
+
         using BinaryReader reader = new(s, Encoding.UTF8, true);
 
         Guid nodeId = reader.ReadGuid();

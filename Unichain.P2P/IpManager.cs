@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualBasic;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Unichain.P2P {
     public static class IpManager {
-        private readonly static Logger logger = new(nameof(IpManager));
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public static IPAddress? GetPublicIp() {
             HttpClient client = new() {
@@ -26,24 +27,24 @@ namespace Unichain.P2P {
                 var response = client.GetAsync(urls[0]).Result;
                 string responseString = response.Content.ReadAsStringAsync().Result.Replace("\n",string.Empty);
                 var address = IPAddress.Parse(responseString);
-                logger.Log($"Public IP: {address}");
+                logger.Debug($"Public IP: {address}");
                 return address;
             } catch (TaskCanceledException) {
                 try {
                     var response = client.GetAsync(urls[1]).Result;
                     var responseString = response.Content.ReadAsStringAsync().Result.Replace("\n", string.Empty);
                     var address = IPAddress.Parse(responseString);
-                    logger.Log($"Public IP: {address}");
+                    logger.Debug($"Public IP: {address}");
                     return address;
                 } catch (TaskCanceledException) {
                     try {
                         var response = client.GetAsync(urls[2]).Result;
                         var responseString = response.Content.ReadAsStringAsync().Result.Replace("\n", string.Empty);
                         var address = IPAddress.Parse(responseString.Split(':')[1]);
-                        logger.Log($"Public IP: {address}");
+                        logger.Debug($"Public IP: {address}");
                         return address;
                     } catch (TaskCanceledException) {
-                        logger.Log("Could not get public IP");
+                        logger.Warn("Could not get public IP");
                         return null;
                     }
                 }
@@ -52,7 +53,7 @@ namespace Unichain.P2P {
 
         public static List<IPAddress> GetPrivateIpsAsync() {
             var ips = Dns.GetHostAddresses(Dns.GetHostName());
-            logger.Log($"Private IPs: {string.Join(", ", ips.ToList())}");
+            logger.Debug($"Private IPs: {string.Join(", ", ips.ToList())}");
             return ips.Where(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).ToList();
         }
 

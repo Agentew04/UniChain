@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using NLog;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -8,8 +9,6 @@ namespace Unichain.P2P.Packets;
 /// Represents a collection of headers and a payload
 /// </summary>
 public readonly struct Content {
-
-    private static readonly Logger logger = new(nameof(Content));
 
     /// <summary>
     /// The headers of this content.
@@ -84,6 +83,14 @@ public readonly struct Content {
         byte[] headersBytes = Encoding.UTF8.GetBytes(sb.ToString());
         byte[] hash = SHA256.HashData([.. headersBytes, .. Payload]);
         return hash;
+    }
+
+    /// <summary>
+    /// Creates a new instance of the builder for this structure
+    /// </summary>
+    /// <returns></returns>
+    public static ContentBuilder Create() {
+        return new();
     }
 
     #region Predifined Contents

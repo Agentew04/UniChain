@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -22,7 +23,7 @@ public class QuicNode : Node {
     /// <summary>
     /// The logger that manages the printing of messages to the console
     /// </summary>
-    private readonly Logger logger;
+    private readonly Logger logger = LogManager.GetCurrentClassLogger();
 
     /// <summary>
     /// The listener in the QUIC protocol
@@ -41,9 +42,6 @@ public class QuicNode : Node {
             throw new NotSupportedException("QUIC is not supported on this platform. If running on linux, check if" +
                 "libmsquic is installed and check if TLS 1.3 is supported");
         }
-
-        logger = new Logger(nameof(QuicNode) + " " + port.ToString());
-
     }
 
     protected override Response Process(Request request) {
@@ -69,7 +67,7 @@ public class QuicNode : Node {
     protected override void ThreadMain() => ThreadMainAsync().Wait();
 
     private async Task ThreadMainAsync() {
-        logger.Log($"Listening...");
+        logger.Info($"Listening...");
 
         // the listen loop
         throw new NotImplementedException();
