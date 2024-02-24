@@ -12,7 +12,7 @@ namespace Unichain.P2P;
 /// <summary>
 /// A specialized class of <see cref="TcpNode"/> that implements the Unichain protocol
 /// </summary>
-public class UnichainNode : UdpNode {
+public class UnichainNode : RudpNode {
 
     /// <summary>
     /// Logger to log messages to the console
@@ -20,7 +20,8 @@ public class UnichainNode : UdpNode {
     private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
     [SuppressMessage("Style", "IDE0290:Usar construtor primário", Justification = "Its ugly")]
-    public UnichainNode(int port) : base(port) {
+    public UnichainNode(int port) : base(port){
+
     }
 
     #region Public Methods

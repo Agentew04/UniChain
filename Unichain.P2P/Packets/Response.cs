@@ -36,6 +36,7 @@ public struct Response {
         using BinaryWriter bw = new(s, Encoding.UTF8, true);
 
         bw.Write((byte)ProtocolVersion);
+        bw.Write((byte)PacketType.Response);
         bw.Write((ushort)StatusCode);
         Content.Write(s);
     }
@@ -54,6 +55,10 @@ public struct Response {
         using BinaryReader br = new(s, Encoding.UTF8, true);
 
         ProtocolVersion protocolVersion = (ProtocolVersion)br.ReadByte();
+        PacketType packetType = (PacketType)br.ReadByte();
+        if(packetType != PacketType.Response) {
+            throw new InvalidDataException("The packet is not a response");
+        }
         StatusCode statusCode = (StatusCode)br.ReadUInt16();
         Content content = Content.Read(s);
         return new Response {

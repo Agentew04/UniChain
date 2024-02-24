@@ -180,28 +180,25 @@ public abstract class Node
     /// Reads a request from a <see cref="TcpClient"/>
     /// </summary>
     /// <param name="client">The client that sent the request</param>
-    /// <returns>The request object</returns>
+    /// <returns>The request object received</returns>
     protected abstract Request ReadRequest(Address address);
 
     /// <summary>
-    /// Reads a response sent from a <see cref="TcpClient"/>
+    /// Expects and reads a response sent from a network <see cref="P2P.Address"/>
     /// </summary>
-    /// <param name="client">The client that received the Request and sent the Response</param>
-    /// <returns></returns>
+    /// <returns>The response structure sent by the other peer</returns>
     protected abstract Response ReadResponse(Address address);
 
     /// <summary>
-    /// Sends a request to a <see cref="TcpClient"/>
+    /// Sends a request to a network <see cref="P2P.Address"/>
     /// </summary>
-    /// <param name="request"></param>
-    /// <param name="client"></param>
+    /// <param name="request">The request that will be serialized and sent</param>
     protected abstract void SendRequest(Request request, Address address);
 
     /// <summary>
-    /// Sends a response to a <see cref="TcpClient"/>
+    /// Sends a response to a network <see cref="P2P.Address"/>
     /// </summary>
     /// <param name="response">The response that will be sent</param>
-    /// <param name="client">The client that made the request and will receive the response</param>
     protected abstract void SendResponse(Response response, Address address);
 
     /// <summary>
@@ -211,6 +208,9 @@ public abstract class Node
     /// <returns>The response object</returns>
     protected abstract Response Process(Request request);
 
+    /// <summary>
+    /// Main method that this node internal thread will run
+    /// </summary>
     protected abstract void ThreadMain();
 
     #endregion

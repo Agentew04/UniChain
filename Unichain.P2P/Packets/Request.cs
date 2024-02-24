@@ -56,6 +56,7 @@ public readonly struct Request
         using BinaryWriter writer = new(s, Encoding.UTF8, true);
 
         writer.Write((byte)ProtocolVersion); // 1 byte
+        writer.Write((byte)PacketType.Request); // 1 byte
         writer.Write((byte)Method); // 1 byte
         writer.Write(IsBroadcast); // 1 byte
         writer.Write((byte)0x0); // 1 byte (reserved)
@@ -82,6 +83,10 @@ public readonly struct Request
         using BinaryReader reader = new(s, Encoding.UTF8, true);
 
         ProtocolVersion protocolVersion = (ProtocolVersion)reader.ReadByte();
+        PacketType packetType = (PacketType)reader.ReadByte();
+        if (packetType != PacketType.Request) {
+            throw new InvalidDataException("The packet is not a request");
+        }
         RequestMethod method = (RequestMethod)reader.ReadByte();
         bool isBroadcast = reader.ReadBoolean();
         reader.ReadByte(); // reserved
