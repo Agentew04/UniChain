@@ -24,6 +24,7 @@ public class RudpNode : Node {
     #region Variables
 
     private const string ProtocolKey = "Unichain";
+    private const int ReadPoolingFrequencyMs = 250;
     private EventBasedNetListener? listener;
     private NetManager? server;
     private NetManager? client;
@@ -73,24 +74,45 @@ public class RudpNode : Node {
     #region R/W Requests/Responses
 
     protected override Request ReadRequest(Address address) {
-        var possible = receivedPackets
+        // blocking wait
+        logger.Debug("Waiting for packet from {address}...", address);
+        Extensions.WaitUntil(() => {
+            return receivedPackets
             .Where(packet => packet.packetType == PacketType.Request)
-            .Where(packet => packet.sender == address);
+            .Any(packet => packet.sender == address);
+        }, frequency: ReadPoolingFrequencyMs).Wait();
 
-        if(possible.Count() == 0) {
-            // todo aaaaaaaaaaaaaaaa
-        }
+        logger.Debug("Received packet from {address}...", address);
+        RudpP2PPacket packet = receivedPackets
+            .Where(packet => packet.packetType == PacketType.Request)
+            .First(packet => packet.sender == address);
 
-        throw new NotImplementedException();
+        receivedPackets.Remove(packet);
+        return (Request)packet.packet;
     }
 
     protected override Response ReadResponse(Address address) {
-        throw new NotImplementedException();
+        // blocking wait
+        logger.Debug("Waiting for packet from {address}...", address);
+        Extensions.WaitUntil(() => {
+            return receivedPackets
+            .Where(packet => packet.packetType == PacketType.Response)
+            .Any(packet => packet.sender == address);
+        }, frequency: ReadPoolingFrequencyMs).Wait();
+
+        logger.Debug("Received packet from {address}...", address);
+        RudpP2PPacket packet = receivedPackets
+            .Where(packet => packet.packetType == PacketType.Response)
+            .First(packet => packet.sender == address);
+
+        receivedPackets.Remove(packet);
+        return (Response)packet.packet;
     }
 
     protected override void SendRequest(Request request, Address address) {
         // we are not connected yet to this peer
         NetPeer? peer = null;
+        Extensions.WaitUntil(() => server.IsRunning).Wait();
         if (!connectedPeers.ContainsKey(address)) { // do not fix CA1864
             peer = server?.Connect(new IPEndPoint(this.address.Normalize(address), address.Port), ProtocolKey);
             if (peer is not null) {
@@ -105,12 +127,14 @@ public class RudpNode : Node {
         peer = connectedPeers[address];
         using MemoryStream ms = new();
         request.Write(ms);
+        logger.Info("Sending request to {address}", address);
         peer.Send(ms.ToArray(), DeliveryMethod.ReliableOrdered);
     }
 
     protected override void SendResponse(Response response, Address address) {
         // we are not connected yet to this peer
         NetPeer? peer = null;
+        Extensions.WaitUntil(() => server.IsRunning).Wait();
         if (!connectedPeers.ContainsKey(address)) { // do not fix CA1864
             logger.Debug("Not yet connected to {address}, connecting...", address);
             peer = server?.Connect(new IPEndPoint(this.address.Normalize(address), address.Port), ProtocolKey);
@@ -126,6 +150,7 @@ public class RudpNode : Node {
         peer = connectedPeers[address];
         using MemoryStream ms = new();
         response.Write(ms);
+        logger.Info("Sending response to {address}", address);
         peer.Send(ms.ToArray(), DeliveryMethod.ReliableOrdered);
     }
 
