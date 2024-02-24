@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -22,7 +23,7 @@ public class QuicNode : Node {
     /// <summary>
     /// The logger that manages the printing of messages to the console
     /// </summary>
-    private readonly Logger logger;
+    private readonly Logger logger = LogManager.GetCurrentClassLogger();
 
     /// <summary>
     /// The listener in the QUIC protocol
@@ -41,18 +42,7 @@ public class QuicNode : Node {
             throw new NotSupportedException("QUIC is not supported on this platform. If running on linux, check if" +
                 "libmsquic is installed and check if TLS 1.3 is supported");
         }
-
-        logger = new Logger(nameof(QuicNode) + " " + port.ToString());
-
     }
-
-    public override void Start(Address? bootnode) {
-        quicListener = await QuicListener.ListenAsync(new QuicListenerOptions() {
-            ListenEndPoint = new IPEndPoint(IPAddress.Any, address.Port)
-        }, cancellationTokenSource.Token);
-        base.Start(bootnode);
-    }
-
 
     protected override Response Process(Request request) {
         throw new NotImplementedException();
@@ -77,31 +67,32 @@ public class QuicNode : Node {
     protected override void ThreadMain() => ThreadMainAsync().Wait();
 
     private async Task ThreadMainAsync() {
-        logger.Log($"Listening...");
+        logger.Info($"Listening...");
 
         // the listen loop
+        throw new NotImplementedException();
         while (!cancellationTokenSource.IsCancellationRequested) {
-            
 
 
-            NetworkStream inStream = incoming.GetStream();
+
+            //NetworkStream inStream = 
 
             // Read the request
-            Request request = Request.Read(inStream);
+            //Request request = Request.Read(inStream);
 
             // Process the request
-            Response response = Process(request);
+            //Response response = Process(request);
 
             // Send the response or broadcast
-            if (!request.IsBroadcast) {
-                response.Write(inStream);
-            } else {
-                Broadcast(request);
-            }
+            //if (!request.IsBroadcast) {
+            //    response.Write(inStream);
+            //} else {
+            //    Broadcast(request);
+            //}
 
-            // Close the connection
-            logger.Log($"Closed connection with {((IPEndPoint)incoming.Client.RemoteEndPoint!).Address}");
-            incoming.Close();
+            //// Close the connection
+            //logger.Log($"Closed connection with {((IPEndPoint)incoming.Client.RemoteEndPoint!).Address}");
+            //incoming.Close();
         }
 
     }

@@ -4,22 +4,24 @@ using System.Text;
 using System.Text.Json;
 using Unichain.P2P.Nodes;
 using Unichain.P2P.Packets;
+using NLog;
+using System.Security.Cryptography;
 
 namespace Unichain.P2P;
 
 /// <summary>
 /// A specialized class of <see cref="TcpNode"/> that implements the Unichain protocol
 /// </summary>
-internal class UnichainNode : TcpNode {
+public class UnichainNode : RudpNode {
 
     /// <summary>
     /// Logger to log messages to the console
     /// </summary>
-    private readonly Logger logger;
+    private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
     [SuppressMessage("Style", "IDE0290:Usar construtor primário", Justification = "Its ugly")]
-    public UnichainNode(int port) : base(port) {
-        logger = new Logger(nameof(UnichainNode) + " " + port);
+    public UnichainNode(int port) : base(port){
+
     }
 
     #region Public Methods
@@ -32,7 +34,7 @@ internal class UnichainNode : TcpNode {
         RequestMethod method = request.Method;
         Route path = request.Route;
         Response response;
-        logger.Log($"Received {method} request on {path} from {request.Sender}");
+        logger.Info("Received {method} request on {path} from {request.Sender}", method, path, request.Sender);
 
         if (path == Route.Peers && method == RequestMethod.GET) {
             response = GetPeers();
@@ -55,7 +57,7 @@ internal class UnichainNode : TcpNode {
             address
         };
 
-        var json = JsonSerializer.Serialize(sentPeers);
+        string json = JsonSerializer.Serialize(sentPeers);
         var bytes = Encoding.UTF8.GetBytes(json);
         ResponseBuilder builder = new();
         Response response = builder
@@ -66,26 +68,31 @@ internal class UnichainNode : TcpNode {
                 .WithPayload(bytes)
                 .Build())
             .Build();
-        return response;
+        return response; 
     }
 
     private Response RegisterNewPeer(Request request) {
-        byte[] payload;
-        try {
-            payload = request.Contents.First(x => x.Headers["contentType"] == "json").Payload;
-        }catch (InvalidOperationException) {
-            return new ResponseBuilder()
+
+        Content ctn = request.Contents[0];
+
+        if (ctn.Headers["contentType"] != "json") {
+            return Response.Create()
+                .WithProtocolVersion(ProtocolVersion.V1)
                 .WithStatusCode(StatusCode.BadRequest)
-                .WithContent(new ContentBuilder()
-                    .WithHeader("error", "Missing json payload")
+                .WithContent(Content.Create()
+                    .WithHeader("contentType", "text")
+                    .WithHeader("encoding", Encoding.UTF8.HeaderName)
+                    .WithPayload(Encoding.UTF8.GetBytes("Invalid content type. Must be 'json'"))
                     .Build())
                 .Build();
         }
 
-        Encoding encoding = Encoding.GetEncoding(request.Contents.First(x => x.Headers["encoding"] != null).Headers["encoding"]);
+        byte[] payload = ctn.Payload;
+
+        Encoding encoding = Encoding.GetEncoding(ctn.Headers["encoding"]);
         string json = encoding.GetString(payload);
         Address newAddress = JsonSerializer.Deserialize<Address>(json)!;
-        logger.Log($"Received new peer {newAddress}.");
+        logger.Info($"Received new peer {newAddress}.");
         if (!peers.Contains(newAddress) && peers.Count < 100) {
             peers.Add(newAddress);
         }

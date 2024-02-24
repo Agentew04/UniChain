@@ -1,4 +1,6 @@
-﻿using System.Security.Cryptography;
+﻿using NLog;
+using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Unichain.P2P.Packets; 
@@ -11,7 +13,7 @@ public readonly struct Content {
     /// <summary>
     /// The headers of this content.
     /// </summary>
-    public Dictionary<string,string> Headers { get; init; }
+    public Dictionary<string, string> Headers { get; init; }
 
     /// <summary>
     /// The binary payload of this content.
@@ -81,6 +83,14 @@ public readonly struct Content {
         byte[] headersBytes = Encoding.UTF8.GetBytes(sb.ToString());
         byte[] hash = SHA256.HashData([.. headersBytes, .. Payload]);
         return hash;
+    }
+
+    /// <summary>
+    /// Creates a new instance of the builder for this structure
+    /// </summary>
+    /// <returns></returns>
+    public static ContentBuilder Create() {
+        return new();
     }
 
     #region Predifined Contents

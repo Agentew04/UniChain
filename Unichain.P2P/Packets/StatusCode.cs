@@ -1,6 +1,6 @@
 ﻿namespace Unichain.P2P;
 
-public enum StatusCode {
+public enum StatusCode : ushort {
     Invalid = 0,
     OK = 200,
     BadRequest = 400,

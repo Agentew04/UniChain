@@ -4,15 +4,15 @@
 /// A class to craft new responses.
 /// </summary>
 public class ResponseBuilder {
-    private int protocolVersion;
+    private ProtocolVersion protocolVersion;
     private StatusCode statusCode;
-    private Content content;
+    private Content? content;
 
     /// <summary>
     /// Defines the protocol version that the response will use
     /// </summary>
     /// <param name="protocolVersion">The protocol version used</param>
-    public ResponseBuilder WithProtocolVersion(int protocolVersion) {
+    public ResponseBuilder WithProtocolVersion(ProtocolVersion protocolVersion) {
         this.protocolVersion = protocolVersion;
         return this;
     }
@@ -41,10 +41,11 @@ public class ResponseBuilder {
     /// </summary>
     /// <returns>The new response object</returns>
     public Response Build() {
+        content ??= Content.empty;
         return new Response {
             ProtocolVersion = protocolVersion,
             StatusCode = statusCode,
-            Content = content
+            Content = (Content)content
         };
     }
 }

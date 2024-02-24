@@ -10,7 +10,7 @@ namespace Unichain.P2P;
 /// <summary>
 /// A class that represents a route and contains a collecion of routes
 /// </summary>
-public class Route {
+public sealed class Route : IEquatable<Route> {
 
     /// <summary>
     /// The path of the route
@@ -27,22 +27,14 @@ public class Route {
 
     #region Statics
 
-    public static Route Root => "";
-    public static Route Peers => "peers";
-    public static Route Peers_Join => Peers / "join";
-    public static Route Broadcast => "broadcast";
+    public static Route Peers => "/peers";
+    public static Route Peers_Join => "/peers/join";
+    public static Route Broadcast => "/broadcast";
 
     #endregion
 
-    #region Overloads
 
-    public static Route operator /(Route route, string path) {
-        return new Route($"{route.Path}/{path}");
-    }
-
-    public static Route operator /(Route route, Route path) {
-        return new Route($"{route.Path}/{path.Path}");
-    }
+    #region Operators
 
     public static bool operator ==(Route route, string path) {
         return route.Path == path;
@@ -60,6 +52,11 @@ public class Route {
         return route.Path;
     }
 
+    #endregion
+
+
+    #region Overrides
+
     public override string ToString() {
         return Path;
     }
@@ -67,6 +64,9 @@ public class Route {
     public override bool Equals(object? obj) {
         return obj is Route route &&
                Path == route.Path;
+    }
+    public bool Equals(Route? other) {
+        return Path == other?.Path;
     }
 
     public override int GetHashCode() {

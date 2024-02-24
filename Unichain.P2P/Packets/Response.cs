@@ -11,7 +11,7 @@ public struct Response {
     /// The protocol version that this node is using. Used to the sender
     /// troubleshoot issues if he has an different version of the protocol.
     /// </summary>
-    public int ProtocolVersion { get; set; }
+    public ProtocolVersion ProtocolVersion { get; set; }
 
     /// <summary>
     /// The status code of the response
@@ -35,8 +35,9 @@ public struct Response {
 
         using BinaryWriter bw = new(s, Encoding.UTF8, true);
 
-        bw.Write(ProtocolVersion);
-        bw.Write((int)StatusCode);
+        bw.Write((byte)ProtocolVersion);
+        bw.Write((byte)PacketType.Response);
+        bw.Write((ushort)StatusCode);
         Content.Write(s);
     }
 
@@ -53,8 +54,12 @@ public struct Response {
 
         using BinaryReader br = new(s, Encoding.UTF8, true);
 
-        int protocolVersion = br.ReadInt32();
-        StatusCode statusCode = (StatusCode)br.ReadInt32();
+        ProtocolVersion protocolVersion = (ProtocolVersion)br.ReadByte();
+        PacketType packetType = (PacketType)br.ReadByte();
+        if(packetType != PacketType.Response) {
+            throw new InvalidDataException("The packet is not a response");
+        }
+        StatusCode statusCode = (StatusCode)br.ReadUInt16();
         Content content = Content.Read(s);
         return new Response {
             ProtocolVersion = protocolVersion,
@@ -63,14 +68,31 @@ public struct Response {
         };
     }
 
+    /// <summary>
+    /// Creates a new instance of the builder for this structure
+    /// </summary>
+    /// <returns></returns>
+    public static ResponseBuilder Create() {
+        return new();
+    }
+
     #region Preset Responses
 
     /// <summary>
     /// An <see cref="StatusCode.OK"/> response with no content
     /// </summary>
     public static readonly Response ok = new() {
-        ProtocolVersion = 1,
+        ProtocolVersion = ProtocolVersion.V1,
         StatusCode = StatusCode.OK,
+        Content = Content.empty
+    };
+
+    /// <summary>
+    /// An <see cref="StatusCode.NotFound"/> response with no content
+    /// </summary>
+    public static readonly Response notFound = new() {
+        ProtocolVersion = ProtocolVersion.V1,
+        StatusCode = StatusCode.NotFound,
         Content = Content.empty
     };
 
